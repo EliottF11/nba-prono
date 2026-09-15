@@ -20,6 +20,29 @@ from auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Pronostics & Matchs"])
 
+def compute_team_recent_forms(db: Session) -> dict:
+    """Calcule la forme récente (jusqu'à 5 derniers matchs: 'W' ou 'L') pour chaque équipe."""
+    finished_matches = (
+        db.query(Match)
+        .filter(Match.status == "finished", Match.winner_team_id.isnot(None))
+        .order_by(Match.deadline.desc())
+        .all()
+    )
+    forms = {}
+    for m in finished_matches:
+        if m.home_team_id not in forms:
+            forms[m.home_team_id] = []
+        if len(forms[m.home_team_id]) < 5:
+            forms[m.home_team_id].append("W" if m.winner_team_id == m.home_team_id else "L")
+
+        if m.away_team_id not in forms:
+            forms[m.away_team_id] = []
+        if len(forms[m.away_team_id]) < 5:
+            forms[m.away_team_id].append("W" if m.winner_team_id == m.away_team_id else "L")
+
+    return forms
+
+
 @router.get("/matches", response_model=List[MatchResponse])
 def get_matches(
     status_filter: Optional[str] = None,
@@ -30,6 +53,7 @@ def get_matches(
     Récupère la liste des matchs ordonnés par heure limite croissante.
     Permet un filtrage optionnel par statut (?status_filter=upcoming ou finished)
     et par semaine NBA (?week=1, 2, etc.).
+    Enrichit chaque équipe avec sa forme récente (5 derniers matchs W/L).
     """
     query = db.query(Match)
     if status_filter:
@@ -37,6 +61,14 @@ def get_matches(
     if week is not None:
         query = query.filter(Match.week_number == week)
     matches = query.order_by(Match.deadline.asc()).all()
+
+    forms = compute_team_recent_forms(db)
+    for m in matches:
+        if m.home_team:
+            m.home_team.recent_form = forms.get(m.home_team_id, ["W", "L", "W", "W", "L"])
+        if m.away_team:
+            m.away_team.recent_form = forms.get(m.away_team_id, ["L", "W", "W", "L", "W"])
+
     return matches
 
 

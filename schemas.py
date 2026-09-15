@@ -37,6 +37,7 @@ class TeamResponse(BaseModel):
     code: str
     color: str
     text_color: str
+    recent_form: List[str] = []
 
     class Config:
         from_attributes = True
@@ -210,4 +211,49 @@ class LeagueSummaryResponse(BaseModel):
     members_count: int
     user_rank: Optional[int] = None
     created_at: datetime
+
+
+# --- Schémas Transparence des Votes & Mur de Chambrage (MPP Features) ---
+
+class LeagueMemberVoteResponse(BaseModel):
+    user_id: int
+    username: str
+    has_voted: bool
+    selected_team_id: Optional[int] = None
+    selected_team_code: Optional[str] = None
+    selected_team_city: Optional[str] = None
+    is_boosted: bool = False
+    points_won: float = 0.0
+
+
+class LeagueMatchVotesResponse(BaseModel):
+    match_id: int
+    league_id: int
+    is_revealed: bool
+    total_members: int
+    voted_count: int
+    home_team_id: int
+    home_team_city: str
+    away_team_id: int
+    away_team_city: str
+    home_votes_count: int = 0
+    away_votes_count: int = 0
+    home_pct: float = 0.0
+    away_pct: float = 0.0
+    votes: List[LeagueMemberVoteResponse] = []
+
+
+class LeagueMessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=280, description="Texte du message")
+
+
+class LeagueMessageResponse(BaseModel):
+    id: int
+    league_id: int
+    user_id: int
+    username: str
+    content: str
+    created_at: datetime
+    is_me: bool = False
+
 

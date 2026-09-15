@@ -197,3 +197,52 @@ body {
   color: #f59e0b;
   border-color: #f59e0b;
 }
+
+/* --- MPP Features Styling --- */
+
+/* Mur de chambrage (Mini-chat) */
+.chat-bubble-me {
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.25) 0%, rgba(255, 85, 0, 0.1) 100%);
+  border: 1px solid rgba(255, 85, 0, 0.35);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-bubble-other {
+  background: #181a24;
+  border: 1px solid #282c3e;
+  border-bottom-left-radius: 4px;
+}
+
+.emoji-pill {
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+.emoji-pill:hover {
+  transform: scale(1.2);
+}
+.emoji-pill:active {
+  transform: scale(0.95);
+}
+
+/* Jauge de répartition des votes */
+.vote-gauge-bar {
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #181a24;
+  display: flex;
+}
+.vote-gauge-home {
+  transition: width 0.4s ease-out;
+}
+.vote-gauge-away {
+  transition: width 0.4s ease-out;
+}
+
+/* Autocomplete suggestion item */
+.player-suggest-item {
+  transition: background-color 0.15s ease;
+}
+.player-suggest-item:hover {
+  background-color: #242938;
+}
+

@@ -19,6 +19,10 @@ const state = {
   weeklyPlayersMap: {}, // weekNumber -> WeeklyPlayerPredictionResponse
   myLeagues: [],
   activeLeague: null,
+  activeLeagueVotesMatchId: null,
+  activeLeagueVotesLeagueId: null,
+  leagueMessages: {},
+  chatPollingInterval: null,
   authMode: 'login'
 };
 
@@ -97,6 +101,28 @@ function initUIEvents() {
   if (openJoinLeagueBtn) openJoinLeagueBtn.addEventListener('click', () => openJoinLeagueModal());
   if (closeJoinLeagueBtn) closeJoinLeagueBtn.addEventListener('click', closeJoinLeagueModal);
   if (joinLeagueForm) joinLeagueForm.addEventListener('submit', handleJoinLeagueSubmit);
+
+  // Gestion modale Transparence des pronostics de ligue (Signature MPP)
+  const closeLmvBtn = document.getElementById('close-league-match-votes-modal');
+  const lmvSelect = document.getElementById('lmv-league-select');
+  if (closeLmvBtn) closeLmvBtn.addEventListener('click', closeLeagueMatchVotesModal);
+  if (lmvSelect) {
+    lmvSelect.addEventListener('change', () => {
+      const selectedLeagueId = parseInt(lmvSelect.value);
+      if (selectedLeagueId && state.activeLeagueVotesMatchId) {
+        state.activeLeagueVotesLeagueId = selectedLeagueId;
+        openLeagueMatchVotesModal(state.activeLeagueVotesMatchId, selectedLeagueId);
+      }
+    });
+  }
+
+  // Gestion modale Bilan Partageable
+  const closeRecapBtn = document.getElementById('close-share-recap-modal');
+  const nativeShareBtn = document.getElementById('btn-native-share');
+  const copyRecapBtn = document.getElementById('btn-copy-recap-text');
+  if (closeRecapBtn) closeRecapBtn.addEventListener('click', closeShareRecapModal);
+  if (nativeShareBtn) nativeShareBtn.addEventListener('click', handleNativeShareRecap);
+  if (copyRecapBtn) copyRecapBtn.addEventListener('click', handleCopyRecapText);
 }
 
 // --- Session & Utilisateur ---
@@ -474,7 +500,15 @@ function renderMatchesList() {
                 <div class="font-condensed font-black text-sm uppercase tracking-wide text-white truncate">
                   ${match.home_team.city}
                 </div>
-                <div class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Domicile</div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Domicile</span>
+                  <div class="flex items-center gap-1" title="Forme (5 derniers matchs)">
+                    ${(match.home_team.recent_form || []).map(r => r === 'W' 
+                      ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
+                      : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
+                    ).join('')}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -510,7 +544,15 @@ function renderMatchesList() {
                 <div class="font-condensed font-black text-sm uppercase tracking-wide text-white truncate">
                   ${match.away_team.city}
                 </div>
-                <div class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Extérieur</div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Extérieur</span>
+                  <div class="flex items-center gap-1" title="Forme (5 derniers matchs)">
+                    ${(match.away_team.recent_form || []).map(r => r === 'W' 
+                      ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
+                      : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
+                    ).join('')}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -528,6 +570,20 @@ function renderMatchesList() {
             ` : ''}
           </button>
 
+        </div>
+
+        <!-- Footer carte : Pronostics de ligue (Signature MPP) -->
+        <div class="pt-2 border-t border-[#1b1e28] flex items-center justify-between">
+          <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
+            <span>👥</span> Pronos de ligue
+          </span>
+          <button 
+            onclick="openLeagueMatchVotesModal(${match.id})" 
+            class="text-[10px] font-bold text-[#ff5500] hover:text-[#ff7733] bg-[#ff5500]/10 hover:bg-[#ff5500]/20 px-2 py-1 rounded-lg border border-[#ff5500]/30 transition cursor-pointer flex items-center gap-1"
+          >
+            <span>Qui a voté quoi ?</span>
+            <span>›</span>
+          </button>
         </div>
 
       </div>
@@ -1026,16 +1082,6 @@ function renderWeeklyPlayersCard() {
   const matchedEast = wp ? findMatchingPlayerOption(eastList, wp.east_player) : '';
   const matchedWest = wp ? findMatchingPlayerOption(westList, wp.west_player) : '';
 
-  const eastOptions = eastList.map(p => {
-    const selected = (matchedEast === p) ? 'selected' : '';
-    return `<option value="${p}" ${selected}>${p}</option>`;
-  }).join('');
-
-  const westOptions = westList.map(p => {
-    const selected = (matchedWest === p) ? 'selected' : '';
-    return `<option value="${p}" ${selected}>${p}</option>`;
-  }).join('');
-
   container.innerHTML = `
     <div class="p-3.5 bg-[#12141a] rounded-2xl border ${hasChoices ? 'border-emerald-500/30' : 'border-[#ff5500]/30'} shadow-xl space-y-3 transition-all duration-300">
       <div class="flex items-center justify-between">
@@ -1061,7 +1107,7 @@ function renderWeeklyPlayersCard() {
                 ? 'Les matchs de cette semaine ont débuté. Choix définitivement verrouillés.' 
                 : hasChoices 
                   ? 'Tes 2 choix sont enregistrés ! Modifiables avant le premier match.' 
-                  : 'Choisis 1 joueur Est et 1 joueur Ouest avant de pronostiquer tes matchs.'}
+                  : 'Recherche 1 joueur Est et 1 joueur Ouest pour débloquer tes pronostics.'}
             </p>
           </div>
         </div>
@@ -1069,35 +1115,83 @@ function renderWeeklyPlayersCard() {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <!-- Conférence Est -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-blue-500 inline-block shadow-sm shadow-blue-500/50"></span>
-            <span>Conférence Est</span>
+        <div class="relative">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-blue-500 inline-block shadow-sm shadow-blue-500/50"></span>
+              <span>Conférence Est</span>
+            </span>
+            <span class="text-[9px] text-slate-500 font-mono">${eastList.length} joueurs</span>
           </label>
-          <select 
-            id="weekly-east-select-${currentWeek}" 
-            ${isLocked ? 'disabled' : ''} 
-            class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5500] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <option value="">Sélectionne le joueur Est...</option>
-            ${eastOptions}
-          </select>
+          <input type="hidden" id="weekly-east-select-${currentWeek}" value="${matchedEast || ''}">
+          
+          ${matchedEast ? `
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-blue-500/40">
+              <div class="flex items-center space-x-2 truncate">
+                <span class="text-blue-400 font-bold text-xs">🏀</span>
+                <span class="font-bold text-xs text-white truncate">${matchedEast}</span>
+              </div>
+              ${!isLocked ? `
+                <button type="button" onclick="clearWeeklyPlayerSelection('east', ${currentWeek})" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-[#202535] hover:bg-[#282f42] border border-[#2f374e] transition cursor-pointer shrink-0">
+                  Changer
+                </button>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="relative">
+              <input 
+                type="text" 
+                id="weekly-east-search-${currentWeek}" 
+                oninput="filterPlayerSuggestions('east', ${currentWeek})"
+                onfocus="filterPlayerSuggestions('east', ${currentWeek})"
+                ${isLocked ? 'disabled' : ''} 
+                placeholder="Tape un nom (ex: Tatum, Giannis...)"
+                autocomplete="off"
+                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500] disabled:opacity-50"
+              >
+              <div id="weekly-east-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
+            </div>
+          `}
         </div>
 
         <!-- Conférence Ouest -->
-        <div>
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-red-500 inline-block shadow-sm shadow-red-500/50"></span>
-            <span>Conférence Ouest</span>
+        <div class="relative">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500 inline-block shadow-sm shadow-red-500/50"></span>
+              <span>Conférence Ouest</span>
+            </span>
+            <span class="text-[9px] text-slate-500 font-mono">${westList.length} joueurs</span>
           </label>
-          <select 
-            id="weekly-west-select-${currentWeek}" 
-            ${isLocked ? 'disabled' : ''} 
-            class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5500] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            <option value="">Sélectionne le joueur Ouest...</option>
-            ${westOptions}
-          </select>
+          <input type="hidden" id="weekly-west-select-${currentWeek}" value="${matchedWest || ''}">
+
+          ${matchedWest ? `
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-red-500/40">
+              <div class="flex items-center space-x-2 truncate">
+                <span class="text-red-400 font-bold text-xs">🏀</span>
+                <span class="font-bold text-xs text-white truncate">${matchedWest}</span>
+              </div>
+              ${!isLocked ? `
+                <button type="button" onclick="clearWeeklyPlayerSelection('west', ${currentWeek})" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-[#202535] hover:bg-[#282f42] border border-[#2f374e] transition cursor-pointer shrink-0">
+                  Changer
+                </button>
+              ` : ''}
+            </div>
+          ` : `
+            <div class="relative">
+              <input 
+                type="text" 
+                id="weekly-west-search-${currentWeek}" 
+                oninput="filterPlayerSuggestions('west', ${currentWeek})"
+                onfocus="filterPlayerSuggestions('west', ${currentWeek})"
+                ${isLocked ? 'disabled' : ''} 
+                placeholder="Tape un nom (ex: Doncic, Curry...)"
+                autocomplete="off"
+                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500] disabled:opacity-50"
+              >
+              <div id="weekly-west-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
+            </div>
+          `}
         </div>
       </div>
 
@@ -1115,6 +1209,57 @@ function renderWeeklyPlayersCard() {
       ` : ''}
     </div>
   `;
+}
+
+function filterPlayerSuggestions(conf, week) {
+  const input = document.getElementById(`weekly-${conf}-search-${week}`);
+  const suggBox = document.getElementById(`weekly-${conf}-suggestions-${week}`);
+  if (!input || !suggBox) return;
+
+  const q = (input.value || '').trim().toLowerCase();
+  const list = conf === 'east' 
+    ? (state.weeklyPlayerCandidates?.east || []) 
+    : (state.weeklyPlayerCandidates?.west || []);
+
+  const filtered = list.filter(p => p.toLowerCase().includes(q)).slice(0, 10);
+
+  if (filtered.length === 0) {
+    suggBox.innerHTML = `<div class="p-2.5 text-center text-slate-500 text-[11px]">Aucun joueur correspondant</div>`;
+    suggBox.classList.remove('hidden');
+    return;
+  }
+
+  suggBox.innerHTML = filtered.map(p => `
+    <div 
+      onclick="selectWeeklyPlayer('${conf}', ${week}, '${p.replace(/'/g, "\\'")}')" 
+      class="player-suggest-item px-3 py-2 text-xs font-semibold text-slate-200 hover:text-white cursor-pointer flex items-center justify-between"
+    >
+      <span>${p}</span>
+      <span class="text-[9px] text-slate-500 font-bold uppercase">${conf === 'east' ? 'EST' : 'OUEST'}</span>
+    </div>
+  `).join('');
+  suggBox.classList.remove('hidden');
+}
+
+function selectWeeklyPlayer(conf, week, playerName) {
+  const hiddenInput = document.getElementById(`weekly-${conf}-select-${week}`);
+  if (hiddenInput) hiddenInput.value = playerName;
+  if (!state.weeklyPlayersMap[week]) {
+    state.weeklyPlayersMap[week] = { week_number: week, is_locked: false, east_player: null, west_player: null };
+  }
+  if (conf === 'east') state.weeklyPlayersMap[week].east_player = playerName;
+  if (conf === 'west') state.weeklyPlayersMap[week].west_player = playerName;
+  renderWeeklyPlayersCard();
+}
+
+function clearWeeklyPlayerSelection(conf, week) {
+  const hiddenInput = document.getElementById(`weekly-${conf}-select-${week}`);
+  if (hiddenInput) hiddenInput.value = '';
+  if (state.weeklyPlayersMap[week]) {
+    if (conf === 'east') state.weeklyPlayersMap[week].east_player = '';
+    if (conf === 'west') state.weeklyPlayersMap[week].west_player = '';
+  }
+  renderWeeklyPlayersCard();
 }
 
 async function saveWeeklyPlayers(weekNumber) {
@@ -1751,7 +1896,70 @@ function renderLeagueDetail(league) {
         }).join('')}
       </div>
     </div>
+
+    <!-- Bouton Bilan Partageable de la Ligue (Format Story / WhatsApp) -->
+    <div class="pt-1">
+      <button 
+        onclick="openShareRecapModal(${league.id})" 
+        class="w-full bg-[#181a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+      >
+        <span>📸</span> Carte Bilan Partageable (Story & WhatsApp)
+      </button>
+    </div>
+
+    <!-- Mur de chambrage / Mini-chat (Signature MPP) -->
+    <div class="bg-[#12141a] border border-[#1f222d] rounded-2xl p-3.5 space-y-3 shadow-lg">
+      <div class="flex items-center justify-between pb-2 border-b border-[#1b1e28]">
+        <div class="flex items-center space-x-2">
+          <span class="text-base">💬</span>
+          <div>
+            <h3 class="font-condensed font-black text-sm uppercase tracking-wide text-white">Mur de chambrage</h3>
+            <p class="text-[10px] text-slate-400">Trash-talk en direct entre membres de la ligue</p>
+          </div>
+        </div>
+        <button onclick="loadLeagueMessages(${league.id})" class="text-[11px] text-slate-400 hover:text-white p-1 cursor-pointer" title="Rafraîchir les messages">
+          🔄
+        </button>
+      </div>
+
+      <!-- Liste des messages -->
+      <div id="league-chat-messages" class="max-h-64 overflow-y-auto space-y-2 pr-1 text-xs">
+        <div class="text-center text-slate-500 text-[11px] py-4">Chargement des messages...</div>
+      </div>
+
+      <!-- Barre d'emojis rapides -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <button type="button" onclick="insertEmojiToChat('🏀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🏀</button>
+        <button type="button" onclick="insertEmojiToChat('🔥')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🔥</button>
+        <button type="button" onclick="insertEmojiToChat('🗑️')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🗑️</button>
+        <button type="button" onclick="insertEmojiToChat('👀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">👀</button>
+        <button type="button" onclick="insertEmojiToChat('🐐')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🐐</button>
+        <button type="button" onclick="insertEmojiToChat('💩')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">💩</button>
+        <button type="button" onclick="insertEmojiToChat('🥱')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🥱</button>
+        <button type="button" onclick="insertEmojiToChat('🎯')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🎯</button>
+      </div>
+
+      <!-- Formulaire d'envoi -->
+      <form id="league-chat-form" onsubmit="handleSendLeagueMessage(event, ${league.id})" class="flex items-center gap-2">
+        <input 
+          type="text" 
+          id="league-chat-input" 
+          maxlength="280" 
+          placeholder="Chambre tes potes... (ex: Préparez les mouchoirs 😈)" 
+          class="flex-1 bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500]"
+        >
+        <button 
+          type="submit" 
+          class="px-3.5 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow-md shadow-[#ff5500]/20"
+        >
+          Envoyer
+        </button>
+      </form>
+    </div>
   `;
+
+  // Charger les messages du chat de la ligue
+  loadLeagueMessages(league.id);
 }
 
 // --- Modales Création / Rejoindre Ligue ---
@@ -1894,6 +2102,362 @@ async function leaveLeagueAction(leagueId) {
   }
 }
 
+// --- Améliorations MPP : Transparence des pronostics de ligue ---
+async function openLeagueMatchVotesModal(matchId, explicitLeagueId = null) {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour voir les pronos de ta ligue !", "info");
+    return;
+  }
+
+  // Si l'utilisateur n'a pas encore de ligues chargées, on tente de les récupérer
+  if (!state.myLeagues || state.myLeagues.length === 0) {
+    try {
+      state.myLeagues = await API.getMyLeagues();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (!state.myLeagues || state.myLeagues.length === 0) {
+    notify("Rejoins ou crée d'abord une ligue privée pour voir les pronos !", "info");
+    selectTab('leagues');
+    return;
+  }
+
+  state.activeLeagueVotesMatchId = matchId;
+  const targetLeagueId = explicitLeagueId || state.activeLeagueVotesLeagueId || state.activeLeague?.id || state.myLeagues[0].id;
+  state.activeLeagueVotesLeagueId = targetLeagueId;
+
+  const modal = document.getElementById('league-match-votes-modal');
+  const selectorContainer = document.getElementById('lmv-league-selector-container');
+  const leagueSelect = document.getElementById('lmv-league-select');
+  const content = document.getElementById('lmv-modal-content');
+  const modalTitle = document.getElementById('lmv-modal-title');
+  const modalSub = document.getElementById('lmv-modal-subtitle');
+
+  if (!modal || !content) return;
+
+  // Configuration du sélecteur de ligue
+  if (state.myLeagues.length > 1 && leagueSelect && selectorContainer) {
+    selectorContainer.classList.remove('hidden');
+    leagueSelect.innerHTML = state.myLeagues.map(l => 
+      `<option value="${l.id}" ${l.id === targetLeagueId ? 'selected' : ''}>${l.name}</option>`
+    ).join('');
+  } else if (selectorContainer) {
+    selectorContainer.classList.add('hidden');
+  }
+
+  const match = state.matches.find(m => m.id === matchId);
+  if (match && modalTitle) {
+    modalTitle.textContent = `${match.home_team.code} vs ${match.away_team.code}`;
+  }
+
+  content.innerHTML = `
+    <div class="text-center py-6 text-slate-400 text-xs flex items-center justify-center gap-2">
+      <div class="w-4 h-4 border-2 border-[#ff5500] border-t-transparent rounded-full animate-spin"></div>
+      <span>Chargement des pronostics...</span>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+
+  try {
+    const data = await API.getLeagueMatchVotes(targetLeagueId, matchId);
+    renderLeagueMatchVotes(data, match);
+  } catch (err) {
+    content.innerHTML = `
+      <div class="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs text-center">
+        ${err.message || "Erreur de chargement des pronostics de la ligue."}
+      </div>
+    `;
+  }
+}
+
+function closeLeagueMatchVotesModal() {
+  const modal = document.getElementById('league-match-votes-modal');
+  if (modal) modal.classList.add('hidden');
+  state.activeLeagueVotesMatchId = null;
+}
+
+function renderLeagueMatchVotes(data, match) {
+  const content = document.getElementById('lmv-modal-content');
+  const modalSub = document.getElementById('lmv-modal-subtitle');
+  if (!content) return;
+
+  if (modalSub) {
+    modalSub.textContent = data.is_revealed 
+      ? "🔓 Coup d'envoi sifflé : les pronostics sont révélés !"
+      : "🔒 Avant coup d'envoi : les choix restent secrets !";
+  }
+
+  if (!data.is_revealed) {
+    // Mode Secret avant le match
+    content.innerHTML = `
+      <div class="p-3 bg-gradient-to-r from-amber-500/10 to-[#181a24] border border-amber-500/30 rounded-xl space-y-1.5 text-center">
+        <div class="text-xs font-bold text-amber-400 flex items-center justify-center gap-1.5">
+          <span>🔒</span> Pronostics secrets (Suspense MPP)
+        </div>
+        <p class="text-[11px] text-slate-300">
+          Les choix d'équipes et les Bonus x2 seront révélés au coup d'envoi du match !
+        </p>
+        <div class="text-xs font-black text-white pt-1">
+          <span class="text-[#ff5500]">${data.voted_count}</span> / ${data.total_members} membres ont pronostiqué
+        </div>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Statut des membres</div>
+        <div class="divide-y divide-[#1f222e] bg-[#171922] border border-[#232738] rounded-xl overflow-hidden">
+          ${data.votes.map(v => {
+            const isMe = state.currentUser && state.currentUser.id === v.user_id;
+            return `
+              <div class="flex items-center justify-between px-3 py-2 text-xs">
+                <div class="flex items-center gap-2">
+                  ${getUserAvatarHtml(v.username, 'sm')}
+                  <span class="font-bold text-white ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
+                  ${isMe ? '<span class="text-[9px] bg-[#ff5500]/20 text-[#ff5500] px-1 rounded uppercase">Moi</span>' : ''}
+                </div>
+                <div>
+                  ${v.has_voted 
+                    ? '<span class="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1"><span>✅</span> A voté</span>'
+                    : '<span class="text-[10px] font-bold uppercase text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">⏳ En attente</span>'
+                  }
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    // Mode Révélé après le coup d'envoi
+    const homeColor = match?.home_team?.color || '#3b82f6';
+    const awayColor = match?.away_team?.color || '#ef4444';
+    const homeCode = match?.home_team?.code || data.home_team_city;
+    const awayCode = match?.away_team?.code || data.away_team_city;
+
+    content.innerHTML = `
+      <!-- Jauge de répartition des votes en % -->
+      <div class="p-3 bg-[#171922] border border-[#232738] rounded-xl space-y-2">
+        <div class="flex items-center justify-between text-xs font-black uppercase">
+          <div class="flex items-center gap-1.5" style="color: ${homeColor}">
+            <span>${homeCode}</span>
+            <span class="text-white">${data.home_pct}%</span>
+            <span class="text-[10px] text-slate-400 font-normal">(${data.home_votes_count})</span>
+          </div>
+          <div class="flex items-center gap-1.5" style="color: ${awayColor}">
+            <span class="text-[10px] text-slate-400 font-normal">(${data.away_votes_count})</span>
+            <span class="text-white">${data.away_pct}%</span>
+            <span>${awayCode}</span>
+          </div>
+        </div>
+
+        <div class="vote-gauge-bar">
+          <div class="vote-gauge-home" style="width: ${data.home_pct}%; background-color: ${homeColor};"></div>
+          <div class="vote-gauge-away" style="width: ${data.away_pct}%; background-color: ${awayColor};"></div>
+        </div>
+      </div>
+
+      <!-- Liste détaillée des choix -->
+      <div class="space-y-1.5 pt-1">
+        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1">Choix de la ligue</div>
+        <div class="divide-y divide-[#1f222e] bg-[#171922] border border-[#232738] rounded-xl overflow-hidden">
+          ${data.votes.map(v => {
+            const isMe = state.currentUser && state.currentUser.id === v.user_id;
+            return `
+              <div class="flex items-center justify-between px-3 py-2 text-xs">
+                <div class="flex items-center gap-2 truncate">
+                  ${getUserAvatarHtml(v.username, 'sm')}
+                  <span class="font-bold text-white truncate ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
+                  ${isMe ? '<span class="text-[9px] bg-[#ff5500]/20 text-[#ff5500] px-1 rounded uppercase shrink-0">Moi</span>' : ''}
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${v.has_voted ? `
+                    <span class="font-condensed font-black text-xs px-2 py-0.5 rounded bg-[#202535] border border-[#2c3348] text-white">
+                      ${v.selected_team_code || v.selected_team_city}
+                    </span>
+                    ${v.is_boosted ? '<span class="text-[10px] font-black text-amber-400 bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 rounded" title="Bonus x2 joué !">⚡ x2</span>' : ''}
+                    ${v.points_won > 0 ? `<span class="font-condensed font-black text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">+${v.points_won.toFixed(1)}</span>` : ''}
+                  ` : `
+                    <span class="text-[10px] text-slate-500 italic">Pas de prono</span>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+}
+
+// --- Améliorations MPP : Mur de Chambrage (Trash-Talk) ---
+async function loadLeagueMessages(leagueId) {
+  const container = document.getElementById('league-chat-messages');
+  if (!container) return;
+
+  try {
+    const messages = await API.getLeagueMessages(leagueId);
+    state.leagueMessages[leagueId] = messages;
+
+    if (messages.length === 0) {
+      container.innerHTML = `
+        <div class="text-center text-slate-500 text-[11px] py-6">
+          Aucun message pour le moment.<br>Sois le premier à chambrer tes potes ! 🔥
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = messages.map(m => {
+      const isMe = m.is_me;
+      const date = new Date(m.created_at);
+      const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+      return `
+        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5">
+          <div class="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
+            <span class="font-bold text-slate-300">${isMe ? 'Moi' : m.username}</span>
+            <span>•</span>
+            <span>${timeStr}</span>
+          </div>
+          <div class="px-3 py-1.5 rounded-2xl text-xs max-w-[85%] ${isMe ? 'chat-bubble-me text-white' : 'chat-bubble-other text-slate-200'}">
+            ${escapeHtml(m.content)}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Défilement automatique en bas
+    container.scrollTop = container.scrollHeight;
+  } catch (err) {
+    console.error("Erreur chargement messages:", err);
+  }
+}
+
+async function handleSendLeagueMessage(e, leagueId) {
+  e.preventDefault();
+  const input = document.getElementById('league-chat-input');
+  if (!input) return;
+
+  const content = input.value.trim();
+  if (!content) return;
+
+  try {
+    await API.sendLeagueMessage(leagueId, content);
+    input.value = '';
+    await loadLeagueMessages(leagueId);
+  } catch (err) {
+    notify(err.message || "Erreur lors de l'envoi du message", "error");
+  }
+}
+
+function insertEmojiToChat(emoji) {
+  const input = document.getElementById('league-chat-input');
+  if (input) {
+    input.value += emoji;
+    input.focus();
+  }
+}
+
+// --- Améliorations MPP : Carte Bilan Partageable ---
+function openShareRecapModal(preferredLeagueId = null) {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour générer ton bilan !", "info");
+    return;
+  }
+
+  const modal = document.getElementById('share-recap-modal');
+  if (!modal) return;
+
+  const currentWeek = state.selectedWeek === 'all' ? 1 : parseInt(state.selectedWeek);
+  const weekBadge = document.getElementById('recap-week-badge');
+  const avatarEl = document.getElementById('recap-avatar');
+  const usernameEl = document.getElementById('recap-username');
+  const titleEl = document.getElementById('recap-title');
+  const pointsEl = document.getElementById('recap-points');
+  const winrateEl = document.getElementById('recap-winrate');
+  const accuracyEl = document.getElementById('recap-accuracy');
+  const punchlineEl = document.getElementById('recap-punchline');
+
+  if (weekBadge) weekBadge.textContent = `Semaine ${currentWeek}`;
+  if (usernameEl) usernameEl.textContent = state.currentUser.username;
+  if (avatarEl) avatarEl.innerHTML = getUserAvatarHtml(state.currentUser.username, 'lg');
+
+  const totalPoints = state.currentUser.total_points || 0.0;
+  if (pointsEl) pointsEl.textContent = totalPoints.toFixed(1);
+
+  // Stats calculées
+  const preds = Object.keys(state.myPredictions).length;
+  const wonMatches = state.matches.filter(m => m.status === 'finished' && state.myPredictions[m.id] === m.winner_team_id).length;
+  const finishedPredicted = state.matches.filter(m => m.status === 'finished' && !!state.myPredictions[m.id]).length;
+  const winRate = finishedPredicted > 0 ? Math.round((wonMatches / finishedPredicted) * 100) : 0;
+
+  if (winrateEl) winrateEl.textContent = `${winRate}%`;
+  if (accuracyEl) accuracyEl.textContent = `${wonMatches}/${finishedPredicted || preds}`;
+
+  if (titleEl) {
+    if (winRate >= 70) titleEl.textContent = "🔥 Précision chirurgicale";
+    else if (winRate >= 50) titleEl.textContent = "🏀 Clutch Player";
+    else titleEl.textContent = "🎯 En pleine montée en puissance";
+  }
+
+  if (punchlineEl) {
+    if (winRate >= 70) {
+      punchlineEl.textContent = "« MVP de la semaine ! Qui peut rivaliser ? Venez tester vos pronos ! »";
+    } else {
+      punchlineEl.textContent = "« La saison est encore longue, préparez-vous au comeback ! 🚀 »";
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeShareRecapModal() {
+  const modal = document.getElementById('share-recap-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function generateRecapShareText() {
+  const user = state.currentUser ? state.currentUser.username : "Un joueur";
+  const points = state.currentUser ? state.currentUser.total_points.toFixed(1) : "0.0";
+  const currentWeek = state.selectedWeek === 'all' ? 1 : state.selectedWeek;
+  return `🏀 NBA PRONO - Semaine ${currentWeek}\n👤 ${user}\n🔥 Total : ${points} pts\nViens défier tes potes sur NBA Prono : ${window.location.origin}`;
+}
+
+async function handleNativeShareRecap() {
+  const text = generateRecapShareText();
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "Mon Bilan NBA Prono",
+        text: text,
+        url: window.location.origin
+      });
+    } catch {
+      // Ignoré si annulé
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      notify("Bilan copié ! Colle-le dans WhatsApp ou ta Story 📸", "success");
+    } catch {
+      notify("Impossible de copier le bilan.", "error");
+    }
+  }
+}
+
+async function handleCopyRecapText() {
+  const text = generateRecapShareText();
+  try {
+    await navigator.clipboard.writeText(text);
+    notify("Texte récapitulatif copié dans le presse-papier ! 📋", "success");
+  } catch {
+    notify("Erreur lors de la copie.", "error");
+  }
+}
+
 // Export pour handlers HTML inline
 window.openSeasonModal = openSeasonModal;
 window.closeSeasonModal = closeSeasonModal;
@@ -1907,4 +2471,15 @@ window.shareLeague = shareLeague;
 window.viewLeague = viewLeague;
 window.backToLeaguesList = backToLeaguesList;
 window.leaveLeagueAction = leaveLeagueAction;
+window.openLeagueMatchVotesModal = openLeagueMatchVotesModal;
+window.closeLeagueMatchVotesModal = closeLeagueMatchVotesModal;
+window.loadLeagueMessages = loadLeagueMessages;
+window.handleSendLeagueMessage = handleSendLeagueMessage;
+window.insertEmojiToChat = insertEmojiToChat;
+window.openShareRecapModal = openShareRecapModal;
+window.closeShareRecapModal = closeShareRecapModal;
+window.filterPlayerSuggestions = filterPlayerSuggestions;
+window.selectWeeklyPlayer = selectWeeklyPlayer;
+window.clearWeeklyPlayerSelection = clearWeeklyPlayerSelection;
+
 

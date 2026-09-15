@@ -50,6 +50,12 @@
           <span class="text-[11px]">Défier</span>
         </button>
 
+        <!-- Bouton Bilan Semaine (Style Story MPP) -->
+        <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="flex items-center space-x-1 bg-[#171a24] hover:bg-[#202534] border border-[#272d3e] text-slate-300 px-2 py-1 rounded-lg text-xs font-bold transition cursor-pointer">
+          <span>📸</span>
+          <span class="text-[11px]">Bilan</span>
+        </button>
+
         <div id="user-score-badge" class="hidden flex items-center space-x-1.5 bg-[#171a24] border border-[#252a3a] px-2.5 py-1 rounded-lg">
           <span class="text-[10px] text-slate-400 font-bold uppercase">Pts</span>
           <span id="user-points-val" class="font-condensed text-base font-black text-[#ff5500]">0.0</span>
@@ -455,6 +461,105 @@
             Rejoindre la ligue
           </button>
         </form>
+      </div>
+    </div>
+
+    <!-- Modale Transparence des Pronostics de Ligue (Signature MPP) -->
+    <div id="league-match-votes-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#12141a] border border-[#25293a] rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] flex flex-col">
+        <button id="close-league-match-votes-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        
+        <div class="space-y-1 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-base">👥</span>
+            <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight" id="lmv-modal-title">
+              Pronos de Ligue
+            </h3>
+          </div>
+          <p class="text-[11px] text-slate-400" id="lmv-modal-subtitle">
+            Qui a voté quoi pour ce match ?
+          </p>
+        </div>
+
+        <!-- Sélecteur de ligue si le joueur en a plusieurs -->
+        <div id="lmv-league-selector-container" class="mb-3 hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Choisir la ligue :</label>
+          <select id="lmv-league-select" class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-[#ff5500]">
+          </select>
+        </div>
+
+        <!-- Contenu dynamique (Jauge + Liste des membres) -->
+        <div id="lmv-modal-content" class="flex-1 overflow-y-auto space-y-3 pr-1">
+          <!-- Injecté par renderLeagueMatchVotes() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Carte Bilan Partageable (Format Story / WhatsApp MPP) -->
+    <div id="share-recap-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#101218] border border-[#252a3b] rounded-2xl w-full max-w-sm p-4 shadow-2xl relative max-h-[95vh] flex flex-col space-y-3.5">
+        <button id="close-share-recap-modal" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-white transition cursor-pointer z-10">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <div class="text-center pt-1">
+          <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center justify-center gap-1.5">
+            <span>📸</span> Bilan Partageable
+          </h3>
+          <p class="text-[11px] text-slate-400">Partage tes performances avec tes potes !</p>
+        </div>
+
+        <!-- Carte Visuelle Récapitulative -->
+        <div id="share-recap-card" class="bg-gradient-to-br from-[#1a1528] via-[#0f1118] to-[#1e130c] border border-amber-500/30 rounded-2xl p-4 space-y-3 text-center shadow-xl relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-[#ff5500]/10 rounded-full blur-2xl pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <div class="flex items-center space-x-1.5">
+              <img src="/static/icons/icon.svg" alt="NBA Prono" class="w-5 h-5 rounded shadow">
+              <span class="font-condensed font-black text-xs tracking-wider text-white">NBA <span class="text-[#ff5500]">PRONO</span></span>
+            </div>
+            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-widest bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20" id="recap-week-badge">Semaine 1</span>
+          </div>
+
+          <!-- Profil Joueur -->
+          <div class="space-y-1 py-1">
+            <div id="recap-avatar" class="flex justify-center"></div>
+            <div class="font-condensed font-black text-lg text-white tracking-wide" id="recap-username">Joueur</div>
+            <div class="text-[11px] text-slate-400 font-semibold" id="recap-title">Précision chirurgicale 🎯</div>
+          </div>
+
+          <!-- Stats Chiffrées -->
+          <div class="grid grid-cols-3 gap-2 bg-black/40 p-2.5 rounded-xl border border-white/5">
+            <div>
+              <div class="text-[9px] font-bold uppercase text-slate-400">Points</div>
+              <div class="font-condensed font-black text-base text-amber-400" id="recap-points">0.0</div>
+            </div>
+            <div>
+              <div class="text-[9px] font-bold uppercase text-slate-400">Réussite</div>
+              <div class="font-condensed font-black text-base text-emerald-400" id="recap-winrate">0%</div>
+            </div>
+            <div>
+              <div class="text-[9px] font-bold uppercase text-slate-400">Pronos</div>
+              <div class="font-condensed font-black text-base text-white" id="recap-accuracy">0/0</div>
+            </div>
+          </div>
+
+          <div class="text-[10px] italic text-slate-400" id="recap-punchline">
+            « Qui peut me tester cette saison ? Viens tenter ta chance ! »
+          </div>
+        </div>
+
+        <!-- Boutons d'action de partage -->
+        <div class="space-y-2 pt-1">
+          <button id="btn-native-share" class="w-full bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-sm uppercase tracking-wider py-2.5 rounded-xl transition shadow-lg shadow-[#ff5500]/25 flex items-center justify-center gap-2 cursor-pointer">
+            <span>📲</span> Partager (WhatsApp / Story)
+          </button>
+          <button id="btn-copy-recap-text" class="w-full bg-[#181a24] hover:bg-[#202534] border border-[#2b3044] text-slate-300 font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>📋</span> Copier le texte récapitulatif
+          </button>
+        </div>
       </div>
     </div>
 

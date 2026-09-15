@@ -187,6 +187,22 @@ const API = {
     return await this.request(`/api/leagues/${leagueId}/leave`, {
       method: 'POST'
     });
+  },
+
+  // --- Améliorations MPP : Transparence des votes & Mur de chambrage ---
+  async getLeagueMatchVotes(leagueId, matchId) {
+    return await this.request(`/api/leagues/${leagueId}/matches/${matchId}/predictions`);
+  },
+
+  async getLeagueMessages(leagueId) {
+    return await this.request(`/api/leagues/${leagueId}/messages`);
+  },
+
+  async sendLeagueMessage(leagueId, content) {
+    return await this.request(`/api/leagues/${leagueId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content })
+    });
   }
 };
 

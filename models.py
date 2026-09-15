@@ -197,3 +197,22 @@ class LeagueMember(Base):
     def __repr__(self):
         return f"<LeagueMember User {self.user_id} in League {self.league_id}>"
 
+
+class LeagueMessage(Base):
+    """
+    Message sur le mur de chambrage (mini-chat) d'une ligue privée (Style MPP).
+    """
+    __tablename__ = "league_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    league_id = Column(Integer, ForeignKey("leagues.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    content = Column(String(280), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    league = relationship("League", backref="messages")
+    user = relationship("User")
+
+    def __repr__(self):
+        return f"<LeagueMessage User {self.user_id} in League {self.league_id}: {self.content[:20]}>"
+
