@@ -28,8 +28,7 @@ def run_tests():
 
     upcoming_matches = [m for m in matches if m["status"] == "upcoming"]
     if not upcoming_matches:
-        from seed import reset_and_init_db, seed_all_teams_and_matches
-        reset_and_init_db()
+        from seed import seed_all_teams_and_matches
         seed_all_teams_and_matches()
         matches = client.get("/api/matches").json()
         upcoming_matches = [m for m in matches if m["status"] == "upcoming"]

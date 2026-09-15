@@ -1,13 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Base de données SQLite locale
-SQLALCHEMY_DATABASE_URL = "sqlite:///./nba_prono.db"
+import os
+from dotenv import load_dotenv
 
-# Pour SQLite en multithreading (requis avec FastAPI/Uvicorn)
+load_dotenv()
+
+# Base de données : SQLite en local ou PostgreSQL sur le Cloud (Render/Railway)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./nba_prono.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    connect_args=connect_args
 )
 
 # Fabrique de sessions de base de données
