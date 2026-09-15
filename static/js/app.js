@@ -1405,6 +1405,18 @@ async function renderProfile() {
 
       </div>
 
+      <!-- Actions Rapides Profil (Bilan Story & Défier) -->
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="openShareRecapModal()" class="btn-tactile p-2.5 rounded-xl bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-amber-400 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-[#f59e0b]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>Bilan Story</span>
+        </button>
+        <button onclick="shareApp()" class="btn-tactile p-2.5 rounded-xl bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-[#ff5500] cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-[#ff5500]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          <span>Défier des amis</span>
+        </button>
+      </div>
+
       <!-- Section Pronostics d'Avant-Saison (Chantier 3) -->
       <div class="space-y-2.5 pt-2">
         <div class="flex items-center justify-between">
@@ -1557,6 +1569,14 @@ async function renderProfile() {
             </div>
           `).join('')}
         </div>
+      </div>
+
+      <!-- Déconnexion -->
+      <div class="pt-2">
+        <button onclick="handleLogout()" class="btn-tactile w-full py-2.5 rounded-xl bg-[#141722] hover:bg-rose-500/10 border border-[rgba(255,255,255,0.08)] hover:border-rose-500/30 text-slate-400 hover:text-rose-400 text-xs font-condensed font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span>Se déconnecter</span>
+        </button>
       </div>
     `;
   } catch (err) {
