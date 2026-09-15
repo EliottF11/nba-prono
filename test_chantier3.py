@@ -73,7 +73,7 @@ def test_chantier3_season_predictions():
         "cup_winner": "New York",
         "mvp": "Luka Doncic (Mavericks)",
         "dpoy": "Victor Wembanyama (Spurs)",
-        "roy": "Cooper Flagg"
+        "roy": "AJ Dybantsa (BYU - #1 Draft 2026)"
     }
     res_save = client.post("/api/season/predictions", json=payload_1, headers=headers)
     assert res_save.status_code == 200, f"Erreur sauvegarde: {res_save.text}"
@@ -82,7 +82,7 @@ def test_chantier3_season_predictions():
     assert saved_data["cup_winner"] == "New York"
     assert saved_data["mvp"] == "Luka Doncic (Mavericks)"
     assert saved_data["dpoy"] == "Victor Wembanyama (Spurs)"
-    assert saved_data["roy"] == "Cooper Flagg"
+    assert saved_data["roy"] == "AJ Dybantsa (BYU - #1 Draft 2026)"
     assert saved_data["is_locked"] is False
     print("-> [OK] Enregistrement des 5 choix d'avant-saison validé.")
 
@@ -92,7 +92,7 @@ def test_chantier3_season_predictions():
         "cup_winner": "Los Angeles (LAL)",
         "mvp": "Shai Gilgeous-Alexander (Thunder)",
         "dpoy": "Rudy Gobert (Timberwolves)",
-        "roy": "Stephon Castle"
+        "roy": "Cameron Boozer (Duke - Draft 2026)"
     }
     res_update = client.post("/api/season/predictions", json=payload_2, headers=headers)
     assert res_update.status_code == 200

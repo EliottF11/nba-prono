@@ -715,6 +715,28 @@ async function loadSeasonCandidates() {
   }
 }
 
+function setSelectValueFuzzy(selectEl, value) {
+  if (!selectEl || !value) return;
+  selectEl.value = value;
+  if (selectEl.value === value) return;
+  const cleanVal = value.split('(')[0].trim().toLowerCase();
+  for (let i = 0; i < selectEl.options.length; i++) {
+    const opt = selectEl.options[i];
+    if (opt.value.toLowerCase().includes(cleanVal)) {
+      selectEl.value = opt.value;
+      break;
+    }
+  }
+}
+
+function findMatchingPlayerOption(optionsList, playerValue) {
+  if (!playerValue) return '';
+  if (optionsList.includes(playerValue)) return playerValue;
+  const cleanVal = playerValue.split('(')[0].trim().toLowerCase();
+  const match = optionsList.find(p => p.toLowerCase().includes(cleanVal));
+  return match || playerValue;
+}
+
 function populateSeasonSelects() {
   if (!state.seasonCandidates) return;
   const { teams, mvp, dpoy, roy } = state.seasonCandidates;
@@ -723,9 +745,10 @@ function populateSeasonSelects() {
     const el = document.getElementById(id);
     if (!el) return;
     const currentVal = el.value;
+    const sorted = [...(items || [])].sort((a, b) => a.localeCompare(b, 'fr'));
     el.innerHTML = `<option value="">${placeholder}</option>` +
-      items.map(item => `<option value="${item}">${item}</option>`).join('');
-    if (currentVal) el.value = currentVal;
+      sorted.map(item => `<option value="${item}">${item}</option>`).join('');
+    if (currentVal) setSelectValueFuzzy(el, currentVal);
   };
 
   populate('season-champion', teams, 'Sélectionne le champion NBA...');
@@ -869,11 +892,11 @@ async function openSeasonModal() {
 
   if (errBox) errBox.classList.add('hidden');
 
-  if (champSelect && p) champSelect.value = p.nba_champion || '';
-  if (cupSelect && p) cupSelect.value = p.cup_winner || '';
-  if (mvpSelect && p) mvpSelect.value = p.mvp || '';
-  if (dpoySelect && p) dpoySelect.value = p.dpoy || '';
-  if (roySelect && p) roySelect.value = p.roy || '';
+  if (champSelect && p) setSelectValueFuzzy(champSelect, p.nba_champion);
+  if (cupSelect && p) setSelectValueFuzzy(cupSelect, p.cup_winner);
+  if (mvpSelect && p) setSelectValueFuzzy(mvpSelect, p.mvp);
+  if (dpoySelect && p) setSelectValueFuzzy(dpoySelect, p.dpoy);
+  if (roySelect && p) setSelectValueFuzzy(roySelect, p.roy);
 
   const selects = [champSelect, cupSelect, mvpSelect, dpoySelect, roySelect];
 
@@ -997,16 +1020,19 @@ function renderWeeklyPlayersCard() {
   const hasChoices = wp && !!wp.east_player && !!wp.west_player;
 
   const candidates = state.weeklyPlayerCandidates || { east: [], west: [] };
-  const eastList = candidates.east || [];
-  const westList = candidates.west || [];
+  const eastList = [...(candidates.east || [])].sort((a, b) => a.localeCompare(b, 'fr'));
+  const westList = [...(candidates.west || [])].sort((a, b) => a.localeCompare(b, 'fr'));
+
+  const matchedEast = wp ? findMatchingPlayerOption(eastList, wp.east_player) : '';
+  const matchedWest = wp ? findMatchingPlayerOption(westList, wp.west_player) : '';
 
   const eastOptions = eastList.map(p => {
-    const selected = (wp && wp.east_player === p) ? 'selected' : '';
+    const selected = (matchedEast === p) ? 'selected' : '';
     return `<option value="${p}" ${selected}>${p}</option>`;
   }).join('');
 
   const westOptions = westList.map(p => {
-    const selected = (wp && wp.west_player === p) ? 'selected' : '';
+    const selected = (matchedWest === p) ? 'selected' : '';
     return `<option value="${p}" ${selected}>${p}</option>`;
   }).join('');
 

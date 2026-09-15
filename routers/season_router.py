@@ -17,16 +17,24 @@ from auth import get_current_user
 router = APIRouter(prefix="/api/season", tags=["Pronostics d'Avant-Saison"])
 
 MVP_CANDIDATES = [
-    "Anthony Edwards (Timberwolves)",
-    "Luka Doncic (Mavericks)",
-    "Nikola Jokic (Nuggets)",
     "Shai Gilgeous-Alexander (Thunder)",
+    "Nikola Jokic (Nuggets)",
+    "Luka Doncic (Mavericks)",
+    "Anthony Edwards (Timberwolves)",
     "Giannis Antetokounmpo (Bucks)",
     "Jayson Tatum (Celtics)",
     "Victor Wembanyama (Spurs)",
+    "Jalen Brunson (Knicks)",
     "Joel Embiid (76ers)",
+    "Donovan Mitchell (Cavaliers)",
+    "Anthony Davis (Lakers)",
+    "Ja Morant (Grizzlies)",
     "Stephen Curry (Warriors)",
-    "LeBron James (Lakers)"
+    "Kevin Durant (Suns)",
+    "LeBron James (Lakers)",
+    "Tyrese Haliburton (Pacers)",
+    "Paolo Banchero (Magic)",
+    "Devin Booker (Suns)"
 ]
 
 DPOY_CANDIDATES = [
@@ -34,22 +42,36 @@ DPOY_CANDIDATES = [
     "Rudy Gobert (Timberwolves)",
     "Bam Adebayo (Heat)",
     "Anthony Davis (Lakers)",
-    "Jaren Jackson Jr. (Grizzlies)",
-    "OG Anunoby (Knicks)",
     "Chet Holmgren (Thunder)",
-    "Herb Jones (Pelicans)"
+    "OG Anunoby (Knicks)",
+    "Alex Caruso (Thunder)",
+    "Jaren Jackson Jr. (Grizzlies)",
+    "Herb Jones (Pelicans)",
+    "Evan Mobley (Cavaliers)",
+    "Derrick White (Celtics)",
+    "Mikal Bridges (Knicks)",
+    "Isaiah Hartenstein (Thunder)",
+    "Jrue Holiday (Celtics)"
 ]
 
 ROY_CANDIDATES = [
-    "Cooper Flagg",
-    "Zaccharie Risacher",
-    "Alex Sarr",
-    "Reed Sheppard",
-    "Stephon Castle",
-    "Matas Buzelis",
-    "Ron Holland",
-    "Donovan Clingan",
-    "Dalton Knecht"
+    "AJ Dybantsa (BYU - #1 Draft 2026)",
+    "Cameron Boozer (Duke - Draft 2026)",
+    "Darryn Peterson (Kansas - Draft 2026)",
+    "Caleb Wilson (North Carolina - Draft 2026)",
+    "Darius Acuff Jr. (Arkansas - Draft 2026)",
+    "Kingston Flemings (Draft 2026)",
+    "Tyran Stokes (Draft 2026)",
+    "Bryson Tiller (Draft 2026)",
+    "Mikel Brown Jr. (Draft 2026)",
+    "Nate Ament (Draft 2026)",
+    "Meleek Thomas (Arkansas - Draft 2026)",
+    "Cayden Boozer (Duke - Draft 2026)",
+    "Koa Peat (Arizona - Draft 2026)",
+    "Chris Cenac (Houston - Draft 2026)",
+    "Brayden Burries (Draft 2026)",
+    "Isiah Harwell (Houston - Draft 2026)",
+    "Jalen Montonati (Draft 2026)"
 ]
 
 def get_season_lock_status(db: Session):
