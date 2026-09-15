@@ -156,3 +156,44 @@ body {
   border: 1px solid #282c3c;
   filter: grayscale(1);
 }
+
+/* Bonus x2 Illumination (Chantier 2) */
+.match-card-boosted {
+  border-color: #f59e0b !important;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(18, 20, 26, 0.95) 100%) !important;
+  box-shadow: 0 0 20px -2px rgba(245, 158, 11, 0.35), inset 0 0 15px rgba(245, 158, 11, 0.08);
+  animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.3), inset 0 0 10px rgba(245, 158, 11, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 25px 2px rgba(245, 158, 11, 0.5), inset 0 0 18px rgba(245, 158, 11, 0.12);
+  }
+}
+
+.boost-btn {
+  cursor: pointer;
+}
+
+.boost-btn-active {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #000000;
+  font-weight: 900;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  border: 1px solid #fbbf24;
+}
+
+.boost-btn-inactive {
+  background: #171a24;
+  color: #94a3b8;
+  border: 1px solid #282c3c;
+}
+
+.boost-btn-inactive:hover {
+  background: #202434;
+  color: #f59e0b;
+  border-color: #f59e0b;
+}

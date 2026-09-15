@@ -60,6 +60,7 @@ class Match(Base):
     winner_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True) # Renseigné quand terminé
     home_score = Column(Integer, nullable=True)                 # Score final domicile (ex: 112)
     away_score = Column(Integer, nullable=True)                 # Score final extérieur (ex: 108)
+    week_number = Column(Integer, default=1, index=True, nullable=False) # Semaine NBA (Week 1, Week 2...)
 
     # Relations
     home_team = relationship("Team", foreign_keys=[home_team_id])
@@ -68,7 +69,7 @@ class Match(Base):
     predictions = relationship("Prediction", back_populates="match", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Match {self.home_team_id} vs {self.away_team_id} (Status: {self.status})>"
+        return f"<Match {self.home_team_id} vs {self.away_team_id} (W{self.week_number} - Status: {self.status})>"
 
 
 class Prediction(Base):
@@ -83,6 +84,7 @@ class Prediction(Base):
     match_id = Column(Integer, ForeignKey("matches.id"), nullable=False)
     selected_team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
     points_won = Column(Float, default=0.0, nullable=False)
+    is_boosted = Column(Boolean, default=False, nullable=False)   # Bonus x2 activé (max 1 par semaine)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     # Relations

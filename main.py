@@ -23,6 +23,16 @@ def ensure_schema_migrations():
             conn.commit()
         except Exception:
             pass
+        try:
+            conn.execute(text("ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"))
+            conn.commit()
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"))
+            conn.commit()
+        except Exception:
+            pass
 
 ensure_schema_migrations()
 

@@ -83,8 +83,22 @@ const API = {
   },
 
   // --- Matchs & Pronostics ---
-  async getMatches() {
-    return await this.request('/api/matches');
+  async getMatches(statusFilter = null, week = null) {
+    const params = new URLSearchParams();
+    if (statusFilter && statusFilter !== 'all') params.append('status_filter', statusFilter);
+    if (week && week !== 'all') params.append('week', week);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return await this.request(`/api/matches${qs}`);
+  },
+
+  async getWeeks() {
+    return await this.request('/api/weeks');
+  },
+
+  async toggleBoost(matchId) {
+    return await this.request(`/api/predictions/${matchId}/boost`, {
+      method: 'POST'
+    });
   },
 
   async getMyPredictions() {

@@ -85,6 +85,17 @@
       <!-- VUE 1 : PRONOSTICS -->
       <section id="matches-view" class="space-y-3">
         
+        <!-- Sélecteur de Semaines NBA (Week 1, Week 2...) -->
+        <div class="flex items-center justify-between gap-2 bg-[#12141a] p-1.5 rounded-xl border border-[#1f222d]">
+          <div class="flex items-center space-x-1 pl-2">
+            <span class="text-xs">📅</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Semaine</span>
+          </div>
+          <div id="weeks-selector" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            <!-- Injecté dynamiquement par JS -->
+          </div>
+        </div>
+
         <!-- Filtres par statut -->
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
           <button class="filter-chip active px-3 py-1 rounded-full font-bold bg-[#ff5500] text-black transition cursor-pointer" data-filter="all">

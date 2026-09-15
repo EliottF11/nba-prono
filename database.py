@@ -18,6 +18,23 @@ engine = create_engine(
     connect_args=connect_args
 )
 
+# Migration légère pour bases de données SQLite / PostgreSQL existantes
+def run_migrations():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        for stmt in [
+            "ALTER TABLE users ADD COLUMN email VARCHAR(120)",
+            "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1",
+            "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0",
+        ]:
+            try:
+                conn.execute(text(stmt))
+                conn.commit()
+            except Exception:
+                pass
+
+run_migrations()
+
 # Fabrique de sessions de base de données
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -14,23 +14,48 @@ from database import get_db
 from models import Match, Prediction, User, Team
 from schemas import (
     MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
-    UserStatsResponse, BadgeResponse
+    UserStatsResponse, BadgeResponse, BoostResponse
 )
 from auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Pronostics & Matchs"])
 
 @router.get("/matches", response_model=List[MatchResponse])
-def get_matches(status_filter: Optional[str] = None, db: Session = Depends(get_db)):
+def get_matches(
+    status_filter: Optional[str] = None,
+    week: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
     """
-    Récupère la liste des matchs hebdomadaires ordonnés par heure limite croissante.
-    Permet un filtrage optionnel par statut (?status_filter=upcoming ou finished).
+    Récupère la liste des matchs ordonnés par heure limite croissante.
+    Permet un filtrage optionnel par statut (?status_filter=upcoming ou finished)
+    et par semaine NBA (?week=1, 2, etc.).
     """
     query = db.query(Match)
     if status_filter:
         query = query.filter(Match.status == status_filter)
+    if week is not None:
+        query = query.filter(Match.week_number == week)
     matches = query.order_by(Match.deadline.asc()).all()
     return matches
+
+
+@router.get("/weeks", tags=["Pronostics & Matchs"])
+def get_weeks(db: Session = Depends(get_db)):
+    """
+    Retourne la liste des semaines NBA disponibles avec le nombre de matchs associés.
+    """
+    from sqlalchemy import func
+    rows = (
+        db.query(Match.week_number, func.count(Match.id))
+        .group_by(Match.week_number)
+        .order_by(Match.week_number.asc())
+        .all()
+    )
+    weeks = [{"week": r[0], "match_count": r[1]} for r in rows]
+    if not weeks:
+        weeks = [{"week": 1, "match_count": 0}]
+    return weeks
 
 
 @router.post("/predictions", response_model=PredictionResponse)
@@ -120,26 +145,100 @@ def get_my_predictions(
     return predictions
 
 
+@router.post("/predictions/{match_id}/boost", response_model=BoostResponse, tags=["Pronostics & Matchs"])
+def toggle_prediction_boost(
+    match_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Active ou désactive le Bonus x2 sur un match pour la semaine NBA correspondante.
+    Règle absolue : 1 seul match boosté x2 par semaine par joueur.
+    Activer le bonus sur un autre match de la même semaine transfère automatiquement le bonus.
+    """
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match introuvable.")
+
+    if match.status != "upcoming":
+        raise HTTPException(
+            status_code=400,
+            detail="Le match est déjà commencé ou terminé. Impossible de modifier le Bonus x2."
+        )
+
+    now = datetime.now(timezone.utc)
+    match_deadline = match.deadline
+    if match_deadline.tzinfo is None:
+        match_deadline = match_deadline.replace(tzinfo=timezone.utc)
+
+    if now >= match_deadline:
+        raise HTTPException(
+            status_code=400,
+            detail="La date limite de ce match est dépassée. Impossible de modifier le Bonus x2."
+        )
+
+    # Récupération du pronostic du joueur sur ce match
+    pred = db.query(Prediction).filter(
+        Prediction.user_id == current_user.id,
+        Prediction.match_id == match.id
+    ).first()
+
+    if not pred:
+        raise HTTPException(
+            status_code=400,
+            detail="Sélectionne d'abord ton vainqueur sur ce match avant d'activer le Bonus x2 !"
+        )
+
+    target_week = match.week_number
+
+    if pred.is_boosted:
+        # Désactivation du bonus
+        pred.is_boosted = False
+        db.commit()
+        return {
+            "match_id": match.id,
+            "is_boosted": False,
+            "week_number": target_week,
+            "message": "Bonus x2 désactivé sur ce match."
+        }
+    else:
+        # 1 seul bonus x2 par semaine : réinitialiser tous les autres matchs de cette même semaine
+        week_match_ids = [
+            m.id for m in db.query(Match.id).filter(Match.week_number == target_week).all()
+        ]
+        db.query(Prediction).filter(
+            Prediction.user_id == current_user.id,
+            Prediction.match_id.in_(week_match_ids)
+        ).update({"is_boosted": False}, synchronize_session=False)
+
+        pred.is_boosted = True
+        db.commit()
+        return {
+            "match_id": match.id,
+            "is_boosted": True,
+            "week_number": target_week,
+            "message": f"Bonus x2 activé pour la Semaine {target_week} ! Les points seront doublés en cas de victoire."
+        }
+
+
 @router.get("/leaderboard", response_model=List[LeaderboardEntry])
 def get_leaderboard(db: Session = Depends(get_db)):
     """
-    Renvoie le classement en direct de tous les joueurs inscrits,
-    triés par leur total de points décroissant, avec leur rang et statistiques.
+    Renvoie le classement général des joueurs trié par points décroissants.
     """
-    users = db.query(User).order_by(User.total_points.desc(), User.username.asc()).all()
-
+    users = db.query(User).order_by(User.total_points.desc(), User.id.asc()).all()
     leaderboard = []
-    for rank, u in enumerate(users, start=1):
-        preds = db.query(Prediction).filter(Prediction.user_id == u.id).all()
-        won_count = sum(1 for p in preds if p.points_won > 0)
-        
+
+    for rank, user in enumerate(users, start=1):
+        preds = user.predictions
+        won = sum(1 for p in preds if p.points_won > 0)
         leaderboard.append(LeaderboardEntry(
             rank=rank,
-            user_id=u.id,
-            username=u.username,
-            total_points=round(u.total_points, 2),
+            user_id=user.id,
+            username=user.username,
+            total_points=user.total_points,
             predictions_count=len(preds),
-            won_count=won_count
+            won_count=won
         ))
 
     return leaderboard
@@ -155,7 +254,7 @@ def resolve_match(
 ):
     """
     Clôture un match, enregistre le score final et calcule les gains :
-    - Attribue les points (cote exacte du vainqueur) aux joueurs ayant vu juste
+    - Attribue les points (cote exacte x2 si Bonus x2 activé) aux joueurs ayant vu juste
     - Met à jour le total_points de chaque joueur pour le classement en direct
     """
     match = db.query(Match).filter(Match.id == match_id).first()
@@ -180,7 +279,8 @@ def resolve_match(
 
     for pred in predictions:
         if pred.selected_team_id == winner_team_id:
-            pred.points_won = round(winning_odds, 2)
+            multiplier = 2.0 if pred.is_boosted else 1.0
+            pred.points_won = round(winning_odds * multiplier, 2)
         else:
             pred.points_won = 0.0
         affected_user_ids.add(pred.user_id)

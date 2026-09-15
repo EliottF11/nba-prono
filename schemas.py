@@ -49,6 +49,7 @@ class MatchResponse(BaseModel):
     away_odds: float
     deadline: datetime
     status: str
+    week_number: int = 1
     winner_team_id: Optional[int] = None
     home_score: Optional[int] = None
     away_score: Optional[int] = None
@@ -67,10 +68,17 @@ class PredictionResponse(BaseModel):
     match_id: int
     selected_team_id: int
     points_won: float
+    is_boosted: bool = False
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+class BoostResponse(BaseModel):
+    match_id: int
+    is_boosted: bool
+    week_number: int
+    message: str
 
 # --- Schémas Classement (Leaderboard) ---
 

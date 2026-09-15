@@ -7,8 +7,11 @@ const state = {
   currentUser: null,
   activeTab: 'matches',
   matchesFilter: 'all',
+  selectedWeek: 'all',
+  availableWeeks: [],
   matches: [],
   myPredictions: {}, // matchId -> selectedTeamId
+  boostedPredictions: {}, // matchId -> boolean (is_boosted)
   leaderboard: [],
   authMode: 'login'
 };
@@ -215,18 +218,24 @@ async function handleAuthSubmit(e) {
 // --- Chargement des données ---
 async function refreshData() {
   try {
-    const [matches, preds, leaderboard] = await Promise.all([
-      API.getMatches(),
+    const [matches, preds, leaderboard, weeks] = await Promise.all([
+      API.getMatches(state.matchesFilter, state.selectedWeek),
       API.getMyPredictions(),
-      API.getLeaderboard()
+      API.getLeaderboard(),
+      API.getWeeks()
     ]);
 
     state.matches = matches;
     state.leaderboard = leaderboard;
+    state.availableWeeks = weeks;
 
     state.myPredictions = {};
+    state.boostedPredictions = {};
     preds.forEach(p => {
       state.myPredictions[p.match_id] = p.selected_team_id;
+      if (p.is_boosted) {
+        state.boostedPredictions[p.match_id] = true;
+      }
     });
 
     const openCount = matches.filter(m => m.status === 'upcoming').length;
@@ -235,11 +244,62 @@ async function refreshData() {
       countBadge.textContent = `${openCount} OUVERT${openCount > 1 ? 'S' : ''}`;
     }
 
+    renderWeeksSelector();
     renderMatchesList();
     renderLeaderboard();
   } catch (err) {
     console.error('Erreur chargement:', err);
     notify("Erreur lors de la synchronisation des données", "error");
+  }
+}
+
+// --- Rendu du Sélecteur de Semaines (Chantier 2) ---
+function renderWeeksSelector() {
+  const container = document.getElementById('weeks-selector');
+  if (!container) return;
+
+  const weeks = state.availableWeeks || [];
+  let html = `
+    <button 
+      onclick="filterByWeek('all')" 
+      class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+        state.selectedWeek === 'all' 
+          ? 'bg-[#ff5500] text-black font-black' 
+          : 'bg-[#181a24] text-slate-300 hover:text-white border border-[#262a3c]'
+      }"
+    >
+      Toutes
+    </button>
+  `;
+
+  weeks.forEach(w => {
+    const isSelected = String(state.selectedWeek) === String(w.week);
+    html += `
+      <button 
+        onclick="filterByWeek(${w.week})" 
+        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+          isSelected 
+            ? 'bg-[#ff5500] text-black font-black shadow-md shadow-[#ff5500]/25' 
+            : 'bg-[#181a24] text-slate-300 hover:text-white border border-[#262a3c]'
+        }"
+      >
+        Week ${w.week}
+      </button>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+async function filterByWeek(week) {
+  state.selectedWeek = week;
+  renderWeeksSelector();
+  try {
+    const matches = await API.getMatches(state.matchesFilter, state.selectedWeek);
+    state.matches = matches;
+    renderMatchesList();
+  } catch (err) {
+    notify(err.message, "error");
   }
 }
 
@@ -269,6 +329,7 @@ function renderMatchesList() {
     const deadline = new Date(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
     const selectedTeamId = state.myPredictions[match.id];
+    const isBoosted = !!state.boostedPredictions[match.id];
 
     const homeSelected = selectedTeamId === match.home_team.id;
     const awaySelected = selectedTeamId === match.away_team.id;
@@ -282,19 +343,45 @@ function renderMatchesList() {
     } else if (selectedTeamId) {
       statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-[#ff5500]/15 text-[#ff5500] border border-[#ff5500]/30">Prono validé</span>`;
     } else {
-      statusPill = `<span class="text-[10px] font-bold text-slate-500">Coup d'envoi : ${dateFormatted}</span>`;
+      statusPill = `<span class="text-[10px] font-bold text-slate-500">${dateFormatted}</span>`;
+    }
+
+    let boostButton = '';
+    if (!isFinished) {
+      boostButton = `
+        <button 
+          onclick="handleToggleBoost(${match.id}, event)" 
+          class="boost-btn px-2 py-0.5 rounded-lg text-[10px] font-condensed font-black uppercase tracking-wider flex items-center gap-1 transition ${
+            isBoosted ? 'boost-btn-active' : 'boost-btn-inactive'
+          }"
+          title="Bonus x2 : double les points en cas de victoire (1 seul par semaine)"
+        >
+          <span>⚡</span>
+          <span>${isBoosted ? 'x2 Actif' : 'Bonus x2'}</span>
+        </button>
+      `;
+    } else if (isBoosted) {
+      boostButton = `
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center gap-1">
+          <span>⚡</span> x2 Joué
+        </span>
+      `;
     }
 
     return `
-      <div class="match-card rounded-xl p-3.5 space-y-3">
+      <div class="match-card rounded-xl p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted' : ''}">
         
-        <!-- En-tête : Date & État -->
+        <!-- En-tête : Semaine, Date, Bonus x2 & État -->
         <div class="flex items-center justify-between text-xs pb-2 border-b border-[#1b1e28]">
           <div class="flex items-center space-x-1.5 text-slate-400 font-medium text-[11px]">
+            <span class="px-1.5 py-0.5 rounded bg-[#181a24] text-slate-300 font-bold border border-[#282c3e] text-[10px]">W${match.week_number || 1}</span>
             <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-slate-600' : 'bg-[#ff5500]'}"></span>
             <span>${isFinished ? 'Match terminé' : dateFormatted}</span>
           </div>
-          <div>${statusPill}</div>
+          <div class="flex items-center space-x-1.5">
+            ${boostButton}
+            <div>${statusPill}</div>
+          </div>
         </div>
 
         <!-- Deux blocs équipes et cotes -->
@@ -377,6 +464,46 @@ function renderMatchesList() {
       </div>
     `;
   }).join('');
+}
+
+// --- Action Bonus x2 (Chantier 2) ---
+async function handleToggleBoost(matchId, event) {
+  if (event) event.stopPropagation();
+
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour activer ton Bonus x2 !", "info");
+    return;
+  }
+
+  if (!state.myPredictions[matchId]) {
+    notify("Choisis d'abord ton équipe gagnante avant d'activer le Bonus x2 !", "error");
+    return;
+  }
+
+  try {
+    const res = await API.toggleBoost(matchId);
+    const targetMatch = state.matches.find(m => m.id === matchId);
+    const week = targetMatch ? targetMatch.week_number : (res.week_number || 1);
+
+    if (res.is_boosted) {
+      // Désactiver le bonus sur les autres matchs de cette semaine
+      state.matches.forEach(m => {
+        if (m.week_number === week && m.id !== matchId) {
+          delete state.boostedPredictions[m.id];
+        }
+      });
+      state.boostedPredictions[matchId] = true;
+      notify(`Bonus x2 activé pour la Semaine ${week} ! ⚡ (Points doublés)`, "success");
+    } else {
+      delete state.boostedPredictions[matchId];
+      notify("Bonus x2 désactivé sur ce match.", "info");
+    }
+
+    renderMatchesList();
+  } catch (err) {
+    notify(err.message, "error");
+  }
 }
 
 // --- Action Pronostic 1-Clic ---

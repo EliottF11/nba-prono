@@ -192,25 +192,81 @@ def seed_all_teams_and_matches():
                 "home_odds": 1.88,
                 "away_odds": 1.92,
                 "deadline": datetime(2026, 10, 23, 2, 30, tzinfo=timezone.utc),  # 04h30 Paris
+                "week_number": 1,
+            },
+
+            # =======================================================
+            # SEMAINE 2 (Week 2 - 27 au 29 Octobre 2026)
+            # =======================================================
+            {
+                "home": "Boston",
+                "away": "Miami",
+                "home_odds": 1.50,
+                "away_odds": 2.65,
+                "deadline": datetime(2026, 10, 27, 23, 30, tzinfo=timezone.utc),
+                "week_number": 2,
+            },
+            {
+                "home": "Denver",
+                "away": "Dallas",
+                "home_odds": 1.72,
+                "away_odds": 2.15,
+                "deadline": datetime(2026, 10, 28, 2, 0, tzinfo=timezone.utc),
+                "week_number": 2,
+            },
+            {
+                "home": "Golden State",
+                "away": "Phoenix",
+                "home_odds": 1.85,
+                "away_odds": 1.95,
+                "deadline": datetime(2026, 10, 28, 23, 0, tzinfo=timezone.utc),
+                "week_number": 2,
+            },
+            {
+                "home": "Los Angeles (LAL)",
+                "away": "Sacramento",
+                "home_odds": 1.62,
+                "away_odds": 2.30,
+                "deadline": datetime(2026, 10, 29, 2, 30, tzinfo=timezone.utc),
+                "week_number": 2,
+            },
+            {
+                "home": "New York",
+                "away": "Milwaukee",
+                "home_odds": 1.90,
+                "away_odds": 1.90,
+                "deadline": datetime(2026, 10, 29, 23, 0, tzinfo=timezone.utc),
+                "week_number": 2,
             },
         ]
 
-        if db.query(Match).count() == 0:
-            for m in matches_data:
+        # Insertion des matchs si la base ne contient pas encore la semaine 2
+        existing_matches = db.query(Match).all()
+        existing_keys = {(m.home_team_id, m.away_team_id, m.week_number) for m in existing_matches}
+
+        added_count = 0
+        for m in matches_data:
+            h_id = teams_map[m["home"]]
+            a_id = teams_map[m["away"]]
+            w_num = m.get("week_number", 1)
+            if (h_id, a_id, w_num) not in existing_keys:
                 match = Match(
-                    home_team_id=teams_map[m["home"]],
-                    away_team_id=teams_map[m["away"]],
+                    home_team_id=h_id,
+                    away_team_id=a_id,
                     home_odds=m["home_odds"],
                     away_odds=m["away_odds"],
                     deadline=m["deadline"],
+                    week_number=w_num,
                     status="upcoming",
                 )
                 db.add(match)
+                added_count += 1
 
-            db.commit()
-            print(f"OK : Les {len(matches_data)} confrontations 100% officielles de la saison NBA 2026/2027 ont été enregistrées.")
+        db.commit()
+        if added_count > 0:
+            print(f"OK : {added_count} nouveaux matchs insérés (Semaines 1 et 2).")
         else:
-            print("Les matchs sont déjà présents en base de données.")
+            print("Les matchs des semaines 1 et 2 sont déjà présents en base.")
 
     except Exception as e:
         db.rollback()
