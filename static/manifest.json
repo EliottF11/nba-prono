@@ -1,0 +1,19 @@
+{
+  "name": "NBA PRONO - Ligue de Pronostics",
+  "short_name": "NBA Prono",
+  "description": "Pronostics NBA 1-clic entre amis style Mon Petit Prono",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0b0e",
+  "theme_color": "#ff5500",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment", "games"]
+}

@@ -1,0 +1,82 @@
+"""
+Schémas Pydantic pour la validation des requêtes et la sérialisation des réponses API.
+"""
+from datetime import datetime
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class UserRegister(BaseModel):
+    username: str = Field(..., min_length=3, max_length=30, description="Pseudo du joueur (3 à 30 caractères)")
+    password: str = Field(..., min_length=4, max_length=100, description="Mot de passe (min 4 caractères)")
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    total_points: float
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+# --- Schémas Équipes & Matchs ---
+
+class TeamResponse(BaseModel):
+    id: int
+    city: str
+    code: str
+    color: str
+    text_color: str
+
+    class Config:
+        from_attributes = True
+
+class MatchResponse(BaseModel):
+    id: int
+    home_team: TeamResponse
+    away_team: TeamResponse
+    home_odds: float
+    away_odds: float
+    deadline: datetime
+    status: str
+    winner_team_id: Optional[int] = None
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+# --- Schémas Pronostics ---
+
+class PredictionCreate(BaseModel):
+    match_id: int
+    selected_team_id: int
+
+class PredictionResponse(BaseModel):
+    id: int
+    match_id: int
+    selected_team_id: int
+    points_won: float
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# --- Schémas Classement (Leaderboard) ---
+
+class LeaderboardEntry(BaseModel):
+    rank: int
+    user_id: int
+    username: str
+    total_points: float
+    predictions_count: int = 0
+    won_count: int = 0
+

@@ -1,0 +1,104 @@
+/**
+ * Client API pour l'application NBA Prono
+ * Gère les requêtes HTTP, l'authentification par token JWT/Bearer, et le stockage local.
+ */
+const API = {
+  baseUrl: '',
+
+  getToken() {
+    return localStorage.getItem('nba_prono_token');
+  },
+
+  setToken(token) {
+    if (token) {
+      localStorage.setItem('nba_prono_token', token);
+    } else {
+      localStorage.removeItem('nba_prono_token');
+    }
+  },
+
+  getHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  },
+
+  async request(endpoint, options = {}) {
+    const config = {
+      ...options,
+      headers: {
+        ...this.getHeaders(),
+        ...(options.headers || {})
+      }
+    };
+
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Une erreur est survenue.');
+      }
+      return data;
+    } catch (error) {
+      console.error(`Erreur API (${endpoint}):`, error);
+      throw error;
+    }
+  },
+
+  // --- Authentification ---
+  async register(username, password) {
+    const data = await this.request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+    this.setToken(data.access_token);
+    return data;
+  },
+
+  async login(username, password) {
+    const data = await this.request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    });
+    this.setToken(data.access_token);
+    return data;
+  },
+
+  async getMe() {
+    if (!this.getToken()) return null;
+    return await this.request('/api/auth/me');
+  },
+
+  logout() {
+    this.setToken(null);
+  },
+
+  // --- Matchs & Pronostics ---
+  async getMatches() {
+    return await this.request('/api/matches');
+  },
+
+  async getMyPredictions() {
+    if (!this.getToken()) return [];
+    return await this.request('/api/predictions/me');
+  },
+
+  async makePrediction(matchId, selectedTeamId) {
+    return await this.request('/api/predictions', {
+      method: 'POST',
+      body: JSON.stringify({
+        match_id: matchId,
+        selected_team_id: selectedTeamId
+      })
+    });
+  },
+
+  // --- Classement ---
+  async getLeaderboard() {
+    return await this.request('/api/leaderboard');
+  }
+};
