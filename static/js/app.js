@@ -123,6 +123,15 @@ function initUIEvents() {
   if (closeRecapBtn) closeRecapBtn.addEventListener('click', closeShareRecapModal);
   if (nativeShareBtn) nativeShareBtn.addEventListener('click', handleNativeShareRecap);
   if (copyRecapBtn) copyRecapBtn.addEventListener('click', handleCopyRecapText);
+
+  // Fermer les suggestions de recherche de joueur au clic à l'extérieur
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#weekly-players-container')) {
+      document.querySelectorAll('[id^="weekly-"][id*="-suggestions-"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+    }
+  });
 }
 
 // --- Session & Utilisateur ---
@@ -146,15 +155,15 @@ function updateHeaderUser() {
     scoreVal.textContent = state.currentUser.total_points.toFixed(1);
 
     container.innerHTML = `
-      <button onclick="handleLogout()" class="flex items-center space-x-1.5 bg-[#171a24] hover:bg-[#202534] border border-[#272d3e] px-3 py-1 rounded-lg text-xs font-bold text-white transition cursor-pointer">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="max-w-[85px] truncate">${state.currentUser.username}</span>
+      <button onclick="handleLogout()" title="Clique pour te déconnecter" class="btn-tactile flex items-center space-x-1.5 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.12)] px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold text-white transition cursor-pointer">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+        <span class="max-w-[60px] sm:max-w-[90px] truncate text-[11px] sm:text-xs">${state.currentUser.username}</span>
       </button>
     `;
   } else {
     scoreBadge.classList.add('hidden');
     container.innerHTML = `
-      <button onclick="openAuthModal('login')" class="bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase px-3.5 py-1.5 rounded-lg transition cursor-pointer shadow-md shadow-[#ff5500]/20">
+      <button onclick="openAuthModal('login')" class="btn-tactile bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer shadow-md shadow-[#ff5500]/25 shrink-0">
         Connexion
       </button>
     `;
@@ -356,10 +365,10 @@ function renderWeeksSelector() {
   let html = `
     <button 
       onclick="filterByWeek('all')" 
-      class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+      class="btn-tactile shrink-0 px-2.5 py-1 rounded-lg text-xs font-condensed font-bold uppercase tracking-wider transition cursor-pointer ${
         state.selectedWeek === 'all' 
-          ? 'bg-[#ff5500] text-black font-black' 
-          : 'bg-[#181a24] text-slate-300 hover:text-white border border-[#262a3c]'
+          ? 'bg-[#ff5500] text-black font-black shadow-sm shadow-[#ff5500]/40' 
+          : 'bg-[#141722] text-slate-300 hover:text-white border border-[rgba(255,255,255,0.08)]'
       }"
     >
       Toutes
@@ -371,10 +380,10 @@ function renderWeeksSelector() {
     html += `
       <button 
         onclick="filterByWeek(${w.week})" 
-        class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+        class="btn-tactile shrink-0 px-2.5 py-1 rounded-lg text-xs font-condensed font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap ${
           isSelected 
-            ? 'bg-[#ff5500] text-black font-black shadow-md shadow-[#ff5500]/25' 
-            : 'bg-[#181a24] text-slate-300 hover:text-white border border-[#262a3c]'
+            ? 'bg-[#ff5500] text-black font-black shadow-md shadow-[#ff5500]/40' 
+            : 'bg-[#141722] text-slate-300 hover:text-white border border-[rgba(255,255,255,0.08)]'
         }"
       >
         Week ${w.week}
@@ -464,45 +473,45 @@ function renderMatchesList() {
     }
 
     return `
-      <div class="match-card rounded-xl p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted' : ''}">
+      <div class="match-card rounded-2xl p-3 sm:p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted' : ''}">
         
         <!-- En-tête : Semaine, Date, Bonus x2 & État -->
-        <div class="flex items-center justify-between text-xs pb-2 border-b border-[#1b1e28]">
-          <div class="flex items-center space-x-1.5 text-slate-400 font-medium text-[11px]">
-            <span class="px-1.5 py-0.5 rounded bg-[#181a24] text-slate-300 font-bold border border-[#282c3e] text-[10px]">W${match.week_number || 1}</span>
-            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-slate-600' : 'bg-[#ff5500]'}"></span>
-            <span>${isFinished ? 'Match terminé' : dateFormatted}</span>
+        <div class="flex items-center justify-between text-xs pb-2 border-b border-[rgba(255,255,255,0.08)] gap-1.5">
+          <div class="flex items-center space-x-1.5 text-slate-400 font-medium text-[11px] min-w-0 truncate">
+            <span class="px-1.5 py-0.5 rounded bg-[#181a24] text-slate-300 font-bold border border-[rgba(255,255,255,0.08)] text-[10px] shrink-0">W${match.week_number || 1}</span>
+            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-slate-600' : 'bg-[#ff5500]'} shrink-0"></span>
+            <span class="truncate">${isFinished ? 'Terminé' : dateFormatted}</span>
           </div>
-          <div class="flex items-center space-x-1.5">
+          <div class="flex items-center space-x-1.5 shrink-0">
             ${boostButton}
             <div>${statusPill}</div>
           </div>
         </div>
 
         <!-- Deux blocs équipes et cotes -->
-        <div class="grid grid-cols-2 gap-2.5">
+        <div class="grid grid-cols-2 gap-2 sm:gap-2.5 items-stretch">
           
           <!-- ÉQUIPE DOMICILE -->
           <button
             onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isFinished})"
-            class="odds-btn rounded-xl p-3 flex flex-col justify-between text-left relative ${
+            class="odds-btn h-full rounded-xl p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
               homeSelected ? 'odds-btn-selected' : ''
             } ${isFinished ? 'cursor-default' : ''}"
           >
-            <div class="flex items-center space-x-2 w-full mb-2">
+            <div class="flex items-center space-x-2 w-full mb-1.5">
               <div 
-                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow"
+                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow shrink-0"
                 style="background-color: ${match.home_team.color}; color: ${match.home_team.text_color};"
               >
                 ${match.home_team.code}
               </div>
               <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-sm uppercase tracking-wide text-white truncate">
+                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
                   ${match.home_team.city}
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Domicile</span>
-                  <div class="flex items-center gap-1" title="Forme (5 derniers matchs)">
+                <div class="flex items-center justify-between gap-1 mt-0.5">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 truncate">Dom.</span>
+                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
                     ${(match.home_team.recent_form || []).map(r => r === 'W' 
                       ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
                       : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
@@ -512,7 +521,7 @@ function renderMatchesList() {
               </div>
             </div>
 
-            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[#202434]">
+            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
               <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
               <span class="font-condensed text-base font-black ${homeSelected ? 'text-[#ff5500]' : 'text-white'}">
                 ${match.home_odds.toFixed(2)}
@@ -529,24 +538,24 @@ function renderMatchesList() {
           <!-- ÉQUIPE EXTÉRIEUR -->
           <button
             onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isFinished})"
-            class="odds-btn rounded-xl p-3 flex flex-col justify-between text-left relative ${
+            class="odds-btn h-full rounded-xl p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
               awaySelected ? 'odds-btn-selected' : ''
             } ${isFinished ? 'cursor-default' : ''}"
           >
-            <div class="flex items-center space-x-2 w-full mb-2">
+            <div class="flex items-center space-x-2 w-full mb-1.5">
               <div 
-                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow"
+                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow shrink-0"
                 style="background-color: ${match.away_team.color}; color: ${match.away_team.text_color};"
               >
                 ${match.away_team.code}
               </div>
               <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-sm uppercase tracking-wide text-white truncate">
+                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
                   ${match.away_team.city}
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Extérieur</span>
-                  <div class="flex items-center gap-1" title="Forme (5 derniers matchs)">
+                <div class="flex items-center justify-between gap-1 mt-0.5">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 truncate">Ext.</span>
+                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
                     ${(match.away_team.recent_form || []).map(r => r === 'W' 
                       ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
                       : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
@@ -556,7 +565,7 @@ function renderMatchesList() {
               </div>
             </div>
 
-            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[#202434]">
+            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
               <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
               <span class="font-condensed text-base font-black ${awaySelected ? 'text-[#ff5500]' : 'text-white'}">
                 ${match.away_odds.toFixed(2)}
@@ -573,13 +582,16 @@ function renderMatchesList() {
         </div>
 
         <!-- Footer carte : Pronostics de ligue (Signature MPP) -->
-        <div class="pt-2 border-t border-[#1b1e28] flex items-center justify-between">
-          <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
-            <span>👥</span> Pronos de ligue
+        <div class="pt-2 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+          <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-[#ff5500]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Pronos de ligue</span>
           </span>
           <button 
             onclick="openLeagueMatchVotesModal(${match.id})" 
-            class="text-[10px] font-bold text-[#ff5500] hover:text-[#ff7733] bg-[#ff5500]/10 hover:bg-[#ff5500]/20 px-2 py-1 rounded-lg border border-[#ff5500]/30 transition cursor-pointer flex items-center gap-1"
+            class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-[#ff5500] hover:text-[#ff7733] bg-[#ff5500]/10 hover:bg-[#ff5500]/20 px-2.5 py-1 rounded-lg border border-[#ff5500]/30 transition cursor-pointer flex items-center gap-1"
           >
             <span>Qui a voté quoi ?</span>
             <span>›</span>
@@ -1332,61 +1344,61 @@ async function renderProfile() {
 
     container.innerHTML = `
       <!-- Carte Joueur -->
-      <div class="p-4 bg-[#12141a] rounded-2xl border border-[#1f222d] shadow-xl flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#b33c00] flex items-center justify-center font-condensed font-black text-lg text-black shadow-md shadow-[#ff5500]/20">
+      <div class="p-3.5 sm:p-4 surface-card flex items-center justify-between gap-3 shadow-xl">
+        <div class="flex items-center space-x-3 min-w-0">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#b33c00] flex items-center justify-center font-condensed font-black text-lg text-black shadow-md shadow-[#ff5500]/25 shrink-0">
             ${initials}
           </div>
-          <div>
-            <div class="font-condensed font-black text-xl text-white leading-tight">
+          <div class="min-w-0">
+            <div class="font-condensed font-black text-lg sm:text-xl text-white leading-tight truncate">
               ${stats.username}
             </div>
-            <div class="text-[11px] text-slate-400 truncate max-w-[160px]">
+            <div class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[200px]">
               ${stats.email || 'Membre NBA Prono'}
             </div>
           </div>
         </div>
 
-        <div class="text-right">
+        <div class="text-right shrink-0">
           <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Classement</div>
-          <div class="font-condensed font-black text-lg text-[#ff5500]">
+          <div class="font-condensed font-black text-base sm:text-lg text-[#ff5500]">
             #${stats.rank || '-'} <span class="text-xs text-slate-400">(${stats.total_points.toFixed(1)} pts)</span>
           </div>
         </div>
       </div>
 
       <!-- Grille des Statistiques du Joueur -->
-      <div class="grid grid-cols-3 gap-2.5">
+      <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
         
         <!-- Winrate -->
-        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Winrate</div>
-          <div class="font-condensed font-black text-2xl ${winrateColor} my-0.5">
+        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Winrate</div>
+          <div class="font-condensed font-black text-xl sm:text-2xl ${winrateColor} my-0.5">
             ${stats.winrate.toFixed(1)}%
           </div>
-          <div class="text-[10px] text-slate-500 font-semibold">
+          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
             ${stats.won_predictions}/${stats.finished_predictions} validés
           </div>
         </div>
 
         <!-- Cote moyenne trouvée -->
-        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Cote Moyenne</div>
-          <div class="font-condensed font-black text-2xl text-white my-0.5">
+        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Cote Moy.</div>
+          <div class="font-condensed font-black text-xl sm:text-2xl text-white my-0.5">
             ${stats.avg_odds > 0 ? stats.avg_odds.toFixed(2) : '-'}
           </div>
-          <div class="text-[10px] text-slate-500 font-semibold">
+          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
             sur victoires
           </div>
         </div>
 
         <!-- Plus grosse cote -->
-        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Max Cote</div>
-          <div class="font-condensed font-black text-2xl text-[#ff5500] my-0.5">
+        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Max Cote</div>
+          <div class="font-condensed font-black text-xl sm:text-2xl text-[#ff5500] my-0.5">
             ${stats.max_odds > 0 ? stats.max_odds.toFixed(2) : '-'}
           </div>
-          <div class="text-[10px] text-slate-500 font-semibold">
+          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
             record validé
           </div>
         </div>

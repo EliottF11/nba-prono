@@ -23,69 +23,69 @@
 <body class="court-bg min-h-screen pb-20 text-slate-100">
 
   <!-- Wrapper Mobile-First -->
-  <div class="max-w-md mx-auto min-h-screen flex flex-col border-x border-[rgba(255,255,255,0.06)] bg-[#07080b] shadow-2xl relative">
+  <div class="max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col border-x border-[rgba(255,255,255,0.06)] bg-[#07080b] shadow-2xl relative">
     
     <!-- Top Bar Sportive -->
-    <header class="sticky top-0 z-30 bg-[#07080b]/92 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)] px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-2.5">
+    <header class="sticky top-0 z-30 bg-[#07080b]/95 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2 shrink-0">
         <!-- Logo minimaliste basket -->
-        <img src="/static/icons/icon.svg" alt="NBA Prono" class="w-8 h-8 rounded-xl shadow-md shadow-[#ff5500]/25">
+        <img src="/static/icons/icon.svg" alt="NBA Prono" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg shadow-md shadow-[#ff5500]/25 shrink-0">
         <div>
-          <div class="font-condensed font-black text-xl tracking-tight leading-none text-white flex items-center gap-1.5">
+          <div class="font-condensed font-black text-lg sm:text-xl tracking-tight leading-none text-white flex items-center gap-1">
             <span>NBA</span>
             <span class="text-[#ff5500]">PRONO</span>
           </div>
-          <div class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Saison 2026/2027</div>
+          <div class="text-[9px] sm:text-[10px] text-slate-400 font-semibold tracking-wider uppercase">2026/2027</div>
         </div>
       </div>
 
       <!-- Actions & Section Utilisateur -->
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
         
         <!-- Bouton Partager / Défier -->
-        <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center space-x-1.5 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.10)] text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+        <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center space-x-1 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.10)] text-slate-200 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
           <svg class="w-3.5 h-3.5 text-[#ff5500]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
           </svg>
-          <span class="text-[11px] font-condensed font-bold uppercase tracking-wider">Défier</span>
+          <span class="hidden sm:inline text-[11px] font-condensed font-bold uppercase tracking-wider">Défier</span>
         </button>
 
         <!-- Bouton Bilan Semaine (Style Story MPP) -->
-        <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center space-x-1.5 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.10)] text-slate-200 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
+        <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center space-x-1 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.10)] text-slate-200 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">
           <svg class="w-3.5 h-3.5 text-[#f59e0b]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
-          <span class="text-[11px] font-condensed font-bold uppercase tracking-wider">Bilan</span>
+          <span class="hidden sm:inline text-[11px] font-condensed font-bold uppercase tracking-wider">Bilan</span>
         </button>
 
-        <div id="user-score-badge" class="hidden flex items-center space-x-1.5 bg-[#141722] border border-[rgba(255,255,255,0.12)] px-2.5 py-1 rounded-lg">
-          <span class="text-[10px] text-slate-400 font-bold uppercase">Pts</span>
-          <span id="user-points-val" class="font-condensed text-base font-black text-[#ff5500]">0.0</span>
+        <div id="user-score-badge" class="hidden flex items-center space-x-1 bg-[#141722] border border-[rgba(255,255,255,0.12)] px-2 py-1 rounded-lg shrink-0">
+          <span id="user-points-val" class="font-condensed text-sm sm:text-base font-black text-[#ff5500]">0.0</span>
+          <span class="text-[9px] text-slate-400 font-bold uppercase">pts</span>
         </div>
         
-        <div id="auth-btn-container">
+        <div id="auth-btn-container" class="shrink-0">
           <!-- Injecté par app.js -->
         </div>
       </div>
     </header>
 
     <!-- Zone principale -->
-    <main class="flex-1 p-3.5 space-y-3.5">
+    <main class="flex-1 p-3 sm:p-3.5 space-y-3.5 pb-28">
 
       <!-- BANNER : Règles succinctes & status -->
-      <div class="bg-gradient-to-r from-[#141722] to-[#0e1017] border border-[rgba(255,255,255,0.08)] rounded-2xl p-3.5 flex items-center justify-between shadow-lg">
-        <div class="space-y-0.5">
+      <div class="bg-gradient-to-r from-[#141722] to-[#0e1017] border border-[rgba(255,255,255,0.08)] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-lg">
+        <div class="space-y-0.5 min-w-0">
           <div class="text-xs font-bold text-white flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[#ff5500] shadow-[0_0_8px_#ff5500]"></span>
-            <span class="font-condensed font-black uppercase tracking-wider text-sm">Règle des cotes</span>
+            <span class="w-2 h-2 rounded-full bg-[#ff5500] shadow-[0_0_8px_#ff5500] shrink-0"></span>
+            <span class="font-condensed font-black uppercase tracking-wider text-xs sm:text-sm">Règle des cotes</span>
           </div>
-          <p class="text-[11px] text-slate-400">
+          <p class="text-[10px] sm:text-[11px] text-slate-400 truncate sm:whitespace-normal">
             Trouve le vainqueur • Empoche la cote exacte en points
           </p>
         </div>
-        <div class="text-right">
-          <span id="open-matches-count" class="font-condensed text-xs font-bold px-2.5 py-1 rounded-lg bg-[#1a1d2b] text-slate-200 border border-[rgba(255,255,255,0.10)]">
+        <div class="text-right shrink-0">
+          <span id="open-matches-count" class="font-condensed text-xs font-bold px-2.5 py-1 rounded-lg bg-[#1a1d2b] text-slate-200 border border-[rgba(255,255,255,0.10)] whitespace-nowrap">
             16 MATCHS
           </span>
         </div>
@@ -569,7 +569,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold text-white shadow-2xl transition-all duration-200 opacity-0 pointer-events-none z-50"></div>
+    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold text-white shadow-2xl transition-all duration-200 opacity-0 pointer-events-none z-50"></div>
 
   </div>
 
