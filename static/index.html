@@ -138,10 +138,48 @@
 
       </section>
 
+      <!-- SECTION 3 : MES LIGUES (Préparation Chantier 5) -->
+      <section id="leagues-view" class="p-4 space-y-4 hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-[#1b1e28]">
+          <div>
+            <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white flex items-center gap-2">
+              <span>Mes Ligues</span>
+              <span class="text-[10px] bg-[#ff5500]/20 text-[#ff5500] px-2 py-0.5 rounded font-sans font-bold uppercase tracking-wider">Bientôt</span>
+            </h2>
+            <p class="text-xs text-slate-400">Défie tes amis dans des ligues privées sur mesure.</p>
+          </div>
+        </div>
+
+        <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-3 shadow-xl">
+          <div class="w-12 h-12 rounded-2xl bg-[#ff5500]/10 text-[#ff5500] mx-auto flex items-center justify-center text-2xl border border-[#ff5500]/20 shadow-lg shadow-[#ff5500]/10">
+            🏆
+          </div>
+          <div class="font-condensed font-black text-lg text-white">Ligues privées & Codes à 6 caractères</div>
+          <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+            Ce module sera activé lors du Chantier 5. Tu pourras créer ta ligue entre potes, générer un code d'invitation et suivre votre classement privé dédié.
+          </p>
+        </div>
+      </section>
+
+      <!-- SECTION 4 : PROFIL & STATISTIQUES (Chantier 1) -->
+      <section id="profile-view" class="p-4 space-y-4 hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-[#1b1e28]">
+          <div>
+            <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">Mon Profil</h2>
+            <p class="text-xs text-slate-400">Performances, cotes validées et trophées débloqués.</p>
+          </div>
+        </div>
+
+        <!-- Conteneur injecté dynamiquement -->
+        <div id="profile-content" class="space-y-4">
+          <!-- Injecté dynamiquement par renderProfile() -->
+        </div>
+      </section>
+
     </main>
 
-    <!-- Bottom Navigation Bar Native -->
-    <nav class="native-tabbar fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 px-6 py-2 flex items-center justify-around">
+    <!-- Bottom Navigation Bar Native (4 Onglets) -->
+    <nav class="native-tabbar fixed bottom-0 left-0 right-0 max-w-md mx-auto z-40 px-3 py-2 flex items-center justify-around">
       
       <!-- Onglet Matchs -->
       <button data-tab="matches" class="tab-btn active flex flex-col items-center py-1 transition cursor-pointer text-[#ff5500]">
@@ -149,15 +187,31 @@
           <circle cx="12" cy="12" r="9"/>
           <path d="M12 3v18M3 12h18M5.5 5.5l13 13M5.5 18.5l13-13"/>
         </svg>
-        <span class="font-condensed text-xs font-black uppercase tracking-wider">Pronostics</span>
+        <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Matchs</span>
       </button>
 
-      <!-- Onglet Classement -->
+      <!-- Onglet Mes Ligues -->
+      <button data-tab="leagues" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-slate-400 hover:text-slate-200">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+        <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Mes Ligues</span>
+      </button>
+
+      <!-- Onglet Classement Général -->
       <button data-tab="leaderboard" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-slate-400 hover:text-slate-200">
         <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M6 9H4.5a2.5 2.5 0 010-5H6M18 9h1.5a2.5 2.5 0 000-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34M6 4h12v7a6 6 0 01-12 0V4z"/>
         </svg>
-        <span class="font-condensed text-xs font-black uppercase tracking-wider">Classement</span>
+        <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Classement</span>
+      </button>
+
+      <!-- Onglet Profil -->
+      <button data-tab="profile" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-slate-400 hover:text-slate-200">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Profil</span>
       </button>
 
     </nav>

@@ -12,7 +12,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Match, Prediction, User, Team
-from schemas import MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry
+from schemas import (
+    MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
+    UserStatsResponse, BadgeResponse
+)
 from auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Pronostics & Matchs"])
@@ -218,4 +221,128 @@ def trigger_sync(date_str: Optional[str] = None, db: Session = Depends(get_db)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/users/me/stats", response_model=UserStatsResponse, tags=["Profil & Statistiques"])
+def get_my_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Retourne les statistiques détaillées et les badges du joueur connecté :
+    - Winrate (% de réussite)
+    - Cote moyenne trouvée
+    - Plus grosse cote validée
+    - Système de badges visuels : 'Rookie', 'Sniper', 'Maçon'
+    """
+    # 1. Calcul du rang général
+    all_users = db.query(User).order_by(User.total_points.desc(), User.id.asc()).all()
+    user_rank = None
+    for idx, u in enumerate(all_users, start=1):
+        if u.id == current_user.id:
+            user_rank = idx
+            break
+
+    # 2. Récupération des pronostics du joueur avec leurs matchs associés
+    predictions = (
+        db.query(Prediction, Match)
+        .join(Match, Prediction.match_id == Match.id)
+        .filter(Prediction.user_id == current_user.id)
+        .order_by(Match.deadline.asc(), Match.id.asc())
+        .all()
+    )
+
+    total_preds = len(predictions)
+    finished_preds = 0
+    won_preds = 0
+    lost_preds = 0
+    won_odds_list = []
+    
+    max_loss_streak = 0
+    current_loss_streak = 0
+    sniper_count = 0  # cotes > 2.50 validées
+
+    for pred, match in predictions:
+        if match.status == "finished" and match.winner_team_id is not None:
+            finished_preds += 1
+            if pred.selected_team_id == match.winner_team_id:
+                won_preds += 1
+                current_loss_streak = 0
+                
+                odds = match.home_odds if pred.selected_team_id == match.home_team_id else match.away_odds
+                won_odds_list.append(odds)
+                
+                if odds > 2.50:
+                    sniper_count += 1
+            else:
+                lost_preds += 1
+                current_loss_streak += 1
+                if current_loss_streak > max_loss_streak:
+                    max_loss_streak = current_loss_streak
+
+    winrate = round((won_preds / finished_preds * 100), 1) if finished_preds > 0 else 0.0
+    avg_odds = round(sum(won_odds_list) / len(won_odds_list), 2) if won_odds_list else 0.0
+    max_odds = round(max(won_odds_list), 2) if won_odds_list else 0.0
+
+    # 3. Badges visuels
+    # Badge 1 : "Rookie" (5 bons pronos)
+    rookie_target = 5
+    rookie_unlocked = won_preds >= rookie_target
+    
+    # Badge 2 : "Sniper" (3 cotes > 2.50 validées)
+    sniper_target = 3
+    sniper_unlocked = sniper_count >= sniper_target
+    
+    # Badge 3 : "Maçon" (5 erreurs de suite)
+    macon_target = 5
+    macon_unlocked = max_loss_streak >= macon_target
+
+    badges = [
+        {
+            "id": "rookie",
+            "name": "Rookie",
+            "description": "5 bons pronos validés",
+            "icon": "🏀",
+            "unlocked": rookie_unlocked,
+            "current": min(won_preds, rookie_target),
+            "target": rookie_target,
+            "progress_pct": min(int((won_preds / rookie_target) * 100), 100)
+        },
+        {
+            "id": "sniper",
+            "name": "Sniper",
+            "description": "3 cotes > 2.50 validées",
+            "icon": "🎯",
+            "unlocked": sniper_unlocked,
+            "current": min(sniper_count, sniper_target),
+            "target": sniper_target,
+            "progress_pct": min(int((sniper_count / sniper_target) * 100), 100)
+        },
+        {
+            "id": "macon",
+            "name": "Maçon",
+            "description": "5 erreurs de suite",
+            "icon": "🧱",
+            "unlocked": macon_unlocked,
+            "current": min(max_loss_streak, macon_target),
+            "target": macon_target,
+            "progress_pct": min(int((max_loss_streak / macon_target) * 100), 100)
+        }
+    ]
+
+    return {
+        "user_id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "total_points": current_user.total_points,
+        "rank": user_rank,
+        "total_predictions": total_preds,
+        "finished_predictions": finished_preds,
+        "won_predictions": won_preds,
+        "lost_predictions": lost_preds,
+        "winrate": winrate,
+        "avg_odds": avg_odds,
+        "max_odds": max_odds,
+        "badges": badges
+    }
 

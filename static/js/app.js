@@ -103,6 +103,7 @@ function handleLogout() {
     updateHeaderUser();
     renderMatchesList();
     renderLeaderboard();
+    if (state.activeTab === 'profile') renderProfile();
     notify("Déconnexion réussie");
   }
 }
@@ -118,15 +119,19 @@ function selectTab(tab) {
   });
 
   const matchesView = document.getElementById('matches-view');
+  const leaguesView = document.getElementById('leagues-view');
   const leaderboardView = document.getElementById('leaderboard-view');
+  const profileView = document.getElementById('profile-view');
 
-  if (tab === 'matches') {
-    matchesView.classList.remove('hidden');
-    leaderboardView.classList.add('hidden');
-  } else {
-    matchesView.classList.add('hidden');
-    leaderboardView.classList.remove('hidden');
+  if (matchesView) matchesView.classList.toggle('hidden', tab !== 'matches');
+  if (leaguesView) leaguesView.classList.toggle('hidden', tab !== 'leagues');
+  if (leaderboardView) leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
+  if (profileView) profileView.classList.toggle('hidden', tab !== 'profile');
+
+  if (tab === 'leaderboard') {
     renderLeaderboard();
+  } else if (tab === 'profile') {
+    renderProfile();
   }
 }
 
@@ -200,6 +205,7 @@ async function handleAuthSubmit(e) {
     closeAuthModal();
     notify(`Connecté en tant que ${res.user.username}`, 'success');
     await refreshData();
+    if (state.activeTab === 'profile') renderProfile();
   } catch (err) {
     errBox.textContent = err.message;
     errBox.classList.remove('hidden');
@@ -481,6 +487,169 @@ function renderLeaderboard() {
       </div>
     `;
   }).join('');
+}
+
+// --- Rendu du Profil & Statistiques (Chantier 1) ---
+async function renderProfile() {
+  const container = document.getElementById('profile-content');
+  if (!container) return;
+
+  if (!state.currentUser) {
+    container.innerHTML = `
+      <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
+        <div class="w-14 h-14 mx-auto rounded-full bg-[#ff5500]/10 border border-[#ff5500]/20 flex items-center justify-center text-2xl text-[#ff5500] shadow-lg shadow-[#ff5500]/10">
+          👤
+        </div>
+        <div class="font-condensed font-black text-xl text-white">Connecte-toi pour voir ton profil</div>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+          Accède à ton Winrate en direct, analyse tes cotes validées et débloque les badges officiels.
+        </p>
+        <button onclick="openAuthModal('login')" class="bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-sm uppercase px-5 py-2.5 rounded-xl transition cursor-pointer shadow-lg shadow-[#ff5500]/25">
+          Connexion / Inscription
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="p-8 text-center text-slate-500 text-xs font-semibold">
+      Chargement de tes statistiques...
+    </div>
+  `;
+
+  try {
+    const stats = await API.getMyStats();
+    if (!stats) return;
+
+    const initials = stats.username.substring(0, 2).toUpperCase();
+    const winrateColor = stats.winrate >= 55 ? 'text-emerald-400' : stats.winrate >= 40 ? 'text-[#ff5500]' : 'text-slate-200';
+
+    container.innerHTML = `
+      <!-- Carte Joueur -->
+      <div class="p-4 bg-[#12141a] rounded-2xl border border-[#1f222d] shadow-xl flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#b33c00] flex items-center justify-center font-condensed font-black text-lg text-black shadow-md shadow-[#ff5500]/20">
+            ${initials}
+          </div>
+          <div>
+            <div class="font-condensed font-black text-xl text-white leading-tight">
+              ${stats.username}
+            </div>
+            <div class="text-[11px] text-slate-400 truncate max-w-[160px]">
+              ${stats.email || 'Membre NBA Prono'}
+            </div>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Classement</div>
+          <div class="font-condensed font-black text-lg text-[#ff5500]">
+            #${stats.rank || '-'} <span class="text-xs text-slate-400">(${stats.total_points.toFixed(1)} pts)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grille des Statistiques du Joueur -->
+      <div class="grid grid-cols-3 gap-2.5">
+        
+        <!-- Winrate -->
+        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Winrate</div>
+          <div class="font-condensed font-black text-2xl ${winrateColor} my-0.5">
+            ${stats.winrate.toFixed(1)}%
+          </div>
+          <div class="text-[10px] text-slate-500 font-semibold">
+            ${stats.won_predictions}/${stats.finished_predictions} validés
+          </div>
+        </div>
+
+        <!-- Cote moyenne trouvée -->
+        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Cote Moyenne</div>
+          <div class="font-condensed font-black text-2xl text-white my-0.5">
+            ${stats.avg_odds > 0 ? stats.avg_odds.toFixed(2) : '-'}
+          </div>
+          <div class="text-[10px] text-slate-500 font-semibold">
+            sur victoires
+          </div>
+        </div>
+
+        <!-- Plus grosse cote -->
+        <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-center flex flex-col justify-between">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Max Cote</div>
+          <div class="font-condensed font-black text-2xl text-[#ff5500] my-0.5">
+            ${stats.max_odds > 0 ? stats.max_odds.toFixed(2) : '-'}
+          </div>
+          <div class="text-[10px] text-slate-500 font-semibold">
+            record validé
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Section Badges & Trophées -->
+      <div class="space-y-3 pt-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-condensed font-black text-lg uppercase tracking-tight text-white flex items-center gap-1.5">
+            <span>Badges & Trophées</span>
+            <span class="text-xs text-slate-400 font-sans font-medium">(${stats.badges.filter(b => b.unlocked).length}/${stats.badges.length})</span>
+          </h3>
+        </div>
+
+        <div class="space-y-2.5">
+          ${stats.badges.map(badge => `
+            <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'} p-3.5 space-y-2.5">
+              <div class="flex items-start justify-between gap-3">
+                
+                <div class="flex items-center space-x-3">
+                  <div class="badge-icon-wrap">
+                    ${badge.icon}
+                  </div>
+                  <div>
+                    <div class="font-condensed font-black text-base uppercase tracking-wide text-white">
+                      ${badge.name}
+                    </div>
+                    <div class="text-xs text-slate-400 leading-tight">
+                      ${badge.description}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  ${badge.unlocked ? `
+                    <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap shadow-sm shadow-emerald-500/10">
+                      <span>✨</span> Débloqué
+                    </span>
+                  ` : `
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-[#161822] border border-[#262a3c] px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap">
+                      <span>🔒</span> ${badge.current}/${badge.target}
+                    </span>
+                  `}
+                </div>
+
+              </div>
+
+              <!-- Barre de progression -->
+              <div class="w-full bg-[#161824] rounded-full h-1.5 overflow-hidden border border-[#232738]">
+                <div 
+                  class="h-full transition-all duration-500 ${badge.unlocked ? 'bg-gradient-to-r from-[#ff5500] to-emerald-400' : 'bg-[#ff5500]'}" 
+                  style="width: ${badge.progress_pct}%"
+                ></div>
+              </div>
+
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = `
+      <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+        Impossible de charger les statistiques : ${err.message}
+      </div>
+    `;
+  }
 }
 
 // --- Utilitaires ---

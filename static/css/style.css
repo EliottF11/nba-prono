@@ -116,3 +116,43 @@ body {
   background: #232734;
   border-radius: 999px;
 }
+
+/* Badges & Trophées */
+.badge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  transition: all 0.2s ease;
+}
+
+.badge-card.unlocked {
+  border-color: rgba(255, 85, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.1) 0%, rgba(18, 20, 26, 0.95) 100%);
+  box-shadow: 0 4px 20px -4px rgba(255, 85, 0, 0.2);
+}
+
+.badge-card.locked {
+  opacity: 0.75;
+}
+
+.badge-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 22px;
+}
+
+.badge-card.unlocked .badge-icon-wrap {
+  background: linear-gradient(135deg, #ff5500 0%, #ff8833 100%);
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.4);
+}
+
+.badge-card.locked .badge-icon-wrap {
+  background: #191c26;
+  border: 1px solid #282c3c;
+  filter: grayscale(1);
+}

@@ -3,7 +3,7 @@ Schémas Pydantic pour la validation des requêtes et la sérialisation des rép
 """
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
 class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=30, description="Pseudo du joueur (3 à 30 caractères)")
@@ -81,4 +81,33 @@ class LeaderboardEntry(BaseModel):
     total_points: float
     predictions_count: int = 0
     won_count: int = 0
+
+
+# --- Schémas Profil, Statistiques & Badges ---
+
+class BadgeResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    icon: str
+    unlocked: bool
+    current: int
+    target: int
+    progress_pct: int
+
+
+class UserStatsResponse(BaseModel):
+    user_id: int
+    username: str
+    email: Optional[str] = None
+    total_points: float
+    rank: Optional[int] = None
+    total_predictions: int
+    finished_predictions: int
+    won_predictions: int
+    lost_predictions: int
+    winrate: float
+    avg_odds: float
+    max_odds: float
+    badges: List[BadgeResponse]
 
