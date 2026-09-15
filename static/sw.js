@@ -1,5 +1,5 @@
 // Service Worker pour NBA Prono (PWA)
-const CACHE_NAME = 'nba-prono-v6';
+const CACHE_NAME = 'nba-prono-v7';
 const STATIC_ASSETS = [
   '/',
   '/static/css/style.css',

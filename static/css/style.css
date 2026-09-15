@@ -1,23 +1,61 @@
-/* Style NBA Prono - Finition Sports App Professionnelle */
+/* ==========================================================================
+   NBA PRONO - Design System Professionnel & Finition OLED Dark Mode
+   Conforme aux directives UI/UX Pro Max :
+   - OLED True Dark (#07080B) & Glassmorphism Sportif
+   - Typographie Barlow Condensed (Display) & Inter (Body)
+   - Micro-interactions tactiles stables (touch-target >= 44px, active:scale)
+   - Contraste certifié WCAG (>= 4.5:1 / 7:1) & Safe-Area Mobile
+   ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #0a0b0e;
-  --bg-card: #12141a;
-  --bg-card-hover: #171922;
-  --border-subtle: #1f222d;
-  --border-active: #ff5500;
+  /* Surfaces OLED */
+  --bg-oled: #07080b;
+  --bg-surface: #0e1017;
+  --bg-surface-elevated: #141722;
+  --bg-surface-glass: rgba(16, 19, 28, 0.85);
+
+  /* Bordures fines haute définition */
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-focus: #ff5500;
+
+  /* Couleurs de marque & Accents sportifs */
   --brand-orange: #ff5500;
   --brand-orange-light: #ff7733;
+  --brand-orange-glow: rgba(255, 85, 0, 0.35);
+
+  --accent-gold: #f59e0b;
+  --accent-gold-glow: rgba(245, 158, 11, 0.4);
+
+  --accent-emerald: #10b981;
+  --accent-rose: #ef4444;
+
+  /* Textes & Contrastes */
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #8492a6;
+}
+
+/* Base Document */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--bg-oled);
+  color-scheme: dark;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--bg-primary);
-  color: #e5e7eb;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-oled);
+  color: var(--text-secondary);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-condensed {
@@ -25,191 +63,195 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Texture terrain de basket ultra subtile en arrière-plan */
+/* Texture terrain de basket et ambiance nocturne OLED */
 .court-bg {
+  background-color: var(--bg-oled);
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(255, 85, 0, 0.08) 0%, transparent 60%),
-    linear-gradient(to bottom, #0a0b0e 0%, #0e1017 100%);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 85, 0, 0.10) 0%, transparent 65%),
+    radial-gradient(circle at 50% 100%, rgba(24, 28, 42, 0.5) 0%, transparent 70%),
+    linear-gradient(to bottom, #07080b 0%, #0b0c12 100%);
+  background-attachment: fixed;
 }
 
-/* Carte de match */
+/* Safe-area insets mobile */
+header.sticky {
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+
+.native-tabbar {
+  background: rgba(8, 9, 13, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--border-hairline);
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Cartes de match (Glassmorphism & Finition Stadium) */
 .match-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  background: linear-gradient(180deg, #11131b 0%, #0d0f16 100%);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .match-card:hover {
-  border-color: #2c303f;
+  border-color: var(--border-medium);
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Bouton de cote sportive */
+/* Boutons de cote sportive (Tactiles avec retour visuel) */
 .odds-btn {
-  background: #181a24;
-  border: 1px solid #252838;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  background: linear-gradient(180deg, #151823 0%, #12141d 100%);
+  border: 1px solid var(--border-hairline);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 84px;
 }
 
 .odds-btn:hover:not(:disabled) {
-  background: #1f2331;
-  border-color: #3b4056;
+  background: linear-gradient(180deg, #1b1f2d 0%, #161924 100%);
+  border-color: var(--border-medium);
 }
 
 .odds-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
 
+/* État sélectionné (Lueur électrique sportive) */
 .odds-btn-selected {
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.18) 0%, rgba(255, 85, 0, 0.08) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.22) 0%, rgba(255, 85, 0, 0.08) 100%) !important;
   border-color: #ff5500 !important;
-  box-shadow: inset 0 0 12px rgba(255, 85, 0, 0.2), 0 2px 10px rgba(255, 85, 0, 0.15);
+  box-shadow: 0 0 20px -2px rgba(255, 85, 0, 0.35), inset 0 0 14px rgba(255, 85, 0, 0.15) !important;
 }
 
-/* Pastille équipe sportive avec bande de couleur */
-.team-pill {
-  position: relative;
-  overflow: hidden;
+/* Pastilles de statut & Chips de filtre */
+.filter-chip {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.team-color-indicator {
-  width: 4px;
-  height: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
+.filter-chip:active {
+  transform: scale(0.95);
+}
+
+.filter-chip.active {
+  background: #ff5500 !important;
+  color: #000000 !important;
+  box-shadow: 0 0 14px rgba(255, 85, 0, 0.4);
 }
 
 /* Podium du classement */
 .podium-step-1 {
-  background: linear-gradient(180deg, rgba(234, 179, 8, 0.15) 0%, rgba(18, 20, 26, 0.9) 100%);
-  border-color: rgba(234, 179, 8, 0.4);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.18) 0%, rgba(16, 19, 27, 0.95) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 24px -4px rgba(245, 158, 11, 0.25);
 }
 
 .podium-step-2 {
-  background: linear-gradient(180deg, rgba(148, 163, 184, 0.15) 0%, rgba(18, 20, 26, 0.9) 100%);
-  border-color: rgba(148, 163, 184, 0.3);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.15) 0%, rgba(16, 19, 27, 0.95) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .podium-step-3 {
-  background: linear-gradient(180deg, rgba(217, 119, 6, 0.15) 0%, rgba(18, 20, 26, 0.9) 100%);
-  border-color: rgba(217, 119, 6, 0.3);
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.15) 0%, rgba(16, 19, 27, 0.95) 100%);
+  border: 1px solid rgba(217, 119, 6, 0.35);
 }
 
-/* Barre de navigation basse type application native */
-.native-tabbar {
-  background: rgba(12, 14, 19, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid #1a1d26;
-}
-
-/* Animations et défilement */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #0a0b0e;
-}
-::-webkit-scrollbar-thumb {
-  background: #232734;
-  border-radius: 999px;
-}
-
-/* Badges & Trophées */
-.badge-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1rem;
-  transition: all 0.2s ease;
-}
-
-.badge-card.unlocked {
-  border-color: rgba(255, 85, 0, 0.45);
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.1) 0%, rgba(18, 20, 26, 0.95) 100%);
-  box-shadow: 0 4px 20px -4px rgba(255, 85, 0, 0.2);
-}
-
-.badge-card.locked {
-  opacity: 0.75;
-}
-
-.badge-icon-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  font-size: 22px;
-}
-
-.badge-card.unlocked .badge-icon-wrap {
-  background: linear-gradient(135deg, #ff5500 0%, #ff8833 100%);
-  box-shadow: 0 0 15px rgba(255, 85, 0, 0.4);
-}
-
-.badge-card.locked .badge-icon-wrap {
-  background: #191c26;
-  border: 1px solid #282c3c;
-  filter: grayscale(1);
-}
-
-/* Bonus x2 Illumination (Chantier 2) */
+/* Illumination Bonus x2 (Chantier 2) */
 .match-card-boosted {
   border-color: #f59e0b !important;
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.12) 0%, rgba(18, 20, 26, 0.95) 100%) !important;
-  box-shadow: 0 0 20px -2px rgba(245, 158, 11, 0.35), inset 0 0 15px rgba(245, 158, 11, 0.08);
-  animation: pulse-glow 2.5s infinite ease-in-out;
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.14) 0%, rgba(14, 16, 23, 0.98) 100%) !important;
+  box-shadow: 0 0 24px -2px rgba(245, 158, 11, 0.4), inset 0 0 15px rgba(245, 158, 11, 0.10) !important;
+  animation: pulse-glow 2.4s infinite ease-in-out;
 }
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.3), inset 0 0 10px rgba(245, 158, 11, 0.05);
+    box-shadow: 0 0 18px -2px rgba(245, 158, 11, 0.35), inset 0 0 12px rgba(245, 158, 11, 0.08);
   }
   50% {
-    box-shadow: 0 0 25px 2px rgba(245, 158, 11, 0.5), inset 0 0 18px rgba(245, 158, 11, 0.12);
+    box-shadow: 0 0 28px 2px rgba(245, 158, 11, 0.55), inset 0 0 20px rgba(245, 158, 11, 0.16);
   }
 }
 
 .boost-btn {
   cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.boost-btn:active {
+  transform: scale(0.94);
 }
 
 .boost-btn-active {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   color: #000000;
   font-weight: 900;
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
   border: 1px solid #fbbf24;
 }
 
 .boost-btn-inactive {
-  background: #171a24;
+  background: #141722;
   color: #94a3b8;
-  border: 1px solid #282c3c;
+  border: 1px solid var(--border-hairline);
 }
 
 .boost-btn-inactive:hover {
-  background: #202434;
+  background: #1c2130;
   color: #f59e0b;
   border-color: #f59e0b;
+}
+
+/* Badges & Trophées */
+.badge-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.badge-card.unlocked {
+  border-color: rgba(255, 85, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.12) 0%, rgba(14, 16, 23, 0.95) 100%);
+  box-shadow: 0 6px 24px -4px rgba(255, 85, 0, 0.22);
+}
+
+.badge-card.locked {
+  opacity: 0.65;
+}
+
+.badge-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 22px;
+}
+
+.badge-card.unlocked .badge-icon-wrap {
+  background: linear-gradient(135deg, #ff5500 0%, #ff8833 100%);
+  box-shadow: 0 0 18px rgba(255, 85, 0, 0.45);
+}
+
+.badge-card.locked .badge-icon-wrap {
+  background: #141722;
+  border: 1px solid var(--border-hairline);
+  filter: grayscale(1);
 }
 
 /* --- MPP Features Styling --- */
 
 /* Mur de chambrage (Mini-chat) */
 .chat-bubble-me {
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.25) 0%, rgba(255, 85, 0, 0.1) 100%);
-  border: 1px solid rgba(255, 85, 0, 0.35);
+  background: linear-gradient(135deg, rgba(255, 85, 0, 0.28) 0%, rgba(255, 85, 0, 0.12) 100%);
+  border: 1px solid rgba(255, 85, 0, 0.4);
   border-bottom-right-radius: 4px;
 }
 
 .chat-bubble-other {
-  background: #181a24;
-  border: 1px solid #282c3e;
+  background: #141722;
+  border: 1px solid var(--border-hairline);
   border-bottom-left-radius: 4px;
 }
 
@@ -217,10 +259,10 @@ body {
   transition: transform 0.12s ease, background-color 0.12s ease;
 }
 .emoji-pill:hover {
-  transform: scale(1.2);
+  transform: scale(1.22);
 }
 .emoji-pill:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 /* Jauge de répartition des votes */
@@ -228,14 +270,15 @@ body {
   height: 10px;
   border-radius: 999px;
   overflow: hidden;
-  background: #181a24;
+  background: #12141c;
+  border: 1px solid var(--border-hairline);
   display: flex;
 }
 .vote-gauge-home {
-  transition: width 0.4s ease-out;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .vote-gauge-away {
-  transition: width 0.4s ease-out;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Autocomplete suggestion item */
@@ -243,6 +286,69 @@ body {
   transition: background-color 0.15s ease;
 }
 .player-suggest-item:hover {
-  background-color: #242938;
+  background-color: #1e2333;
+}
+
+/* Form inputs styling */
+input:focus, select:focus, textarea:focus {
+  border-color: #ff5500 !important;
+  box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.25) !important;
+}
+
+/* Modal Box styling (OLED Glassmorphism) */
+.modal-box {
+  background: linear-gradient(180deg, #121520 0%, #0c0e15 100%);
+  border: 1px solid var(--border-medium);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Surface Card */
+.surface-card {
+  background: linear-gradient(180deg, #10131c 0%, #0c0e15 100%);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
+}
+
+/* Tab bar touch targets & active glow */
+.tab-btn {
+  min-height: 48px;
+  min-width: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-btn.active {
+  color: #ff5500 !important;
+}
+
+.tab-btn.active svg {
+  filter: drop-shadow(0 0 8px rgba(255, 85, 0, 0.6));
+}
+
+/* Boutons tactiles interactifs */
+.btn-tactile {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-tactile:active {
+  transform: scale(0.96);
+}
+
+/* Défilement épuré */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #07080b;
+}
+::-webkit-scrollbar-thumb {
+  background: #202434;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff5500;
 }
 
