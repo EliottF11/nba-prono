@@ -7,35 +7,17 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from database import engine, Base, SessionLocal
+from database import engine, Base, SessionLocal, run_migrations
+import models  # Assure le chargement de toutes les tables ORM (dont SeasonPrediction)
 from routers.auth_router import router as auth_router
 from routers.predictions_router import router as predictions_router
 from routers.season_router import router as season_router
 
-# Création automatique des tables si non existantes
+# 1. Création automatique de toutes les tables si non existantes
 Base.metadata.create_all(bind=engine)
 
-# Migration légère pour bases de données existantes
-def ensure_schema_migrations():
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(120)"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"))
-            conn.commit()
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"))
-            conn.commit()
-        except Exception:
-            pass
-
-ensure_schema_migrations()
+# 2. Exécution des migrations légères pour les colonnes récemment ajoutées
+run_migrations()
 
 def daily_morning_sync():
     """Tâche automatique quotidienne exécutée chaque matin à 07:00."""
@@ -55,18 +37,12 @@ scheduler = BackgroundScheduler(daemon=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Injection automatique des données de départ si la base est vide (déploiement cloud Render)
-    db = SessionLocal()
+    # Injection automatique des données de départ si nécessaire (déploiement cloud Render)
     try:
-        from models import Match
-        if db.query(Match).count() == 0:
-            print("🌱 [STARTUP] Base vide détectée : injection des 30 équipes et matchs officiels 2026/2027...")
-            from seed import seed_all_teams_and_matches
-            seed_all_teams_and_matches()
+        from seed import seed_all_teams_and_matches
+        seed_all_teams_and_matches()
     except Exception as e:
         print(f"⚠️ [STARTUP] Erreur initialisation automatique : {e}")
-    finally:
-        db.close()
 
     # Enregistrement de la tâche quotidienne à 07h00
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))

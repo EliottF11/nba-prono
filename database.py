@@ -18,23 +18,6 @@ engine = create_engine(
     connect_args=connect_args
 )
 
-# Migration légère pour bases de données SQLite / PostgreSQL existantes
-def run_migrations():
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        for stmt in [
-            "ALTER TABLE users ADD COLUMN email VARCHAR(120)",
-            "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1",
-            "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0",
-        ]:
-            try:
-                conn.execute(text(stmt))
-                conn.commit()
-            except Exception:
-                pass
-
-run_migrations()
-
 # Fabrique de sessions de base de données
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -48,3 +31,40 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Migration légère pour bases de données SQLite / PostgreSQL existantes
+def run_migrations():
+    from sqlalchemy import text
+    is_postgres = "postgresql" in str(engine.url)
+
+    if is_postgres:
+        statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
+            "ALTER TABLE matches ADD COLUMN IF NOT EXISTS week_number INTEGER DEFAULT 1",
+            "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
+        ]
+        for stmt in statements:
+            try:
+                with engine.connect() as conn:
+                    conn.execute(text(stmt))
+                    conn.commit()
+            except Exception as e:
+                print(f"[MIGRATION PG NOTICE] {stmt}: {e}")
+    else:
+        # SQLite
+        migrations = [
+            ("users", "email", "ALTER TABLE users ADD COLUMN email VARCHAR(120)"),
+            ("matches", "week_number", "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"),
+            ("predictions", "is_boosted", "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"),
+        ]
+        for table, col, stmt in migrations:
+            try:
+                with engine.connect() as conn:
+                    res = conn.execute(text(f"PRAGMA table_info({table})")).fetchall()
+                    existing_cols = [r[1] for r in res]
+                    if col not in existing_cols:
+                        conn.execute(text(stmt))
+                        conn.commit()
+            except Exception:
+                pass
+
