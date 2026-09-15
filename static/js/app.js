@@ -17,6 +17,8 @@ const state = {
   seasonCandidates: null,
   weeklyPlayerCandidates: null,
   weeklyPlayersMap: {}, // weekNumber -> WeeklyPlayerPredictionResponse
+  myLeagues: [],
+  activeLeague: null,
   authMode: 'login'
 };
 
@@ -27,6 +29,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadSeasonCandidates();
   loadWeeklyPlayerCandidates();
   await refreshData();
+
+  // Détection automatique d'un code de ligue d'invitation dans l'URL (?join=XXXXXX)
+  const urlParams = new URLSearchParams(window.location.search);
+  const joinCode = urlParams.get('join');
+  if (joinCode && joinCode.trim().length === 6) {
+    selectTab('leagues');
+    openJoinLeagueModal(joinCode.trim().toUpperCase());
+  }
 });
 
 // --- Événements UI ---
@@ -72,6 +82,21 @@ function initUIEvents() {
   const seasonForm = document.getElementById('season-form');
   if (closeSeasonBtn) closeSeasonBtn.addEventListener('click', closeSeasonModal);
   if (seasonForm) seasonForm.addEventListener('submit', handleSeasonSubmit);
+
+  // Gestion modales Ligues Privées (Chantier 5)
+  const openCreateLeagueBtn = document.getElementById('btn-open-create-league');
+  const closeCreateLeagueBtn = document.getElementById('close-create-league-modal');
+  const createLeagueForm = document.getElementById('create-league-form');
+  if (openCreateLeagueBtn) openCreateLeagueBtn.addEventListener('click', openCreateLeagueModal);
+  if (closeCreateLeagueBtn) closeCreateLeagueBtn.addEventListener('click', closeCreateLeagueModal);
+  if (createLeagueForm) createLeagueForm.addEventListener('submit', handleCreateLeagueSubmit);
+
+  const openJoinLeagueBtn = document.getElementById('btn-open-join-league');
+  const closeJoinLeagueBtn = document.getElementById('close-join-league-modal');
+  const joinLeagueForm = document.getElementById('join-league-form');
+  if (openJoinLeagueBtn) openJoinLeagueBtn.addEventListener('click', () => openJoinLeagueModal());
+  if (closeJoinLeagueBtn) closeJoinLeagueBtn.addEventListener('click', closeJoinLeagueModal);
+  if (joinLeagueForm) joinLeagueForm.addEventListener('submit', handleJoinLeagueSubmit);
 }
 
 // --- Session & Utilisateur ---
@@ -150,6 +175,8 @@ function selectTab(tab) {
     renderLeaderboard();
   } else if (tab === 'profile') {
     renderProfile();
+  } else if (tab === 'leagues') {
+    loadAndRenderLeagues();
   }
 }
 
@@ -1414,8 +1441,444 @@ async function shareApp() {
   }
 }
 
+// --- Ligues Privées & Partage (Chantier 5) ---
+
+function getUserAvatarHtml(username, size = 'sm') {
+  const safeName = username || '?';
+  const initials = safeName.substring(0, 2).toUpperCase();
+  const colors = [
+    'from-blue-600 to-indigo-800 text-blue-100',
+    'from-emerald-600 to-teal-800 text-emerald-100',
+    'from-purple-600 to-pink-800 text-purple-100',
+    'from-amber-500 to-orange-700 text-amber-100',
+    'from-rose-600 to-red-800 text-rose-100',
+    'from-cyan-600 to-blue-800 text-cyan-100'
+  ];
+  let hash = 0;
+  for (let i = 0; i < safeName.length; i++) {
+    hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colorClass = colors[Math.abs(hash) % colors.length];
+  const sizeClasses = size === 'lg' 
+    ? 'w-11 h-11 text-sm font-black' 
+    : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : 'w-7 h-7 text-[10px] font-black');
+
+  return `<div class="${sizeClasses} rounded-full bg-gradient-to-tr ${colorClass} flex items-center justify-center shadow-md uppercase tracking-wider shrink-0 border border-white/10">${initials}</div>`;
+}
+
+async function loadAndRenderLeagues() {
+  const listContainer = document.getElementById('my-leagues-list');
+  if (!listContainer) return;
+
+  if (!state.currentUser) {
+    document.getElementById('leagues-list-container').classList.remove('hidden');
+    document.getElementById('league-detail-container').classList.add('hidden');
+    listContainer.innerHTML = `
+      <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
+        <div class="w-12 h-12 rounded-2xl bg-[#ff5500]/10 text-[#ff5500] mx-auto flex items-center justify-center text-2xl border border-[#ff5500]/20 shadow-lg shadow-[#ff5500]/10">
+          🔒
+        </div>
+        <div class="font-condensed font-black text-lg text-white">Connexion requise</div>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+          Connecte-toi ou crée un compte pour créer ta ligue privée ou rejoindre celle de tes amis avec un code d'invitation !
+        </p>
+        <button onclick="openAuthModal('login')" class="px-5 py-2.5 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black uppercase text-xs tracking-wider transition shadow-lg shadow-[#ff5500]/20 cursor-pointer">
+          Se connecter / S'inscrire
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  try {
+    const leagues = await API.getMyLeagues();
+    state.myLeagues = leagues;
+
+    if (state.activeLeague) {
+      // Si une ligue était déjà ouverte, rafraîchir ses données
+      await viewLeague(state.activeLeague.id);
+    } else {
+      renderLeaguesList();
+    }
+  } catch (err) {
+    console.error("Erreur chargement ligues:", err);
+    notify("Erreur lors de la récupération des ligues", "error");
+  }
+}
+
+function renderLeaguesList() {
+  const listContainer = document.getElementById('my-leagues-list');
+  const leaguesListWrapper = document.getElementById('leagues-list-container');
+  const detailContainer = document.getElementById('league-detail-container');
+  if (!listContainer || !leaguesListWrapper || !detailContainer) return;
+
+  leaguesListWrapper.classList.remove('hidden');
+  detailContainer.classList.add('hidden');
+
+  const leagues = state.myLeagues || [];
+
+  if (leagues.length === 0) {
+    listContainer.innerHTML = `
+      <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center text-2xl border border-amber-500/20 shadow-lg shadow-amber-500/10">
+          🏆
+        </div>
+        <div class="font-condensed font-black text-lg text-white">Aucune ligue pour le moment</div>
+        <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+          Défie tes amis et collègues ! Crée ta propre ligue pour générer un code d'invitation unique ou rejoins une ligue existante.
+        </p>
+        <div class="flex items-center justify-center gap-2 pt-1">
+          <button onclick="openJoinLeagueModal()" class="px-4 py-2 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-bold text-xs uppercase tracking-wider transition cursor-pointer">
+            🔑 Rejoindre
+          </button>
+          <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#ff5500]/20 cursor-pointer">
+            + Créer une ligue
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  listContainer.innerHTML = leagues.map(l => {
+    const isCreator = state.currentUser && state.currentUser.id === l.creator_id;
+    const rankLabel = l.user_rank ? (l.user_rank === 1 ? '🥇 #1' : `#${l.user_rank}`) : '-';
+
+    return `
+      <div class="bg-[#12141a] border border-[#1f222d] hover:border-[#ff5500]/40 rounded-2xl p-4 transition-all shadow-lg space-y-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-condensed font-black text-lg text-white uppercase tracking-tight">${l.name}</h3>
+              ${isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Créateur</span>' : ''}
+            </div>
+            <div class="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
+              <span>👥 ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
+              <span>•</span>
+              <span class="text-amber-400 font-bold">Mon rang : ${rankLabel}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 bg-[#171a24] border border-[#232738] px-2 py-1 rounded-lg">
+            <span class="font-mono text-xs font-black text-amber-400 tracking-wider">${l.code}</span>
+            <button onclick="event.stopPropagation(); copyLeagueCode('${l.code}')" title="Copier le code" class="text-slate-400 hover:text-white p-0.5 transition cursor-pointer">
+              📋
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-1 flex items-center justify-between gap-2 border-t border-[#1b1e28]">
+          <button onclick="shareLeague('${l.code}', '${l.name.replace(/'/g, "\\'")}')" class="text-xs text-slate-300 hover:text-white font-bold flex items-center gap-1 transition cursor-pointer">
+            <span>📤</span> Inviter
+          </button>
+          <button onclick="viewLeague(${l.id})" class="px-3.5 py-1.5 rounded-xl bg-[#ff5500]/10 hover:bg-[#ff5500]/20 border border-[#ff5500]/30 text-[#ff5500] font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer">
+            Voir le classement →
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function viewLeague(leagueId) {
+  try {
+    const detail = await API.getLeagueDetail(leagueId);
+    state.activeLeague = detail;
+    renderLeagueDetail(detail);
+  } catch (err) {
+    console.error("Erreur consultation ligue:", err);
+    notify(err.message || "Impossible d'accéder à cette ligue", "error");
+  }
+}
+
+function backToLeaguesList() {
+  state.activeLeague = null;
+  renderLeaguesList();
+}
+
+function renderLeagueDetail(league) {
+  const leaguesListWrapper = document.getElementById('leagues-list-container');
+  const detailContainer = document.getElementById('league-detail-container');
+  if (!leaguesListWrapper || !detailContainer) return;
+
+  leaguesListWrapper.classList.add('hidden');
+  detailContainer.classList.remove('hidden');
+
+  const members = league.members || [];
+  const top1 = members[0];
+  const top2 = members[1];
+  const top3 = members[2];
+
+  detailContainer.innerHTML = `
+    <!-- Barre de retour et En-tête -->
+    <div class="flex items-center justify-between pb-2 border-b border-[#1b1e28]">
+      <button onclick="backToLeaguesList()" class="px-2.5 py-1 rounded-lg bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+        ← Retour aux ligues
+      </button>
+      <button onclick="leaveLeagueAction(${league.id})" class="text-[11px] text-rose-400 hover:text-rose-300 font-bold transition cursor-pointer">
+        Quitter la ligue
+      </button>
+    </div>
+
+    <!-- Titre et infos ligue -->
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">${league.name}</h2>
+        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+          ${league.members_count} membre${league.members_count > 1 ? 's' : ''}
+        </span>
+      </div>
+      <p class="text-xs text-slate-400">Créée par <span class="text-slate-200 font-bold">${league.creator_username}</span></p>
+    </div>
+
+    <!-- Bloc d'invitation et de partage -->
+    <div class="p-3.5 bg-gradient-to-r from-amber-500/10 via-[#161822] to-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+      <div class="text-center sm:text-left">
+        <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Code d'invitation unique</span>
+        <div class="font-mono text-2xl font-black tracking-widest text-white">${league.code}</div>
+      </div>
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button onclick="copyLeagueCode('${league.code}')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-[#202434] hover:bg-[#2b3147] border border-[#323850] text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>📋</span> Copier
+        </button>
+        <button onclick="shareLeague('${league.code}', '${league.name.replace(/'/g, "\\'")}')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-lg shadow-[#ff5500]/20 flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>📤</span> Inviter des amis
+        </button>
+      </div>
+    </div>
+
+    <!-- Podium Top 3 de la Ligue -->
+    ${members.length >= 2 ? `
+      <div class="grid grid-cols-3 gap-2 items-end pt-2 pb-1">
+        <!-- 2ème Place -->
+        <div class="podium-step-2 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[110px]">
+          ${top2 ? `
+            <div class="flex justify-center mb-1">${getUserAvatarHtml(top2.username, 'md')}</div>
+            <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-slate-300 text-black font-black text-[10px] flex items-center justify-center">2</div>
+            <div class="font-bold text-xs text-white truncate">${top2.username}</div>
+            <div class="font-condensed font-black text-sm text-slate-300">${top2.total_points.toFixed(1)} <span class="text-[9px]">pts</span></div>
+          ` : '<div class="text-slate-600 text-xs">-</div>'}
+        </div>
+
+        <!-- 1ère Place (Au centre, surélevé) -->
+        <div class="podium-step-1 rounded-xl p-3 text-center border flex flex-col justify-end min-h-[135px]">
+          ${top1 ? `
+            <div class="flex justify-center mb-1.5">${getUserAvatarHtml(top1.username, 'lg')}</div>
+            <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-amber-400 text-black font-black text-xs flex items-center justify-center shadow-lg shadow-amber-400/30">1</div>
+            <div class="font-black text-xs text-white truncate">${top1.username}</div>
+            <div class="font-condensed font-black text-base text-amber-400">${top1.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
+          ` : '<div class="text-slate-600 text-xs">-</div>'}
+        </div>
+
+        <!-- 3ème Place -->
+        <div class="podium-step-3 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[95px]">
+          ${top3 ? `
+            <div class="flex justify-center mb-1">${getUserAvatarHtml(top3.username, 'md')}</div>
+            <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-amber-700 text-white font-black text-[10px] flex items-center justify-center">3</div>
+            <div class="font-bold text-xs text-white truncate">${top3.username}</div>
+            <div class="font-condensed font-black text-sm text-amber-500">${top3.total_points.toFixed(1)} <span class="text-[9px]">pts</span></div>
+          ` : '<div class="text-slate-600 text-xs">-</div>'}
+        </div>
+      </div>
+    ` : ''}
+
+    <!-- Tableau de Classement Interne -->
+    <div class="bg-[#12141a] border border-[#1f222d] rounded-xl overflow-hidden shadow-lg">
+      <div class="grid grid-cols-12 px-3.5 py-2 bg-[#171922] border-b border-[#212432] text-[10px] font-black uppercase tracking-wider text-slate-400">
+        <div class="col-span-2 text-center">Rang</div>
+        <div class="col-span-6">Joueur</div>
+        <div class="col-span-2 text-center">Pronos</div>
+        <div class="col-span-2 text-right">Pts</div>
+      </div>
+      <div class="divide-y divide-[#1b1e28]">
+        ${members.map(member => {
+          const isMe = state.currentUser && state.currentUser.id === member.user_id;
+          let rankBadge = `<span class="text-slate-400 font-bold">${member.rank}</span>`;
+          if (member.rank === 1) rankBadge = '🥇';
+          else if (member.rank === 2) rankBadge = '🥈';
+          else if (member.rank === 3) rankBadge = '🥉';
+
+          return `
+            <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
+              isMe ? 'bg-[#ff5500]/10 font-bold text-white' : 'hover:bg-[#161821]'
+            }">
+              <div class="col-span-2 text-center text-sm font-black">
+                ${rankBadge}
+              </div>
+              <div class="col-span-6 flex items-center gap-2 truncate">
+                ${getUserAvatarHtml(member.username, 'sm')}
+                <div class="truncate">
+                  <div class="font-bold flex items-center gap-1.5 truncate">
+                    <span class="truncate">${member.username}</span>
+                    ${member.is_creator ? '<span class="text-[9px] bg-amber-400/20 text-amber-400 px-1 rounded font-normal shrink-0">👑</span>' : ''}
+                    ${isMe ? '<span class="text-[9px] bg-[#ff5500]/30 text-[#ff5500] px-1 rounded uppercase tracking-wider shrink-0">Moi</span>' : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="col-span-2 text-center text-slate-400 font-mono text-[11px]">
+                ${member.won_count}/${member.predictions_count}
+              </div>
+              <div class="col-span-2 text-right font-condensed font-black text-amber-400 text-sm">
+                ${member.total_points.toFixed(1)}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// --- Modales Création / Rejoindre Ligue ---
+function openCreateLeagueModal() {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour créer une ligue", "info");
+    return;
+  }
+  const modal = document.getElementById('create-league-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    const input = document.getElementById('create-league-name');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+  }
+}
+
+function closeCreateLeagueModal() {
+  const modal = document.getElementById('create-league-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function openJoinLeagueModal(prefillCode = '') {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour rejoindre une ligue", "info");
+    return;
+  }
+  const modal = document.getElementById('join-league-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    const input = document.getElementById('join-league-code');
+    if (input) {
+      input.value = prefillCode || '';
+      input.focus();
+    }
+  }
+}
+
+function closeJoinLeagueModal() {
+  const modal = document.getElementById('join-league-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function handleCreateLeagueSubmit(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('create-league-name');
+  if (!nameInput) return;
+
+  const name = nameInput.value.trim();
+  if (name.length < 3) {
+    notify("Le nom doit faire au moins 3 caractères", "error");
+    return;
+  }
+
+  try {
+    const newLeague = await API.createLeague(name);
+    closeCreateLeagueModal();
+    notify(`Ligue "${newLeague.name}" créée avec succès !`, "success");
+    await loadAndRenderLeagues();
+    viewLeague(newLeague.id);
+  } catch (err) {
+    console.error("Erreur création ligue:", err);
+    notify(err.message || "Erreur lors de la création de la ligue", "error");
+  }
+}
+
+async function handleJoinLeagueSubmit(e) {
+  e.preventDefault();
+  const codeInput = document.getElementById('join-league-code');
+  if (!codeInput) return;
+
+  const code = codeInput.value.trim().toUpperCase();
+  if (code.length !== 6) {
+    notify("Le code d'invitation doit comporter 6 caractères", "error");
+    return;
+  }
+
+  try {
+    const joined = await API.joinLeague(code);
+    closeJoinLeagueModal();
+    notify(`Tu as rejoint la ligue "${joined.name}" !`, "success");
+    await loadAndRenderLeagues();
+    viewLeague(joined.id);
+  } catch (err) {
+    console.error("Erreur rejoindre ligue:", err);
+    notify(err.message || "Code invalide ou introuvable", "error");
+  }
+}
+
+async function copyLeagueCode(code) {
+  try {
+    await navigator.clipboard.writeText(code);
+    notify(`Code ${code} copié dans le presse-papier !`, "success");
+  } catch {
+    notify(`Code d'invitation : ${code}`, "info");
+  }
+}
+
+async function shareLeague(code, name) {
+  const shareUrl = `${window.location.origin}/?join=${code}`;
+  const shareData = {
+    title: `Rejoins ma ligue NBA Prono : ${name}`,
+    text: `Rejoins ma ligue privée "${name}" sur NBA Prono avec le code : ${code} !`,
+    url: shareUrl
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch {
+      // Annulation utilisateur
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      notify("Lien d'invitation copié dans le presse-papier !", "success");
+    } catch {
+      copyLeagueCode(code);
+    }
+  }
+}
+
+async function leaveLeagueAction(leagueId) {
+  if (!confirm("Es-tu sûr de vouloir quitter cette ligue ?")) {
+    return;
+  }
+
+  try {
+    const res = await API.leaveLeague(leagueId);
+    notify(res.message || "Tu as quitté la ligue", "info");
+    backToLeaguesList();
+    await loadAndRenderLeagues();
+  } catch (err) {
+    console.error("Erreur départ ligue:", err);
+    notify(err.message || "Impossible de quitter la ligue", "error");
+  }
+}
+
 // Export pour handlers HTML inline
 window.openSeasonModal = openSeasonModal;
 window.closeSeasonModal = closeSeasonModal;
 window.saveWeeklyPlayers = saveWeeklyPlayers;
+window.openCreateLeagueModal = openCreateLeagueModal;
+window.closeCreateLeagueModal = closeCreateLeagueModal;
+window.openJoinLeagueModal = openJoinLeagueModal;
+window.closeJoinLeagueModal = closeJoinLeagueModal;
+window.copyLeagueCode = copyLeagueCode;
+window.shareLeague = shareLeague;
+window.viewLeague = viewLeague;
+window.backToLeaguesList = backToLeaguesList;
+window.leaveLeagueAction = leaveLeagueAction;
 

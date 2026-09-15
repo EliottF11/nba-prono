@@ -13,6 +13,7 @@ from routers.auth_router import router as auth_router
 from routers.predictions_router import router as predictions_router
 from routers.season_router import router as season_router
 from routers.weekly_router import router as weekly_router
+from routers.leagues_router import router as leagues_router
 
 # 1. Création automatique de toutes les tables si non existantes
 Base.metadata.create_all(bind=engine)
@@ -74,6 +75,7 @@ app.include_router(auth_router)
 app.include_router(predictions_router)
 app.include_router(season_router)
 app.include_router(weekly_router)
+app.include_router(leagues_router)
 
 # Montage des fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")

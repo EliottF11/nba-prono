@@ -159,27 +159,39 @@
 
       </section>
 
-      <!-- SECTION 3 : MES LIGUES (Préparation Chantier 5) -->
+      <!-- SECTION 3 : MES LIGUES (Chantier 5) -->
       <section id="leagues-view" class="p-4 space-y-4 hidden">
-        <div class="flex items-center justify-between pb-1 border-b border-[#1b1e28]">
-          <div>
-            <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white flex items-center gap-2">
-              <span>Mes Ligues</span>
-              <span class="text-[10px] bg-[#ff5500]/20 text-[#ff5500] px-2 py-0.5 rounded font-sans font-bold uppercase tracking-wider">Bientôt</span>
-            </h2>
-            <p class="text-xs text-slate-400">Défie tes amis dans des ligues privées sur mesure.</p>
+        
+        <!-- VUE A : LISTE DES LIGUES -->
+        <div id="leagues-list-container" class="space-y-4">
+          <div class="flex items-center justify-between pb-1 border-b border-[#1b1e28]">
+            <div>
+              <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white flex items-center gap-2">
+                <span>Mes Ligues</span>
+              </h2>
+              <p class="text-xs text-slate-400">Défie tes amis dans des ligues privées sur mesure.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-open-join-league" class="px-3 py-1.5 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <span>🔑</span> Rejoindre
+              </button>
+              <button id="btn-open-create-league" class="px-3 py-1.5 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-lg shadow-[#ff5500]/20 flex items-center gap-1 cursor-pointer">
+                <span>+</span> Créer
+              </button>
+            </div>
+          </div>
+
+          <!-- Liste dynamique des ligues -->
+          <div id="my-leagues-list" class="space-y-3">
+            <!-- Injecté dynamiquement par renderLeaguesList() -->
           </div>
         </div>
 
-        <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-3 shadow-xl">
-          <div class="w-12 h-12 rounded-2xl bg-[#ff5500]/10 text-[#ff5500] mx-auto flex items-center justify-center text-2xl border border-[#ff5500]/20 shadow-lg shadow-[#ff5500]/10">
-            🏆
-          </div>
-          <div class="font-condensed font-black text-lg text-white">Ligues privées & Codes à 6 caractères</div>
-          <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-            Ce module sera activé lors du Chantier 5. Tu pourras créer ta ligue entre potes, générer un code d'invitation et suivre votre classement privé dédié.
-          </p>
+        <!-- VUE B : DÉTAIL D'UNE LIGUE & CLASSEMENT INTERNE -->
+        <div id="league-detail-container" class="space-y-4 hidden">
+          <!-- Injecté dynamiquement par renderLeagueDetail() -->
         </div>
+
       </section>
 
       <!-- SECTION 4 : PROFIL & STATISTIQUES (Chantier 1) -->
@@ -395,6 +407,54 @@
           </button>
         </form>
 
+      </div>
+    </div>
+
+    <!-- Modale Création de Ligue (Chantier 5) -->
+    <div id="create-league-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#12141a] border border-[#232738] rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+        <button id="close-create-league-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="space-y-1">
+          <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center gap-2">
+            <span>🏆</span> Créer une Ligue Privée
+          </h3>
+          <p class="text-xs text-slate-400">Un code d'invitation unique à 6 caractères sera généré pour inviter tes amis.</p>
+        </div>
+        <form id="create-league-form" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">Nom de la ligue</label>
+            <input type="text" id="create-league-name" required minlength="3" maxlength="50" placeholder="Ex: Les Experts NBA" class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#ff5500]">
+          </div>
+          <button type="submit" class="w-full bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-lg shadow-[#ff5500]/20 transition cursor-pointer">
+            Créer ma ligue
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modale Rejoindre une Ligue (Chantier 5) -->
+    <div id="join-league-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-[#12141a] border border-[#232738] rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+        <button id="close-join-league-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="space-y-1">
+          <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center gap-2">
+            <span>🔑</span> Rejoindre une Ligue
+          </h3>
+          <p class="text-xs text-slate-400">Saisis le code à 6 caractères partagé par un ami.</p>
+        </div>
+        <form id="join-league-form" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">Code d'invitation (6 caractères)</label>
+            <input type="text" id="join-league-code" required minlength="6" maxlength="6" placeholder="ex: NBA8K2" class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-base text-center font-mono font-black tracking-widest text-amber-400 uppercase focus:outline-none focus:border-[#ff5500]">
+          </div>
+          <button type="submit" class="w-full bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-lg shadow-[#ff5500]/20 transition cursor-pointer">
+            Rejoindre la ligue
+          </button>
+        </form>
       </div>
     </div>
 

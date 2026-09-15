@@ -167,3 +167,47 @@ class WeeklyPlayerPredictionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# --- Schémas Ligues Privées (Chantier 5) ---
+
+class LeagueCreate(BaseModel):
+    name: str = Field(..., min_length=3, max_length=50, description="Nom de la ligue privée")
+
+
+class LeagueJoin(BaseModel):
+    code: str = Field(..., min_length=6, max_length=6, description="Code d'invitation à 6 caractères")
+
+
+class LeagueMemberResponse(BaseModel):
+    user_id: int
+    username: str
+    total_points: float
+    rank: int
+    joined_at: datetime
+    is_creator: bool = False
+    predictions_count: int = 0
+    won_count: int = 0
+
+
+class LeagueDetailResponse(BaseModel):
+    id: int
+    name: str
+    code: str
+    creator_id: int
+    creator_username: str
+    created_at: datetime
+    members_count: int
+    user_rank: Optional[int] = None
+    members: List[LeagueMemberResponse]
+
+
+class LeagueSummaryResponse(BaseModel):
+    id: int
+    name: str
+    code: str
+    creator_id: int
+    creator_username: str
+    members_count: int
+    user_rank: Optional[int] = None
+    created_at: datetime
+

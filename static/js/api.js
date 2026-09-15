@@ -157,6 +157,36 @@ const API = {
         west_player: westPlayer
       })
     });
+  },
+
+  // --- Ligues Privées (Chantier 5) ---
+  async createLeague(name) {
+    return await this.request('/api/leagues', {
+      method: 'POST',
+      body: JSON.stringify({ name })
+    });
+  },
+
+  async joinLeague(code) {
+    return await this.request('/api/leagues/join', {
+      method: 'POST',
+      body: JSON.stringify({ code })
+    });
+  },
+
+  async getMyLeagues() {
+    if (!this.getToken()) return [];
+    return await this.request('/api/leagues/my');
+  },
+
+  async getLeagueDetail(leagueId) {
+    return await this.request(`/api/leagues/${leagueId}`);
+  },
+
+  async leaveLeague(leagueId) {
+    return await this.request(`/api/leagues/${leagueId}/leave`, {
+      method: 'POST'
+    });
   }
 };
 

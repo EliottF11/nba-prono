@@ -154,3 +154,46 @@ class WeeklyPlayerPrediction(Base):
     def __repr__(self):
         return f"<WeeklyPlayerPrediction User {self.user_id} W{self.week_number}: East={self.east_player}, West={self.west_player}>"
 
+
+class League(Base):
+    """
+    Modèle de ligue privée (Chantier 5).
+    Chaque ligue possède un code d'invitation unique à 6 caractères (ex: 'NBA7X9').
+    """
+    __tablename__ = "leagues"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    code = Column(String(6), unique=True, index=True, nullable=False)
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    creator = relationship("User", foreign_keys=[creator_id])
+    members = relationship("LeagueMember", back_populates="league", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<League {self.name} ({self.code})>"
+
+
+class LeagueMember(Base):
+    """
+    Membre d'une ligue privée.
+    Associe un utilisateur à une ligue.
+    """
+    __tablename__ = "league_members"
+
+    id = Column(Integer, primary_key=True, index=True)
+    league_id = Column(Integer, ForeignKey("leagues.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    joined_at = Column(DateTime, default=utcnow, nullable=False)
+
+    league = relationship("League", back_populates="members")
+    user = relationship("User", backref="league_memberships")
+
+    __table_args__ = (
+        UniqueConstraint("league_id", "user_id", name="uq_league_member"),
+    )
+
+    def __repr__(self):
+        return f"<LeagueMember User {self.user_id} in League {self.league_id}>"
+
