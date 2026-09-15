@@ -61,6 +61,14 @@ def test_chantier2_weeks_and_boost():
     assert res_boost_no_pred.status_code == 400, "Doit refuser le boost si aucun pronostic n'a été fait."
     print("-> [OK] Rejet correct du Bonus x2 sans sélection préalable d'équipe (HTTP 400).")
 
+    # 4.bis Pré-requis Chantier 4 : Enregistrer les 2 Joueurs de la Semaine 1
+    res_wp1 = client.post("/api/weekly-players", json={
+        "week_number": 1,
+        "east_player": "Jayson Tatum",
+        "west_player": "Nikola Jokic"
+    }, headers=headers)
+    assert res_wp1.status_code == 200
+
     # 5. Enregistrement d'un pronostic sur le match 1 de la semaine 1
     res_pred1 = client.post("/api/predictions", json={
         "match_id": m1["id"],

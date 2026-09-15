@@ -12,6 +12,7 @@ import models  # Assure le chargement de toutes les tables ORM (dont SeasonPredi
 from routers.auth_router import router as auth_router
 from routers.predictions_router import router as predictions_router
 from routers.season_router import router as season_router
+from routers.weekly_router import router as weekly_router
 
 # 1. Création automatique de toutes les tables si non existantes
 Base.metadata.create_all(bind=engine)
@@ -72,6 +73,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(predictions_router)
 app.include_router(season_router)
+app.include_router(weekly_router)
 
 # Montage des fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")

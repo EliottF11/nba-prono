@@ -145,3 +145,25 @@ class SeasonPredictionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# --- Schémas Pronostics Hebdomadaires (Chantier 4) ---
+
+class WeeklyPlayerPredictionCreate(BaseModel):
+    week_number: int = Field(..., ge=1, le=50, description="Numéro de la semaine NBA")
+    east_player: str = Field(..., min_length=2, max_length=100, description="Joueur de la semaine - Conférence Est")
+    west_player: str = Field(..., min_length=2, max_length=100, description="Joueur de la semaine - Conférence Ouest")
+
+
+class WeeklyPlayerPredictionResponse(BaseModel):
+    id: Optional[int] = None
+    user_id: Optional[int] = None
+    week_number: int
+    east_player: Optional[str] = None
+    west_player: Optional[str] = None
+    is_locked: bool = False
+    deadline: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+

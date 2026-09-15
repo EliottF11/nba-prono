@@ -136,5 +136,27 @@ const API = {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  },
+
+  // --- Pronostics Hebdomadaires - Joueurs de la Semaine (Chantier 4) ---
+  async getWeeklyCandidates() {
+    return await this.request('/api/weekly-players/candidates');
+  },
+
+  async getWeeklyPlayerPrediction(week) {
+    if (!this.getToken()) return null;
+    return await this.request(`/api/weekly-players/${week}`);
+  },
+
+  async saveWeeklyPlayerPrediction(week, eastPlayer, westPlayer) {
+    return await this.request('/api/weekly-players', {
+      method: 'POST',
+      body: JSON.stringify({
+        week_number: parseInt(week),
+        east_player: eastPlayer,
+        west_player: westPlayer
+      })
+    });
   }
 };
+

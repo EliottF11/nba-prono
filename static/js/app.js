@@ -15,6 +15,8 @@ const state = {
   leaderboard: [],
   seasonPrediction: null,
   seasonCandidates: null,
+  weeklyPlayerCandidates: null,
+  weeklyPlayersMap: {}, // weekNumber -> WeeklyPlayerPredictionResponse
   authMode: 'login'
 };
 
@@ -23,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initUIEvents();
   await checkSession();
   loadSeasonCandidates();
+  loadWeeklyPlayerCandidates();
   await refreshData();
 });
 
@@ -266,8 +269,23 @@ async function refreshData() {
       countBadge.textContent = `${openCount} OUVERT${openCount > 1 ? 'S' : ''}`;
     }
 
+    // Chargement des Joueurs de la Semaine (Chantier 4)
+    if (state.currentUser && weeks.length > 0) {
+      try {
+        const wpList = await Promise.all(weeks.map(w => API.getWeeklyPlayerPrediction(w.week)));
+        wpList.forEach(wp => {
+          if (wp) {
+            state.weeklyPlayersMap[wp.week_number] = wp;
+          }
+        });
+      } catch (e) {
+        console.error("Erreur chargement joueurs de la semaine:", e);
+      }
+    }
+
     renderSeasonBanner();
     renderWeeksSelector();
+    renderWeeklyPlayersCard();
     renderMatchesList();
     renderLeaderboard();
   } catch (err) {
@@ -317,6 +335,7 @@ function renderWeeksSelector() {
 async function filterByWeek(week) {
   state.selectedWeek = week;
   renderWeeksSelector();
+  renderWeeklyPlayersCard();
   try {
     const matches = await API.getMatches(state.matchesFilter, state.selectedWeek);
     state.matches = matches;
@@ -539,6 +558,24 @@ async function voteForTeam(matchId, teamId, isFinished) {
   if (!state.currentUser) {
     openAuthModal('login');
     notify("Connecte-toi pour pronostiquer", "info");
+    return;
+  }
+
+  // Chantier 4 : Obligation de choisir ses Joueurs de la Semaine (Est & Ouest)
+  const targetMatch = state.matches.find(m => m.id === matchId);
+  const weekNum = targetMatch ? targetMatch.week_number : 1;
+  const wp = state.weeklyPlayersMap[weekNum];
+
+  if (!wp || !wp.east_player || !wp.west_player) {
+    notify(`⚠️ Choisis d'abord tes 2 Joueurs de la Semaine pour la Week ${weekNum} !`, "error");
+    const container = document.getElementById('weekly-players-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      container.classList.add('ring-2', 'ring-[#ff5500]', 'ring-offset-2', 'ring-offset-[#0c0d12]');
+      setTimeout(() => {
+        container.classList.remove('ring-2', 'ring-[#ff5500]', 'ring-offset-2', 'ring-offset-[#0c0d12]');
+      }, 2000);
+    }
     return;
   }
 
@@ -909,6 +946,152 @@ async function handleSeasonSubmit(e) {
   }
 }
 
+// --- Pronostics Hebdomadaires - Joueurs de la Semaine (Chantier 4) ---
+async function loadWeeklyPlayerCandidates() {
+  if (!state.weeklyPlayerCandidates) {
+    try {
+      state.weeklyPlayerCandidates = await API.getWeeklyCandidates();
+    } catch (err) {
+      console.error("Erreur chargement candidats joueurs hebdo:", err);
+    }
+  }
+}
+
+function renderWeeklyPlayersCard() {
+  const container = document.getElementById('weekly-players-container');
+  if (!container) return;
+
+  const availableWeeks = state.availableWeeks || [];
+  const defaultWeek = availableWeeks[0]?.week || 1;
+  const currentWeek = state.selectedWeek === 'all' ? defaultWeek : parseInt(state.selectedWeek);
+
+  const wp = state.weeklyPlayersMap[currentWeek];
+  const isLocked = wp ? wp.is_locked : false;
+  const hasChoices = wp && !!wp.east_player && !!wp.west_player;
+
+  const candidates = state.weeklyPlayerCandidates || { east: [], west: [] };
+  const eastList = candidates.east || [];
+  const westList = candidates.west || [];
+
+  const eastOptions = eastList.map(p => {
+    const selected = (wp && wp.east_player === p) ? 'selected' : '';
+    return `<option value="${p}" ${selected}>${p}</option>`;
+  }).join('');
+
+  const westOptions = westList.map(p => {
+    const selected = (wp && wp.west_player === p) ? 'selected' : '';
+    return `<option value="${p}" ${selected}>${p}</option>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="p-3.5 bg-[#12141a] rounded-2xl border ${hasChoices ? 'border-emerald-500/30' : 'border-[#ff5500]/30'} shadow-xl space-y-3 transition-all duration-300">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="text-base">🌟</span>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">
+                Joueurs de la Semaine • Week ${currentWeek}
+              </span>
+              <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
+                isLocked 
+                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
+                  : hasChoices 
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
+                    : 'bg-[#ff5500]/15 text-[#ff5500] border border-[#ff5500]/30'
+              }">
+                ${isLocked ? '🔒 Verrouillé' : hasChoices ? '✅ 2/2 Validés' : '⚡ Obligatoire'}
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400 leading-tight mt-0.5">
+              ${isLocked 
+                ? 'Les matchs de cette semaine ont débuté. Choix définitivement verrouillés.' 
+                : hasChoices 
+                  ? 'Tes 2 choix sont enregistrés ! Modifiables avant le premier match.' 
+                  : 'Choisis 1 joueur Est et 1 joueur Ouest avant de pronostiquer tes matchs.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <!-- Conférence Est -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-500 inline-block shadow-sm shadow-blue-500/50"></span>
+            <span>Conférence Est</span>
+          </label>
+          <select 
+            id="weekly-east-select-${currentWeek}" 
+            ${isLocked ? 'disabled' : ''} 
+            class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5500] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <option value="">Sélectionne le joueur Est...</option>
+            ${eastOptions}
+          </select>
+        </div>
+
+        <!-- Conférence Ouest -->
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-red-500 inline-block shadow-sm shadow-red-500/50"></span>
+            <span>Conférence Ouest</span>
+          </label>
+          <select 
+            id="weekly-west-select-${currentWeek}" 
+            ${isLocked ? 'disabled' : ''} 
+            class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#ff5500] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <option value="">Sélectionne le joueur Ouest...</option>
+            ${westOptions}
+          </select>
+        </div>
+      </div>
+
+      ${!isLocked ? `
+        <button 
+          onclick="saveWeeklyPlayers(${currentWeek})" 
+          class="w-full ${
+            hasChoices 
+              ? 'bg-[#1a1e2a] hover:bg-[#232838] text-slate-200 border border-[#2c3346]' 
+              : 'bg-[#ff5500] hover:bg-[#ff661a] text-black shadow-lg shadow-[#ff5500]/20'
+          } font-condensed font-black text-xs uppercase tracking-wider py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
+        >
+          <span>${hasChoices ? '💾 Mettre à jour mes 2 choix' : '⚡ Valider mes 2 Joueurs de la Semaine'}</span>
+        </button>
+      ` : ''}
+    </div>
+  `;
+}
+
+async function saveWeeklyPlayers(weekNumber) {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour valider tes Joueurs de la Semaine", "info");
+    return;
+  }
+
+  const eastEl = document.getElementById(`weekly-east-select-${weekNumber}`);
+  const westEl = document.getElementById(`weekly-west-select-${weekNumber}`);
+  const eastPlayer = eastEl?.value;
+  const westPlayer = westEl?.value;
+
+  if (!eastPlayer || !westPlayer) {
+    notify("Sélectionne 1 joueur Est et 1 joueur Ouest !", "error");
+    return;
+  }
+
+  try {
+    const res = await API.saveWeeklyPlayerPrediction(weekNumber, eastPlayer, westPlayer);
+    state.weeklyPlayersMap[weekNumber] = res;
+    renderWeeklyPlayersCard();
+    if (state.activeTab === 'profile') renderProfile();
+    notify(`⭐ Joueurs de la Semaine ${weekNumber} validés ! Tu peux maintenant pronostiquer tes matchs.`, "success");
+  } catch (err) {
+    notify(err.message, "error");
+  }
+}
+
 // --- Rendu du Profil & Statistiques (Chantier 1) ---
 async function renderProfile() {
   const container = document.getElementById('profile-content');
@@ -1076,6 +1259,41 @@ async function renderProfile() {
         </div>
       </div>
 
+      <!-- Section Joueurs de la Semaine (Chantier 4) -->
+      <div class="space-y-2.5 pt-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-condensed font-black text-lg uppercase tracking-tight text-white flex items-center gap-1.5">
+            <span>Joueurs de la Semaine</span>
+            <span class="text-xs text-slate-400 font-sans font-medium">(Par Semaine)</span>
+          </h3>
+        </div>
+
+        <div class="space-y-2">
+          ${(state.availableWeeks || []).map(w => {
+            const wp = state.weeklyPlayersMap[w.week];
+            const hasWp = wp && wp.east_player && wp.west_player;
+            return `
+              <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-xs space-y-1.5 shadow-md">
+                <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1">
+                  <span class="font-condensed font-black text-white uppercase text-sm">Week ${w.week}</span>
+                  <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${hasWp ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'}">
+                    ${hasWp ? '✅ 2/2 Validés' : '⚡ À compléter'}
+                  </span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 font-medium">🔵 Est</span>
+                  <span class="font-bold ${wp?.east_player ? 'text-white' : 'text-slate-500 italic'}">${wp?.east_player || 'Non choisi'}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 font-medium">🔴 Ouest</span>
+                  <span class="font-bold ${wp?.west_player ? 'text-white' : 'text-slate-500 italic'}">${wp?.west_player || 'Non choisi'}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
       <!-- Section Badges & Trophées -->
       <div class="space-y-3 pt-2">
         <div class="flex items-center justify-between">
@@ -1199,4 +1417,5 @@ async function shareApp() {
 // Export pour handlers HTML inline
 window.openSeasonModal = openSeasonModal;
 window.closeSeasonModal = closeSeasonModal;
+window.saveWeeklyPlayers = saveWeeklyPlayers;
 

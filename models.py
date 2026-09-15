@@ -126,3 +126,31 @@ class SeasonPrediction(Base):
 
     def __repr__(self):
         return f"<SeasonPrediction User {self.user_id}: Champ={self.nba_champion}, MVP={self.mvp}>"
+
+
+class WeeklyPlayerPrediction(Base):
+    """
+    Modèle des pronostics hebdomadaires (Chantier 4).
+    2 joueurs clés obligatoires par semaine avant de valider ses matchs :
+    - Joueur de la semaine - Conférence Est
+    - Joueur de la semaine - Conférence Ouest
+    """
+    __tablename__ = "weekly_player_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    week_number = Column(Integer, nullable=False, index=True)
+    east_player = Column(String(100), nullable=False)
+    west_player = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", backref="weekly_player_predictions")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "week_number", name="uq_user_week_player_prediction"),
+    )
+
+    def __repr__(self):
+        return f"<WeeklyPlayerPrediction User {self.user_id} W{self.week_number}: East={self.east_player}, West={self.west_player}>"
+
