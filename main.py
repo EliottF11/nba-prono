@@ -32,6 +32,19 @@ scheduler = BackgroundScheduler(daemon=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Injection automatique des données de départ si la base est vide (déploiement cloud Render)
+    db = SessionLocal()
+    try:
+        from models import Match
+        if db.query(Match).count() == 0:
+            print("🌱 [STARTUP] Base vide détectée : injection des 30 équipes et matchs officiels 2026/2027...")
+            from seed import seed_all_teams_and_matches
+            seed_all_teams_and_matches()
+    except Exception as e:
+        print(f"⚠️ [STARTUP] Erreur initialisation automatique : {e}")
+    finally:
+        db.close()
+
     # Enregistrement de la tâche quotidienne à 07h00
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
     scheduler.start()
@@ -71,6 +84,13 @@ def serve_frontend():
 @app.get("/api/health", tags=["Système"])
 def health_check():
     return {"status": "ok", "app": "NBA Prono MVP"}
+
+@app.get("/api/seed", tags=["Système"])
+def trigger_seed():
+    """Initialise ou réinjecte les 30 équipes et les matchs officiels NBA 2026/2027."""
+    from seed import seed_all_teams_and_matches
+    seed_all_teams_and_matches()
+    return {"status": "ok", "message": "Les 30 équipes et les matchs officiels 2026/2027 sont injectés avec succès !"}
 
 if __name__ == "__main__":
     import uvicorn

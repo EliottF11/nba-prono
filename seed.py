@@ -54,14 +54,16 @@ def seed_all_teams_and_matches():
             {"city": "San Antonio", "code": "SAS", "color": "#111111", "text_color": "#C4CED4"},
         ]
 
-        teams_map = {}
-        for t in teams_data:
-            team = Team(city=t["city"], code=t["code"], color=t["color"], text_color=t["text_color"])
-            db.add(team)
-            db.flush()
-            teams_map[t["city"]] = team.id
-
-        print(f"OK : Les 30 équipes ont été insérées.")
+        teams_map = {t.city: t.id for t in db.query(Team).all()}
+        if len(teams_map) < 30:
+            for t in teams_data:
+                if t["city"] not in teams_map:
+                    team = Team(city=t["city"], code=t["code"], color=t["color"], text_color=t["text_color"])
+                    db.add(team)
+                    db.flush()
+                    teams_map[t["city"]] = team.id
+            db.commit()
+            print("OK : Les 30 équipes ont été insérées.")
 
         print("-> Injection des VRAIES confrontations officielles de la saison NBA 2026/2027...")
 
@@ -193,19 +195,22 @@ def seed_all_teams_and_matches():
             },
         ]
 
-        for m in matches_data:
-            match = Match(
-                home_team_id=teams_map[m["home"]],
-                away_team_id=teams_map[m["away"]],
-                home_odds=m["home_odds"],
-                away_odds=m["away_odds"],
-                deadline=m["deadline"],
-                status="upcoming",
-            )
-            db.add(match)
+        if db.query(Match).count() == 0:
+            for m in matches_data:
+                match = Match(
+                    home_team_id=teams_map[m["home"]],
+                    away_team_id=teams_map[m["away"]],
+                    home_odds=m["home_odds"],
+                    away_odds=m["away_odds"],
+                    deadline=m["deadline"],
+                    status="upcoming",
+                )
+                db.add(match)
 
-        db.commit()
-        print(f"OK : Les {len(matches_data)} confrontations 100% officielles de la saison NBA 2026/2027 ont été enregistrées.")
+            db.commit()
+            print(f"OK : Les {len(matches_data)} confrontations 100% officielles de la saison NBA 2026/2027 ont été enregistrées.")
+        else:
+            print("Les matchs sont déjà présents en base de données.")
 
     except Exception as e:
         db.rollback()
