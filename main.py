@@ -14,6 +14,18 @@ from routers.predictions_router import router as predictions_router
 # Création automatique des tables si non existantes
 Base.metadata.create_all(bind=engine)
 
+# Migration légère pour bases de données existantes
+def ensure_schema_migrations():
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(120)"))
+            conn.commit()
+        except Exception:
+            pass
+
+ensure_schema_migrations()
+
 def daily_morning_sync():
     """Tâche automatique quotidienne exécutée chaque matin à 07:00."""
     print("⏰ [SCHEDULER] Exécution de la synchronisation automatique des scores de la nuit...")

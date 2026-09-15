@@ -32,24 +32,24 @@ def test_unit_security():
 def test_api_auth():
     print("-> Test des routes API d'authentification (/api/auth)...")
     
-    test_user = "stephen_curry"
+    import time
+    uid = int(time.time())
+    test_user = f"curry_{uid}"
+    test_email = f"curry_{uid}@warriors.com"
     test_pwd = "golden_state_champ"
 
     # 1. Inscription
-    res_reg = client.post("/api/auth/register", json={"username": test_user, "password": test_pwd})
-    assert res_reg.status_code in [201, 400], f"Code inattendu: {res_reg.status_code}"
-    
-    if res_reg.status_code == 201:
-        data = res_reg.json()
-        assert "access_token" in data, "Le token doit être renvoyé à l'inscription."
-        assert data["user"]["username"] == test_user
-        print(f"   [OK] Inscription réussie pour '{test_user}' (ID: {data['user']['id']}).")
-    else:
-        print(f"   [INFO] L'utilisateur '{test_user}' existe déjà.")
+    res_reg = client.post("/api/auth/register", json={"username": test_user, "email": test_email, "password": test_pwd})
+    assert res_reg.status_code == 201, f"Erreur inscription: {res_reg.text}"
+    data = res_reg.json()
+    assert "access_token" in data, "Le token doit être renvoyé à l'inscription."
+    assert data["user"]["username"] == test_user
+    assert data["user"]["email"] == test_email
+    print(f"   [OK] Inscription réussie pour '{test_user}' avec email '{test_email}'.")
 
-    # 2. Rejet doublon
-    res_dup = client.post("/api/auth/register", json={"username": test_user, "password": "any_password"})
-    assert res_dup.status_code == 400, "Le doublon doit renvoyer HTTP 400."
+    # 2. Rejet doublon email ou pseudo
+    res_dup = client.post("/api/auth/register", json={"username": test_user, "email": "autre@warriors.com", "password": "any_password"})
+    assert res_dup.status_code == 400, "Le doublon de pseudo doit renvoyer HTTP 400."
     print("   [OK] Rejet correct d'un pseudo déjà existant (HTTP 400).")
 
     # 3. Connexion faux mot de passe
@@ -57,11 +57,16 @@ def test_api_auth():
     assert res_fail.status_code == 401, "Mauvais mot de passe doit renvoyer HTTP 401."
     print("   [OK] Rejet correct d'un mot de passe erroné (HTTP 401).")
 
-    # 4. Connexion bon mot de passe
-    res_login = client.post("/api/auth/login", json={"username": test_user, "password": test_pwd})
-    assert res_login.status_code == 200, f"Erreur login: {res_login.text}"
-    token = res_login.json()["access_token"]
-    print("   [OK] Connexion réussie et réception du jeton Bearer (HTTP 200).")
+    # 4. Connexion par pseudo
+    res_login_pseudo = client.post("/api/auth/login", json={"username": test_user, "password": test_pwd})
+    assert res_login_pseudo.status_code == 200, f"Erreur login pseudo: {res_login_pseudo.text}"
+    token = res_login_pseudo.json()["access_token"]
+    print("   [OK] Connexion réussie via PSEUDO (HTTP 200).")
+
+    # 5. Connexion par EMAIL
+    res_login_email = client.post("/api/auth/login", json={"username": test_email, "password": test_pwd})
+    assert res_login_email.status_code == 200, f"Erreur login email: {res_login_email.text}"
+    print("   [OK] Connexion réussie via ADRESSE EMAIL (HTTP 200).")
 
     # 5. Route protégée /me avec token
     headers = {"Authorization": f"Bearer {token}"}

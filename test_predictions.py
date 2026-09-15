@@ -40,10 +40,10 @@ def run_tests():
     away_team_id = m1["away_team"]["id"]
 
     # 2. Création de deux utilisateurs test
-    res_u1 = client.post("/api/auth/register", json={"username": "luka_magic", "password": "pass_luka_77"})
+    res_u1 = client.post("/api/auth/register", json={"username": "luka_magic", "email": "luka@mavs.com", "password": "pass_luka_77"})
     token_u1 = res_u1.json()["access_token"] if res_u1.status_code == 201 else client.post("/api/auth/login", json={"username": "luka_magic", "password": "pass_luka_77"}).json()["access_token"]
 
-    res_u2 = client.post("/api/auth/register", json={"username": "giannis_freak", "password": "pass_giannis_34"})
+    res_u2 = client.post("/api/auth/register", json={"username": "giannis_freak", "email": "giannis@bucks.com", "password": "pass_giannis_34"})
     token_u2 = res_u2.json()["access_token"] if res_u2.status_code == 201 else client.post("/api/auth/login", json={"username": "giannis_freak", "password": "pass_giannis_34"}).json()["access_token"]
 
     headers_u1 = {"Authorization": f"Bearer {token_u1}"}

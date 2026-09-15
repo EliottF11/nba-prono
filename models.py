@@ -33,6 +33,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
+    email = Column(String(120), unique=True, index=True, nullable=True)
     hashed_password = Column(String(255), nullable=False)
     total_points = Column(Float, default=0.0, nullable=False)
     created_at = Column(DateTime, default=utcnow, nullable=False)

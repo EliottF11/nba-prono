@@ -7,15 +7,17 @@ from typing import Optional
 
 class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=30, description="Pseudo du joueur (3 à 30 caractères)")
+    email: str = Field(..., min_length=5, max_length=120, description="Adresse e-mail")
     password: str = Field(..., min_length=4, max_length=100, description="Mot de passe (min 4 caractères)")
 
 class UserLogin(BaseModel):
-    username: str
-    password: str
+    username: str = Field(..., description="Pseudo ou adresse e-mail")
+    password: str = Field(..., min_length=1)
 
 class UserResponse(BaseModel):
     id: int
     username: str
+    email: Optional[str] = None
     total_points: float
     created_at: datetime
 

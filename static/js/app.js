@@ -150,6 +150,10 @@ function setAuthMode(mode) {
   const submitBtn = document.getElementById('auth-submit-btn');
   const switchText = document.getElementById('auth-switch-text');
   const switchBtn = document.getElementById('auth-switch-btn');
+  const usernameLabel = document.getElementById('auth-username-label');
+  const usernameInput = document.getElementById('auth-username-input');
+  const emailContainer = document.getElementById('auth-email-container');
+  const emailInput = document.getElementById('auth-email-input');
 
   if (mode === 'login') {
     title.textContent = 'Connexion';
@@ -157,12 +161,20 @@ function setAuthMode(mode) {
     submitBtn.textContent = 'Se connecter';
     switchText.textContent = "Pas encore de compte ?";
     switchBtn.textContent = "Créer un compte";
+    if (usernameLabel) usernameLabel.textContent = "Pseudo ou Email";
+    if (usernameInput) usernameInput.placeholder = "Pseudo ou adresse email";
+    if (emailContainer) emailContainer.classList.add('hidden');
+    if (emailInput) emailInput.removeAttribute('required');
   } else {
     title.textContent = 'Création de compte';
     subtitle.textContent = 'Rejoins la ligue et défie tes amis.';
     submitBtn.textContent = 'Créer mon compte';
     switchText.textContent = "Déjà inscrit ?";
     switchBtn.textContent = "Se connecter";
+    if (usernameLabel) usernameLabel.textContent = "Pseudo de joueur";
+    if (usernameInput) usernameInput.placeholder = "Ex: Anteto34";
+    if (emailContainer) emailContainer.classList.remove('hidden');
+    if (emailInput) emailInput.setAttribute('required', 'true');
   }
 }
 
@@ -179,7 +191,8 @@ async function handleAuthSubmit(e) {
     if (state.authMode === 'login') {
       res = await API.login(username, password);
     } else {
-      res = await API.register(username, password);
+      const email = document.getElementById('auth-email-input').value.trim();
+      res = await API.register(username, email, password);
     }
 
     state.currentUser = res.user;
