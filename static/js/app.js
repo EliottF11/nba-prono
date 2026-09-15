@@ -637,6 +637,8 @@ function renderLeaderboard() {
       </div>
     `;
   }).join('');
+}
+
 // --- Pronostics d'Avant-Saison (Chantier 3) ---
 async function loadSeasonCandidates() {
   if (!state.seasonCandidates) {
