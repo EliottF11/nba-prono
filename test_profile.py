@@ -145,6 +145,7 @@ def test_profile_and_navigation():
             )
             db.add(m_loss)
             db.flush()
+            created_matches.append(m_loss)
 
             # Le joueur vote pour t2 (l'équipe perdante)
             pred_loss = Prediction(
@@ -169,6 +170,11 @@ def test_profile_and_navigation():
         print("-> [OK] Badge 'Maçon' (5 erreurs de suite) DÉBLOQUÉ après série noire.")
 
     finally:
+        for m in created_matches:
+            db.query(Prediction).filter(Prediction.match_id == m.id).delete()
+            db.delete(m)
+        db.query(User).filter(User.id == user_id).delete()
+        db.commit()
         db.close()
 
     print("===========================================================================")

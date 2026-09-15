@@ -10,6 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from database import engine, Base, SessionLocal
 from routers.auth_router import router as auth_router
 from routers.predictions_router import router as predictions_router
+from routers.season_router import router as season_router
 
 # Création automatique des tables si non existantes
 Base.metadata.create_all(bind=engine)
@@ -94,6 +95,7 @@ app.add_middleware(
 # Inclusion des routeurs
 app.include_router(auth_router)
 app.include_router(predictions_router)
+app.include_router(season_router)
 
 # Montage des fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")

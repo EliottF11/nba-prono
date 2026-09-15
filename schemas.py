@@ -119,3 +119,29 @@ class UserStatsResponse(BaseModel):
     max_odds: float
     badges: List[BadgeResponse]
 
+
+# --- Schémas Pronostics d'Avant-Saison (Chantier 3) ---
+
+class SeasonPredictionCreate(BaseModel):
+    nba_champion: str = Field(..., min_length=2, max_length=100, description="Champion NBA")
+    cup_winner: str = Field(..., min_length=2, max_length=100, description="Vainqueur du tournoi NBA (NBA Cup)")
+    mvp: str = Field(..., min_length=2, max_length=100, description="MVP de la saison régulière")
+    dpoy: str = Field(..., min_length=2, max_length=100, description="Défenseur de l'année (DPOY)")
+    roy: str = Field(..., min_length=2, max_length=100, description="Rookie de l'année (ROY)")
+
+
+class SeasonPredictionResponse(BaseModel):
+    id: Optional[int] = None
+    user_id: Optional[int] = None
+    nba_champion: Optional[str] = None
+    cup_winner: Optional[str] = None
+    mvp: Optional[str] = None
+    dpoy: Optional[str] = None
+    roy: Optional[str] = None
+    is_locked: bool = False
+    deadline: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+

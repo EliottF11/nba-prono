@@ -123,6 +123,17 @@ def test_chantier2_weeks_and_boost():
     assert "match-card-boosted" in client.get("/static/css/style.css").text, "Le style d'illumination doit être présent."
     print("-> [OK] Éléments UI (sélecteur de semaines, styles d'illumination et pulse glow) vérifiés.")
 
+    # Nettoyage / Restauration du match 1 en status upcoming
+    db_clean = SessionLocal()
+    m_reset = db_clean.query(Match).filter(Match.id == m1["id"]).first()
+    if m_reset:
+        m_reset.status = "upcoming"
+        m_reset.home_score = None
+        m_reset.away_score = None
+        m_reset.winner_team_id = None
+        db_clean.commit()
+    db_clean.close()
+
     print("===========================================================================")
     print("TOUS LES TESTS DU CHANTIER 2 (SEMAINES & BONUS X2) ONT RÉUSSI SANS ERREUR !")
     print("===========================================================================")

@@ -119,5 +119,22 @@ const API = {
   // --- Classement ---
   async getLeaderboard() {
     return await this.request('/api/leaderboard');
+  },
+
+  // --- Pronostics d'Avant-Saison (Chantier 3) ---
+  async getSeasonCandidates() {
+    return await this.request('/api/season/candidates');
+  },
+
+  async getSeasonPrediction() {
+    if (!this.getToken()) return null;
+    return await this.request('/api/season/predictions');
+  },
+
+  async saveSeasonPrediction(data) {
+    return await this.request('/api/season/predictions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };

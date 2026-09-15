@@ -98,3 +98,31 @@ class Prediction(Base):
 
     def __repr__(self):
         return f"<Prediction User {self.user_id} Match {self.match_id} -> Team {self.selected_team_id}>"
+
+
+class SeasonPrediction(Base):
+    """
+    Modèle des pronostics d'avant-saison (Chantier 3).
+    5 choix définitifs par joueur, verrouillés dès le coup d'envoi du premier match :
+    - Champion NBA (ex: Minnesota)
+    - Vainqueur du NBA In-Season Tournament (NBA Cup)
+    - MVP de la saison régulière (ex: Anthony Edwards)
+    - DPOY (Défenseur de l'année)
+    - ROY (Rookie de l'année)
+    """
+    __tablename__ = "season_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    nba_champion = Column(String(100), nullable=False)
+    cup_winner = Column(String(100), nullable=False)
+    mvp = Column(String(100), nullable=False)
+    dpoy = Column(String(100), nullable=False)
+    roy = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
+
+    user = relationship("User", backref="season_prediction")
+
+    def __repr__(self):
+        return f"<SeasonPrediction User {self.user_id}: Champ={self.nba_champion}, MVP={self.mvp}>"

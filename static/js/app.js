@@ -13,6 +13,8 @@ const state = {
   myPredictions: {}, // matchId -> selectedTeamId
   boostedPredictions: {}, // matchId -> boolean (is_boosted)
   leaderboard: [],
+  seasonPrediction: null,
+  seasonCandidates: null,
   authMode: 'login'
 };
 
@@ -20,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   registerServiceWorker();
   initUIEvents();
   await checkSession();
+  loadSeasonCandidates();
   await refreshData();
 });
 
@@ -60,6 +63,12 @@ function initUIEvents() {
     });
   }
   if (authForm) authForm.addEventListener('submit', handleAuthSubmit);
+
+  // Gestion modale pronostics d'avant-saison (Chantier 3)
+  const closeSeasonBtn = document.getElementById('close-season-modal');
+  const seasonForm = document.getElementById('season-form');
+  if (closeSeasonBtn) closeSeasonBtn.addEventListener('click', closeSeasonModal);
+  if (seasonForm) seasonForm.addEventListener('submit', handleSeasonSubmit);
 }
 
 // --- Session & Utilisateur ---
@@ -103,7 +112,10 @@ function handleLogout() {
     API.logout();
     state.currentUser = null;
     state.myPredictions = {};
+    state.boostedPredictions = {};
+    state.seasonPrediction = null;
     updateHeaderUser();
+    renderSeasonBanner();
     renderMatchesList();
     renderLeaderboard();
     if (state.activeTab === 'profile') renderProfile();
@@ -218,16 +230,26 @@ async function handleAuthSubmit(e) {
 // --- Chargement des données ---
 async function refreshData() {
   try {
-    const [matches, preds, leaderboard, weeks] = await Promise.all([
+    const promises = [
       API.getMatches(state.matchesFilter, state.selectedWeek),
       API.getMyPredictions(),
       API.getLeaderboard(),
       API.getWeeks()
-    ]);
+    ];
+    if (state.currentUser) {
+      promises.push(API.getSeasonPrediction());
+    }
+
+    const results = await Promise.all(promises);
+    const matches = results[0];
+    const preds = results[1];
+    const leaderboard = results[2];
+    const weeks = results[3];
 
     state.matches = matches;
     state.leaderboard = leaderboard;
     state.availableWeeks = weeks;
+    state.seasonPrediction = state.currentUser ? results[4] : null;
 
     state.myPredictions = {};
     state.boostedPredictions = {};
@@ -244,6 +266,7 @@ async function refreshData() {
       countBadge.textContent = `${openCount} OUVERT${openCount > 1 ? 'S' : ''}`;
     }
 
+    renderSeasonBanner();
     renderWeeksSelector();
     renderMatchesList();
     renderLeaderboard();
@@ -614,6 +637,274 @@ function renderLeaderboard() {
       </div>
     `;
   }).join('');
+// --- Pronostics d'Avant-Saison (Chantier 3) ---
+async function loadSeasonCandidates() {
+  if (!state.seasonCandidates) {
+    try {
+      state.seasonCandidates = await API.getSeasonCandidates();
+      populateSeasonSelects();
+    } catch (err) {
+      console.error("Erreur chargement candidats d'avant-saison:", err);
+    }
+  }
+}
+
+function populateSeasonSelects() {
+  if (!state.seasonCandidates) return;
+  const { teams, mvp, dpoy, roy } = state.seasonCandidates;
+
+  const populate = (id, items, placeholder) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const currentVal = el.value;
+    el.innerHTML = `<option value="">${placeholder}</option>` +
+      items.map(item => `<option value="${item}">${item}</option>`).join('');
+    if (currentVal) el.value = currentVal;
+  };
+
+  populate('season-champion', teams, 'Sélectionne le champion NBA...');
+  populate('season-cup', teams, 'Sélectionne le vainqueur de la Cup...');
+  populate('season-mvp', mvp, 'Sélectionne le MVP...');
+  populate('season-dpoy', dpoy, 'Sélectionne le DPOY...');
+  populate('season-roy', roy, 'Sélectionne le Rookie de l\'année...');
+}
+
+function renderSeasonBanner() {
+  const container = document.getElementById('season-banner-container');
+  if (!container) return;
+
+  if (!state.currentUser) {
+    container.innerHTML = `
+      <div class="p-3.5 bg-gradient-to-r from-[#171924] via-[#1b1e2c] to-[#171924] rounded-2xl border border-amber-500/20 shadow-lg flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0 text-amber-400">
+            🏆
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos d'Avant-Saison</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">5 Choix Clés</span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-tight mt-0.5">
+              Champion, MVP, DPOY, ROY, In-Season Cup : pronostique avant le 1er match !
+            </p>
+          </div>
+        </div>
+        <button onclick="openAuthModal('login')" class="shrink-0 bg-amber-500 hover:bg-amber-400 text-black font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer shadow-md shadow-amber-500/20">
+          Participer
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const p = state.seasonPrediction;
+  const isLocked = p ? p.is_locked : false;
+  const picksCount = p ? [p.nba_champion, p.cup_winner, p.mvp, p.dpoy, p.roy].filter(Boolean).length : 0;
+  const hasAllPicks = picksCount === 5;
+
+  if (isLocked) {
+    container.innerHTML = `
+      <div class="p-3.5 bg-[#12141a] rounded-2xl border border-[#23273a] shadow-lg flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-lg shrink-0 text-slate-400">
+            🔒
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos d'Avant-Saison</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30">Verrouillé</span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-tight mt-0.5">
+              ${hasAllPicks ? 'Tes 5 choix sont enregistrés pour toute la saison !' : 'Saison débutée. Pronostics fermés.'}
+            </p>
+          </div>
+        </div>
+        <button onclick="openSeasonModal()" class="shrink-0 bg-[#1e2230] hover:bg-[#282d40] text-slate-200 border border-[#30374e] font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer">
+          Voir mes choix
+        </button>
+      </div>
+    `;
+  } else if (hasAllPicks) {
+    container.innerHTML = `
+      <div class="p-3.5 bg-gradient-to-r from-[#121b18] via-[#13221e] to-[#121b18] rounded-2xl border border-emerald-500/30 shadow-lg flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0 text-emerald-400">
+            ✨
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos d'Avant-Saison</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">5/5 Prêts</span>
+            </div>
+            <p class="text-[11px] text-emerald-400/90 leading-tight mt-0.5">
+              Enregistrés ! Modifiables jusqu'au coup d'envoi du 1er match.
+            </p>
+          </div>
+        </div>
+        <button onclick="openSeasonModal()" class="shrink-0 bg-emerald-500 hover:bg-emerald-400 text-black font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer shadow-md shadow-emerald-500/20">
+          Modifier
+        </button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="p-3.5 bg-gradient-to-r from-[#21160d] via-[#26190e] to-[#21160d] rounded-2xl border border-[#ff5500]/30 shadow-lg flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#ff5500]/15 border border-[#ff5500]/30 flex items-center justify-center text-xl shrink-0 text-[#ff5500]">
+            🏆
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos d'Avant-Saison</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#ff5500]/20 text-[#ff5500] border border-[#ff5500]/30 font-bold">${picksCount}/5 Choix</span>
+            </div>
+            <p class="text-[11px] text-slate-300 leading-tight mt-0.5">
+              Choisis tes 5 vainqueurs avant le coup d'envoi officiel !
+            </p>
+          </div>
+        </div>
+        <button onclick="openSeasonModal()" class="shrink-0 bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer shadow-md shadow-[#ff5500]/20">
+          Pronostiquer
+        </button>
+      </div>
+    `;
+  }
+}
+
+async function openSeasonModal() {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour pronostiquer la saison !", "info");
+    return;
+  }
+
+  await loadSeasonCandidates();
+
+  if (!state.seasonPrediction) {
+    try {
+      state.seasonPrediction = await API.getSeasonPrediction();
+    } catch (e) {
+      console.error("Erreur seasonPrediction:", e);
+    }
+  }
+
+  const p = state.seasonPrediction;
+  const isLocked = p ? p.is_locked : false;
+
+  const champSelect = document.getElementById('season-champion');
+  const cupSelect = document.getElementById('season-cup');
+  const mvpSelect = document.getElementById('season-mvp');
+  const dpoySelect = document.getElementById('season-dpoy');
+  const roySelect = document.getElementById('season-roy');
+  const submitBtn = document.getElementById('season-submit-btn');
+  const lockAlert = document.getElementById('season-lock-alert');
+  const errBox = document.getElementById('season-error-box');
+
+  if (errBox) errBox.classList.add('hidden');
+
+  if (champSelect && p) champSelect.value = p.nba_champion || '';
+  if (cupSelect && p) cupSelect.value = p.cup_winner || '';
+  if (mvpSelect && p) mvpSelect.value = p.mvp || '';
+  if (dpoySelect && p) dpoySelect.value = p.dpoy || '';
+  if (roySelect && p) roySelect.value = p.roy || '';
+
+  const selects = [champSelect, cupSelect, mvpSelect, dpoySelect, roySelect];
+
+  if (isLocked) {
+    selects.forEach(s => { if (s) s.disabled = true; });
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "🔒 Pronostics Verrouillés";
+      submitBtn.className = "w-full bg-[#1b1e28] text-slate-500 font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl transition cursor-not-allowed mt-2 border border-[#272d3e]";
+    }
+    if (lockAlert) {
+      lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-rose-500/10 border-rose-500/30 text-rose-400";
+      lockAlert.innerHTML = `
+        <div class="flex items-center gap-1.5 font-bold uppercase">
+          <span>🔒</span> Pronostics Définitivement Verrouillés
+        </div>
+        <p class="mt-1 text-[11px] text-slate-300 font-normal">
+          Le premier match officiel de la saison a débuté. Les choix sont gravés dans le marbre !
+        </p>
+      `;
+      lockAlert.classList.remove('hidden');
+    }
+  } else {
+    selects.forEach(s => { if (s) s.disabled = false; });
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = p && p.nba_champion ? "Mettre à jour mes 5 choix" : "Enregistrer mes 5 choix";
+      submitBtn.className = "w-full bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-lg shadow-[#ff5500]/20 transition cursor-pointer mt-2";
+    }
+    if (lockAlert) {
+      let deadlineStr = "";
+      if (p && p.deadline) {
+        const d = new Date(p.deadline);
+        deadlineStr = ` avant le ${d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+      }
+      lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-amber-500/10 border-amber-500/30 text-amber-300";
+      lockAlert.innerHTML = `
+        <div class="flex items-center gap-1.5 font-bold uppercase">
+          <span>⏳</span> Choix Modifiables
+        </div>
+        <p class="mt-1 text-[11px] text-slate-300 font-normal">
+          Tu peux ajuster tes pronostics à tout moment${deadlineStr} (coup d'envoi du 1er match).
+        </p>
+      `;
+      lockAlert.classList.remove('hidden');
+    }
+  }
+
+  const modal = document.getElementById('season-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeSeasonModal() {
+  const modal = document.getElementById('season-modal');
+  if (modal) modal.classList.add('hidden');
+  const errBox = document.getElementById('season-error-box');
+  if (errBox) errBox.classList.add('hidden');
+}
+
+async function handleSeasonSubmit(e) {
+  e.preventDefault();
+  const errBox = document.getElementById('season-error-box');
+  if (errBox) errBox.classList.add('hidden');
+
+  const nba_champion = document.getElementById('season-champion')?.value;
+  const cup_winner = document.getElementById('season-cup')?.value;
+  const mvp = document.getElementById('season-mvp')?.value;
+  const dpoy = document.getElementById('season-dpoy')?.value;
+  const roy = document.getElementById('season-roy')?.value;
+
+  if (!nba_champion || !cup_winner || !mvp || !dpoy || !roy) {
+    if (errBox) {
+      errBox.textContent = "Merci de compléter les 5 pronostics avant de valider.";
+      errBox.classList.remove('hidden');
+    }
+    return;
+  }
+
+  try {
+    const updated = await API.saveSeasonPrediction({
+      nba_champion,
+      cup_winner,
+      mvp,
+      dpoy,
+      roy
+    });
+    state.seasonPrediction = updated;
+    closeSeasonModal();
+    renderSeasonBanner();
+    if (state.activeTab === 'profile') renderProfile();
+    notify("🏆 Tes 5 pronostics de saison sont enregistrés !", "success");
+  } catch (err) {
+    if (errBox) {
+      errBox.textContent = err.message;
+      errBox.classList.remove('hidden');
+    }
+  }
 }
 
 // --- Rendu du Profil & Statistiques (Chantier 1) ---
@@ -646,8 +937,12 @@ async function renderProfile() {
   `;
 
   try {
-    const stats = await API.getMyStats();
+    const [stats, seasonPred] = await Promise.all([
+      API.getMyStats(),
+      API.getSeasonPrediction()
+    ]);
     if (!stats) return;
+    state.seasonPrediction = seasonPred;
 
     const initials = stats.username.substring(0, 2).toUpperCase();
     const winrateColor = stats.winrate >= 55 ? 'text-emerald-400' : stats.winrate >= 40 ? 'text-[#ff5500]' : 'text-slate-200';
@@ -713,6 +1008,70 @@ async function renderProfile() {
           </div>
         </div>
 
+      </div>
+
+      <!-- Section Pronostics d'Avant-Saison (Chantier 3) -->
+      <div class="space-y-2.5 pt-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-condensed font-black text-lg uppercase tracking-tight text-white flex items-center gap-1.5">
+            <span>Pronostics de Saison</span>
+            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${seasonPred && seasonPred.is_locked ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">
+              ${seasonPred && seasonPred.is_locked ? '🔒 Verrouillé' : '⏳ Modifiable'}
+            </span>
+          </h3>
+          ${!seasonPred?.is_locked ? `
+            <button onclick="openSeasonModal()" class="text-xs text-[#ff5500] hover:underline font-bold cursor-pointer">
+              ${seasonPred && seasonPred.nba_champion ? 'Modifier' : 'Faire mes 5 choix'}
+            </button>
+          ` : ''}
+        </div>
+
+        <div class="bg-[#12141a] p-3.5 rounded-2xl border border-[#1f222d] space-y-2 text-xs shadow-lg">
+          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
+            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+              <span>🏆</span> Champion NBA
+            </span>
+            <span class="font-bold ${seasonPred?.nba_champion ? 'text-white' : 'text-slate-500 italic'}">
+              ${seasonPred?.nba_champion || 'Non pronostiqué'}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
+            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+              <span>🥇</span> In-Season Tournament
+            </span>
+            <span class="font-bold ${seasonPred?.cup_winner ? 'text-white' : 'text-slate-500 italic'}">
+              ${seasonPred?.cup_winner || 'Non pronostiqué'}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
+            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+              <span>⭐</span> MVP
+            </span>
+            <span class="font-bold ${seasonPred?.mvp ? 'text-amber-400' : 'text-slate-500 italic'}">
+              ${seasonPred?.mvp || 'Non pronostiqué'}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
+            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+              <span>🛡️</span> DPOY
+            </span>
+            <span class="font-bold ${seasonPred?.dpoy ? 'text-white' : 'text-slate-500 italic'}">
+              ${seasonPred?.dpoy || 'Non pronostiqué'}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-medium flex items-center gap-1.5">
+              <span>👶</span> ROY
+            </span>
+            <span class="font-bold ${seasonPred?.roy ? 'text-white' : 'text-slate-500 italic'}">
+              ${seasonPred?.roy || 'Non pronostiqué'}
+            </span>
+          </div>
+        </div>
       </div>
 
       <!-- Section Badges & Trophées -->
@@ -834,4 +1193,8 @@ async function shareApp() {
     }
   }
 }
+
+// Export pour handlers HTML inline
+window.openSeasonModal = openSeasonModal;
+window.closeSeasonModal = closeSeasonModal;
 
