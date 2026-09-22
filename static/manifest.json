@@ -1,11 +1,11 @@
 {
-  "name": "NBA PRONO - Ligue de Pronostics",
-  "short_name": "NBA Prono",
-  "description": "Pronostics NBA 1-clic entre amis style Mon Petit Prono",
+  "name": "HOOPS PRONO - Ligue de Pronostics",
+  "short_name": "Hoops Prono",
+  "description": "Pronostics Basketball US 1-clic entre amis style Mon Petit Prono",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0b0e",
-  "theme_color": "#ff5500",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait-primary",
   "icons": [
     {

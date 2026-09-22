@@ -53,8 +53,8 @@ def test_profile_and_navigation():
     assert data_empty["winrate"] == 0.0
     assert data_empty["avg_odds"] == 0.0
     assert data_empty["max_odds"] == 0.0
-    assert len(data_empty["badges"]) == 3
-    print("-> [OK] Profil initialisé avec statistiques à zéro et 3 badges verrouillés.")
+    assert len(data_empty["badges"]) == 10
+    print("-> [OK] Profil initialisé avec statistiques à zéro et 10 badges d'accomplissements verrouillés.")
 
     # 4. Simulation de pronostics et calcul des stats
     # Créons des matchs terminés pour tester les badges

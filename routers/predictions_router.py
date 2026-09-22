@@ -11,7 +11,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Match, Prediction, User, Team, WeeklyPlayerPrediction
+from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, SeasonPrediction, LeagueMember
 from schemas import (
     MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
     UserStatsResponse, BadgeResponse, BoostResponse
@@ -404,13 +404,20 @@ def get_my_stats(
     
     max_loss_streak = 0
     current_loss_streak = 0
+    max_win_streak = 0
+    current_win_streak = 0
     sniper_count = 0  # cotes > 2.50 validées
+    underdog_count = 0  # cotes >= 3.00 validées
+    boost_won_count = 0  # pronos boostés victorieux
 
     for pred, match in predictions:
         if match.status == "finished" and match.winner_team_id is not None:
             finished_preds += 1
             if pred.selected_team_id == match.winner_team_id:
                 won_preds += 1
+                current_win_streak += 1
+                if current_win_streak > max_win_streak:
+                    max_win_streak = current_win_streak
                 current_loss_streak = 0
                 
                 odds = match.home_odds if pred.selected_team_id == match.home_team_id else match.away_odds
@@ -418,28 +425,54 @@ def get_my_stats(
                 
                 if odds > 2.50:
                     sniper_count += 1
+                if odds >= 3.00:
+                    underdog_count += 1
+                if pred.is_boosted:
+                    boost_won_count += 1
             else:
                 lost_preds += 1
                 current_loss_streak += 1
                 if current_loss_streak > max_loss_streak:
                     max_loss_streak = current_loss_streak
+                current_win_streak = 0
 
     winrate = round((won_preds / finished_preds * 100), 1) if finished_preds > 0 else 0.0
     avg_odds = round(sum(won_odds_list) / len(won_odds_list), 2) if won_odds_list else 0.0
     max_odds = round(max(won_odds_list), 2) if won_odds_list else 0.0
 
-    # 3. Badges visuels
-    # Badge 1 : "Rookie" (5 bons pronos)
+    # 3. Badges d'accomplissements visuels (10 badges)
     rookie_target = 5
     rookie_unlocked = won_preds >= rookie_target
-    
-    # Badge 2 : "Sniper" (3 cotes > 2.50 validées)
+
+    allstar_target = 15
+    allstar_unlocked = won_preds >= allstar_target
+
     sniper_target = 3
     sniper_unlocked = sniper_count >= sniper_target
-    
-    # Badge 3 : "Maçon" (5 erreurs de suite)
+
+    underdog_target = 1
+    underdog_unlocked = underdog_count >= underdog_target
+
+    clutch_target = 3
+    clutch_unlocked = max_win_streak >= clutch_target
+
+    boost_target = 1
+    boost_unlocked = boost_won_count >= boost_target
+
+    scorer_target = 30
+    user_points = int(current_user.total_points or 0)
+    scorer_unlocked = user_points >= scorer_target
+
     macon_target = 5
     macon_unlocked = max_loss_streak >= macon_target
+
+    has_season_preds = db.query(SeasonPrediction).filter(SeasonPrediction.user_id == current_user.id).first() is not None
+    season_target = 1
+    season_unlocked = has_season_preds
+
+    has_leagues = db.query(LeagueMember).filter(LeagueMember.user_id == current_user.id).first() is not None
+    league_target = 1
+    league_unlocked = has_leagues
 
     badges = [
         {
@@ -453,6 +486,16 @@ def get_my_stats(
             "progress_pct": min(int((won_preds / rookie_target) * 100), 100)
         },
         {
+            "id": "allstar",
+            "name": "All-Star",
+            "description": "15 bons pronos validés",
+            "icon": "🌟",
+            "unlocked": allstar_unlocked,
+            "current": min(won_preds, allstar_target),
+            "target": allstar_target,
+            "progress_pct": min(int((won_preds / allstar_target) * 100), 100)
+        },
+        {
             "id": "sniper",
             "name": "Sniper",
             "description": "3 cotes > 2.50 validées",
@@ -463,6 +506,46 @@ def get_my_stats(
             "progress_pct": min(int((sniper_count / sniper_target) * 100), 100)
         },
         {
+            "id": "underdog",
+            "name": "Chasseur d'Underdogs",
+            "description": "1 cote ≥ 3.00 validée",
+            "icon": "🐺",
+            "unlocked": underdog_unlocked,
+            "current": min(underdog_count, underdog_target),
+            "target": underdog_target,
+            "progress_pct": min(int((underdog_count / underdog_target) * 100), 100)
+        },
+        {
+            "id": "clutch",
+            "name": "Clutch Player",
+            "description": "Série de 3 victoires d'affilée",
+            "icon": "🔥",
+            "unlocked": clutch_unlocked,
+            "current": min(max_win_streak, clutch_target),
+            "target": clutch_target,
+            "progress_pct": min(int((max_win_streak / clutch_target) * 100), 100)
+        },
+        {
+            "id": "boost_master",
+            "name": "Boost Master",
+            "description": "1 prono boosté (x2) victorieux",
+            "icon": "⚡",
+            "unlocked": boost_unlocked,
+            "current": min(boost_won_count, boost_target),
+            "target": boost_target,
+            "progress_pct": min(int((boost_won_count / boost_target) * 100), 100)
+        },
+        {
+            "id": "scorer",
+            "name": "Scoreur d'Élite",
+            "description": "Atteindre 30 points au total",
+            "icon": "👑",
+            "unlocked": scorer_unlocked,
+            "current": min(user_points, scorer_target),
+            "target": scorer_target,
+            "progress_pct": min(int((user_points / scorer_target) * 100), 100)
+        },
+        {
             "id": "macon",
             "name": "Maçon",
             "description": "5 erreurs de suite",
@@ -471,6 +554,26 @@ def get_my_stats(
             "current": min(max_loss_streak, macon_target),
             "target": macon_target,
             "progress_pct": min(int((max_loss_streak / macon_target) * 100), 100)
+        },
+        {
+            "id": "season_oracle",
+            "name": "Oracle de Saison",
+            "description": "Pronostics de saison validés",
+            "icon": "🔮",
+            "unlocked": season_unlocked,
+            "current": 1 if has_season_preds else 0,
+            "target": season_target,
+            "progress_pct": 100 if has_season_preds else 0
+        },
+        {
+            "id": "league_captain",
+            "name": "Capitaine de Ligue",
+            "description": "Rejoindre ou créer une ligue",
+            "icon": "🎖️",
+            "unlocked": league_unlocked,
+            "current": 1 if has_leagues else 0,
+            "target": league_target,
+            "progress_pct": 100 if has_leagues else 0
         }
     ]
 

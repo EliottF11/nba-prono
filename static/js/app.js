@@ -1,5 +1,5 @@
 /**
- * NBA PRONO - Logique applicative
+ * HOOPS PRONO - Logique applicative
  * Interface sportive épurée, sélection 1-clic et classement en direct.
  */
 
@@ -25,6 +25,28 @@ const state = {
   chatPollingInterval: null,
   authMode: 'login'
 };
+
+// Fonction utilitaire d'échappement HTML anti-XSS
+function escapeHtml(text) {
+  if (text === null || text === undefined) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+window.escapeHtml = escapeHtml;
+
+// Formatage robuste des heures pour le chat (compatible ISO et SQLite)
+function formatChatTime(dateStr) {
+  if (!dateStr) return '';
+  const cleanStr = String(dateStr).includes('T') ? dateStr : String(dateStr).replace(' ', 'T') + (String(dateStr).includes('Z') ? '' : 'Z');
+  const d = new Date(cleanStr);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+}
+window.formatChatTime = formatChatTime;
 
 document.addEventListener('DOMContentLoaded', async () => {
   registerServiceWorker();
@@ -57,11 +79,11 @@ function initUIEvents() {
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.filter-chip').forEach(c => {
-        c.classList.remove('active', 'bg-[#ff5500]', 'text-black');
-        c.classList.add('bg-[#171a24]', 'text-slate-300');
+        c.classList.remove('active', 'bg-white', 'text-black');
+        c.classList.add('bg-[#141418]', 'text-zinc-400');
       });
-      chip.classList.add('active', 'bg-[#ff5500]', 'text-black');
-      chip.classList.remove('bg-[#171a24]', 'text-slate-300');
+      chip.classList.add('active', 'bg-white', 'text-black');
+      chip.classList.remove('bg-[#141418]', 'text-zinc-400');
       state.matchesFilter = chip.getAttribute('data-filter');
       renderMatchesList();
     });
@@ -155,15 +177,15 @@ function updateHeaderUser() {
     scoreVal.textContent = state.currentUser.total_points.toFixed(1);
 
     container.innerHTML = `
-      <button onclick="handleLogout()" title="Clique pour te déconnecter" class="btn-tactile flex items-center space-x-1.5 bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.12)] px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold text-white transition cursor-pointer">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+      <button onclick="handleLogout()" title="Clique pour te déconnecter" class="btn-tactile flex items-center space-x-1.5 bg-[#141418] hover:bg-[#202026] border border-[rgba(255,255,255,0.12)] px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold text-white transition cursor-pointer">
+        <span class="w-1.5 h-1.5 rounded-full bg-white shrink-0"></span>
         <span class="max-w-[60px] sm:max-w-[90px] truncate text-[11px] sm:text-xs">${state.currentUser.username}</span>
       </button>
     `;
   } else {
     scoreBadge.classList.add('hidden');
     container.innerHTML = `
-      <button onclick="openAuthModal('login')" class="btn-tactile bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer shadow-md shadow-[#ff5500]/25 shrink-0">
+      <button onclick="openAuthModal('login')" class="btn-tactile bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer shadow-md shrink-0">
         Connexion
       </button>
     `;
@@ -192,8 +214,8 @@ function selectTab(tab) {
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const isCurrent = btn.getAttribute('data-tab') === tab;
-    btn.classList.toggle('text-[#ff5500]', isCurrent);
-    btn.classList.toggle('text-slate-400', !isCurrent);
+    btn.classList.toggle('text-white', isCurrent);
+    btn.classList.toggle('text-zinc-500', !isCurrent);
   });
 
   const matchesView = document.getElementById('matches-view');
@@ -205,6 +227,11 @@ function selectTab(tab) {
   if (leaguesView) leaguesView.classList.toggle('hidden', tab !== 'leagues');
   if (leaderboardView) leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
   if (profileView) profileView.classList.toggle('hidden', tab !== 'profile');
+
+  if (tab !== 'leagues' && state.chatPollingInterval) {
+    clearInterval(state.chatPollingInterval);
+    state.chatPollingInterval = null;
+  }
 
   if (tab === 'leaderboard') {
     renderLeaderboard();
@@ -367,8 +394,8 @@ function renderWeeksSelector() {
       onclick="filterByWeek('all')" 
       class="btn-tactile shrink-0 px-2.5 py-1 rounded-lg text-xs font-condensed font-bold uppercase tracking-wider transition cursor-pointer ${
         state.selectedWeek === 'all' 
-          ? 'bg-[#ff5500] text-black font-black shadow-sm shadow-[#ff5500]/40' 
-          : 'bg-[#141722] text-slate-300 hover:text-white border border-[rgba(255,255,255,0.08)]'
+          ? 'bg-white text-black font-black shadow-sm' 
+          : 'bg-[#141418] text-zinc-400 hover:text-white border border-[rgba(255,255,255,0.08)]'
       }"
     >
       Toutes
@@ -382,8 +409,8 @@ function renderWeeksSelector() {
         onclick="filterByWeek(${w.week})" 
         class="btn-tactile shrink-0 px-2.5 py-1 rounded-lg text-xs font-condensed font-bold uppercase tracking-wider transition cursor-pointer whitespace-nowrap ${
           isSelected 
-            ? 'bg-[#ff5500] text-black font-black shadow-md shadow-[#ff5500]/40' 
-            : 'bg-[#141722] text-slate-300 hover:text-white border border-[rgba(255,255,255,0.08)]'
+            ? 'bg-white text-black font-black shadow-sm' 
+            : 'bg-[#141418] text-zinc-400 hover:text-white border border-[rgba(255,255,255,0.08)]'
         }"
       >
         Week ${w.week}
@@ -421,7 +448,7 @@ function renderMatchesList() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-[#12141a] rounded-xl border border-[#1f222d] text-slate-500 text-xs font-semibold">
+      <div class="p-8 text-center bg-[#121216] rounded-xl border border-[rgba(255,255,255,0.08)] text-zinc-500 text-xs font-semibold">
         Aucun match dans cette catégorie.
       </div>
     `;
@@ -443,11 +470,11 @@ function renderMatchesList() {
 
     let statusPill = '';
     if (isFinished) {
-      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">Terminé</span>`;
+      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">Terminé</span>`;
     } else if (selectedTeamId) {
-      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-[#ff5500]/15 text-[#ff5500] border border-[#ff5500]/30">Prono validé</span>`;
+      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white text-black border border-white">Prono validé</span>`;
     } else {
-      statusPill = `<span class="text-[10px] font-bold text-slate-500">${dateFormatted}</span>`;
+      statusPill = `<span class="text-[10px] font-bold text-zinc-400">${dateFormatted}</span>`;
     }
 
     let boostButton = '';
@@ -466,7 +493,7 @@ function renderMatchesList() {
       `;
     } else if (isBoosted) {
       boostButton = `
-        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center gap-1">
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white/10 text-white border border-white/25 flex items-center gap-1">
           <span>⚡</span> x2 Joué
         </span>
       `;
@@ -477,9 +504,9 @@ function renderMatchesList() {
         
         <!-- En-tête : Semaine, Date, Bonus x2 & État -->
         <div class="flex items-center justify-between text-xs pb-2 border-b border-[rgba(255,255,255,0.08)] gap-1.5">
-          <div class="flex items-center space-x-1.5 text-slate-400 font-medium text-[11px] min-w-0 truncate">
-            <span class="px-1.5 py-0.5 rounded bg-[#181a24] text-slate-300 font-bold border border-[rgba(255,255,255,0.08)] text-[10px] shrink-0">W${match.week_number || 1}</span>
-            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-slate-600' : 'bg-[#ff5500]'} shrink-0"></span>
+          <div class="flex items-center space-x-1.5 text-zinc-400 font-medium text-[11px] min-w-0 truncate">
+            <span class="px-1.5 py-0.5 rounded bg-[#18181c] text-zinc-300 font-bold border border-[rgba(255,255,255,0.08)] text-[10px] shrink-0">W${match.week_number || 1}</span>
+            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : 'bg-white'} shrink-0"></span>
             <span class="truncate">${isFinished ? 'Terminé' : dateFormatted}</span>
           </div>
           <div class="flex items-center space-x-1.5 shrink-0">
@@ -523,7 +550,7 @@ function renderMatchesList() {
 
             <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
               <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
-              <span class="font-condensed text-base font-black ${homeSelected ? 'text-[#ff5500]' : 'text-white'}">
+              <span class="font-condensed text-base font-black ${homeSelected ? 'text-white' : 'text-zinc-200'}">
                 ${match.home_odds.toFixed(2)}
               </span>
             </div>
@@ -567,7 +594,7 @@ function renderMatchesList() {
 
             <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
               <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
-              <span class="font-condensed text-base font-black ${awaySelected ? 'text-[#ff5500]' : 'text-white'}">
+              <span class="font-condensed text-base font-black ${awaySelected ? 'text-white' : 'text-zinc-200'}">
                 ${match.away_odds.toFixed(2)}
               </span>
             </div>
@@ -581,17 +608,17 @@ function renderMatchesList() {
 
         </div>
 
-        <!-- Footer carte : Pronostics de ligue (Signature MPP) -->
+        <!-- Footer carte : Pronostics de ligue -->
         <div class="pt-2 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
-          <span class="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-[#ff5500]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <span class="text-[10px] text-zinc-400 font-semibold flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
             <span>Pronos de ligue</span>
           </span>
           <button 
             onclick="openLeagueMatchVotesModal(${match.id})" 
-            class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-[#ff5500] hover:text-[#ff7733] bg-[#ff5500]/10 hover:bg-[#ff5500]/20 px-2.5 py-1 rounded-lg border border-[#ff5500]/30 transition cursor-pointer flex items-center gap-1"
+            class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-[#18181c] hover:bg-[#24242c] px-2.5 py-1 rounded-lg border border-[rgba(255,255,255,0.10)] transition cursor-pointer flex items-center gap-1"
           >
             <span>Qui a voté quoi ?</span>
             <span>›</span>
@@ -666,9 +693,9 @@ async function voteForTeam(matchId, teamId, isFinished) {
     const container = document.getElementById('weekly-players-container');
     if (container) {
       container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      container.classList.add('ring-2', 'ring-[#ff5500]', 'ring-offset-2', 'ring-offset-[#0c0d12]');
+      container.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
       setTimeout(() => {
-        container.classList.remove('ring-2', 'ring-[#ff5500]', 'ring-offset-2', 'ring-offset-[#0c0d12]');
+        container.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
       }, 2000);
     }
     return;
@@ -720,28 +747,28 @@ function renderLeaderboard() {
     <!-- 2ème Place -->
     <div class="podium-step-2 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[110px]">
       ${top2 ? `
-        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-slate-300 text-black font-black text-xs flex items-center justify-center">2</div>
+        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-zinc-300 text-black font-black text-xs flex items-center justify-center">2</div>
         <div class="font-bold text-xs text-white truncate">${top2.username}</div>
-        <div class="font-condensed font-black text-sm text-slate-300">${top2.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
-      ` : '<div class="text-slate-600 text-xs">-</div>'}
+        <div class="font-condensed font-black text-sm text-zinc-300">${top2.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
+      ` : '<div class="text-zinc-600 text-xs">-</div>'}
     </div>
 
     <!-- 1ère Place (Au centre, surélevé) -->
     <div class="podium-step-1 rounded-xl p-3 text-center border flex flex-col justify-end min-h-[135px]">
       ${top1 ? `
-        <div class="w-7 h-7 mx-auto mb-1.5 rounded-full bg-amber-400 text-black font-black text-sm flex items-center justify-center shadow-lg shadow-amber-400/30">1</div>
+        <div class="w-7 h-7 mx-auto mb-1.5 rounded-full bg-white text-black font-black text-sm flex items-center justify-center shadow-md">1</div>
         <div class="font-black text-xs text-white truncate">${top1.username}</div>
-        <div class="font-condensed font-black text-base text-amber-400">${top1.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
-      ` : '<div class="text-slate-600 text-xs">-</div>'}
+        <div class="font-condensed font-black text-base text-white">${top1.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
+      ` : '<div class="text-zinc-600 text-xs">-</div>'}
     </div>
 
     <!-- 3ème Place -->
     <div class="podium-step-3 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[95px]">
       ${top3 ? `
-        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-amber-700 text-white font-black text-xs flex items-center justify-center">3</div>
+        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-zinc-700 text-zinc-100 font-black text-xs flex items-center justify-center">3</div>
         <div class="font-bold text-xs text-white truncate">${top3.username}</div>
-        <div class="font-condensed font-black text-sm text-amber-500">${top3.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
-      ` : '<div class="text-slate-600 text-xs">-</div>'}
+        <div class="font-condensed font-black text-sm text-zinc-400">${top3.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
+      ` : '<div class="text-zinc-600 text-xs">-</div>'}
     </div>
   `;
 
@@ -751,19 +778,19 @@ function renderLeaderboard() {
 
     return `
       <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
-        isMe ? 'bg-[#ff5500]/10 font-bold text-white' : 'hover:bg-[#161821]'
+        isMe ? 'bg-white/10 font-bold text-white border-l-2 border-white' : 'hover:bg-white/5'
       }">
         <div class="col-span-2 text-center font-condensed font-black text-slate-400">
           #${player.rank}
         </div>
         <div class="col-span-6 flex items-center space-x-1.5 truncate">
-          <span class="truncate ${isMe ? 'text-[#ff5500]' : 'text-slate-200'}">${player.username}</span>
-          ${isMe ? '<span class="text-[9px] uppercase tracking-wider bg-[#ff5500] text-black font-black px-1 rounded">Moi</span>' : ''}
+          <span class="truncate ${isMe ? 'text-white font-black' : 'text-zinc-200'}">${player.username}</span>
+          ${isMe ? '<span class="text-[9px] uppercase tracking-wider bg-white text-black font-black px-1 rounded">Moi</span>' : ''}
         </div>
         <div class="col-span-2 text-center text-slate-400 text-[11px]">
           ${player.won_count}/${player.predictions_count}
         </div>
-        <div class="col-span-2 text-right font-condensed font-black text-sm ${isMe ? 'text-[#ff5500]' : 'text-white'}">
+        <div class="col-span-2 text-right font-condensed font-black text-sm ${isMe ? 'text-white font-black' : 'text-zinc-200'}">
           ${player.total_points.toFixed(1)}
         </div>
       </div>
@@ -819,8 +846,8 @@ function populateSeasonSelects() {
     if (currentVal) setSelectValueFuzzy(el, currentVal);
   };
 
-  populate('season-champion', teams, 'Sélectionne le champion NBA...');
-  populate('season-cup', teams, 'Sélectionne le vainqueur de la Cup...');
+  populate('season-champion', teams, 'Sélectionne le champion de la Ligue...');
+  populate('season-cup', teams, 'Sélectionne le vainqueur du Tournoi...');
   populate('season-mvp', mvp, 'Sélectionne le MVP...');
   populate('season-dpoy', dpoy, 'Sélectionne le DPOY...');
   populate('season-roy', roy, 'Sélectionne le Rookie de l\'année...');
@@ -906,22 +933,22 @@ function renderSeasonBanner() {
     `;
   } else {
     container.innerHTML = `
-      <div class="p-3.5 bg-gradient-to-r from-[#21160d] via-[#26190e] to-[#21160d] rounded-2xl border border-[#ff5500]/30 shadow-lg flex items-center justify-between gap-3">
+      <div class="p-3.5 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.12)] shadow-md flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-[#ff5500]/15 border border-[#ff5500]/30 flex items-center justify-center text-xl shrink-0 text-[#ff5500]">
+          <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0 text-white">
             🏆
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos d'Avant-Saison</span>
-              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#ff5500]/20 text-[#ff5500] border border-[#ff5500]/30 font-bold">${picksCount}/5 Choix</span>
+              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">Pronos de Saison</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/20 font-bold">${picksCount}/5 Choix</span>
             </div>
-            <p class="text-[11px] text-slate-300 leading-tight mt-0.5">
+            <p class="text-[11px] text-zinc-400 leading-tight mt-0.5">
               Choisis tes 5 vainqueurs avant le coup d'envoi officiel !
             </p>
           </div>
         </div>
-        <button onclick="openSeasonModal()" class="shrink-0 bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer shadow-md shadow-[#ff5500]/20">
+        <button onclick="openSeasonModal()" class="shrink-0 bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase px-3 py-2 rounded-xl transition cursor-pointer shadow-sm">
           Pronostiquer
         </button>
       </div>
@@ -973,7 +1000,7 @@ async function openSeasonModal() {
     if (submitBtn) {
       submitBtn.disabled = true;
       submitBtn.textContent = "🔒 Pronostics Verrouillés";
-      submitBtn.className = "w-full bg-[#1b1e28] text-slate-500 font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl transition cursor-not-allowed mt-2 border border-[#272d3e]";
+      submitBtn.className = "w-full bg-[#18181c] text-zinc-500 font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl transition cursor-not-allowed mt-2 border border-zinc-800";
     }
     if (lockAlert) {
       lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-rose-500/10 border-rose-500/30 text-rose-400";
@@ -992,7 +1019,7 @@ async function openSeasonModal() {
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = p && p.nba_champion ? "Mettre à jour mes 5 choix" : "Enregistrer mes 5 choix";
-      submitBtn.className = "w-full bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-lg shadow-[#ff5500]/20 transition cursor-pointer mt-2";
+      submitBtn.className = "w-full bg-white hover:bg-zinc-200 text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer mt-2";
     }
     if (lockAlert) {
       let deadlineStr = "";
@@ -1000,7 +1027,7 @@ async function openSeasonModal() {
         const d = new Date(p.deadline);
         deadlineStr = ` avant le ${d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
       }
-      lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-amber-500/10 border-amber-500/30 text-amber-300";
+      lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-white/5 border-white/15 text-zinc-300";
       lockAlert.innerHTML = `
         <div class="flex items-center gap-1.5 font-bold uppercase">
           <span>⏳</span> Choix Modifiables
@@ -1095,7 +1122,7 @@ function renderWeeklyPlayersCard() {
   const matchedWest = wp ? findMatchingPlayerOption(westList, wp.west_player) : '';
 
   container.innerHTML = `
-    <div class="p-3.5 bg-[#12141a] rounded-2xl border ${hasChoices ? 'border-emerald-500/30' : 'border-[#ff5500]/30'} shadow-xl space-y-3 transition-all duration-300">
+    <div class="p-3.5 bg-[#121216] rounded-2xl border ${hasChoices ? 'border-white/20' : 'border-[rgba(255,255,255,0.10)]'} shadow-md space-y-3 transition-all duration-300">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <span class="text-base">🌟</span>
@@ -1108,13 +1135,13 @@ function renderWeeklyPlayersCard() {
                 isLocked 
                   ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
                   : hasChoices 
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-                    : 'bg-[#ff5500]/15 text-[#ff5500] border border-[#ff5500]/30'
+                    ? 'bg-white text-black font-bold' 
+                    : 'bg-white/10 text-white border border-white/20'
               }">
                 ${isLocked ? '🔒 Verrouillé' : hasChoices ? '✅ 2/2 Validés' : '⚡ Obligatoire'}
               </span>
             </div>
-            <p class="text-[10px] text-slate-400 leading-tight mt-0.5">
+            <p class="text-[10px] text-zinc-400 leading-tight mt-0.5">
               ${isLocked 
                 ? 'Les matchs de cette semaine ont débuté. Choix définitivement verrouillés.' 
                 : hasChoices 
@@ -1130,7 +1157,7 @@ function renderWeeklyPlayersCard() {
         <div class="relative">
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
             <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-blue-500 inline-block shadow-sm shadow-blue-500/50"></span>
+              <span class="w-2 h-2 rounded-full bg-zinc-300 inline-block"></span>
               <span>Conférence Est</span>
             </span>
             <span class="text-[9px] text-slate-500 font-mono">${eastList.length} joueurs</span>
@@ -1138,9 +1165,9 @@ function renderWeeklyPlayersCard() {
           <input type="hidden" id="weekly-east-select-${currentWeek}" value="${matchedEast || ''}">
           
           ${matchedEast ? `
-            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-blue-500/40">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
               <div class="flex items-center space-x-2 truncate">
-                <span class="text-blue-400 font-bold text-xs">🏀</span>
+                <span class="text-zinc-300 font-bold text-xs">🏀</span>
                 <span class="font-bold text-xs text-white truncate">${matchedEast}</span>
               </div>
               ${!isLocked ? `
@@ -1159,7 +1186,7 @@ function renderWeeklyPlayersCard() {
                 ${isLocked ? 'disabled' : ''} 
                 placeholder="Tape un nom (ex: Tatum, Giannis...)"
                 autocomplete="off"
-                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500] disabled:opacity-50"
+                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white disabled:opacity-50"
               >
               <div id="weekly-east-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
             </div>
@@ -1170,7 +1197,7 @@ function renderWeeklyPlayersCard() {
         <div class="relative">
           <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
             <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-red-500 inline-block shadow-sm shadow-red-500/50"></span>
+              <span class="w-2 h-2 rounded-full bg-zinc-500 inline-block"></span>
               <span>Conférence Ouest</span>
             </span>
             <span class="text-[9px] text-slate-500 font-mono">${westList.length} joueurs</span>
@@ -1178,9 +1205,9 @@ function renderWeeklyPlayersCard() {
           <input type="hidden" id="weekly-west-select-${currentWeek}" value="${matchedWest || ''}">
 
           ${matchedWest ? `
-            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-red-500/40">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
               <div class="flex items-center space-x-2 truncate">
-                <span class="text-red-400 font-bold text-xs">🏀</span>
+                <span class="text-zinc-300 font-bold text-xs">🏀</span>
                 <span class="font-bold text-xs text-white truncate">${matchedWest}</span>
               </div>
               ${!isLocked ? `
@@ -1199,7 +1226,7 @@ function renderWeeklyPlayersCard() {
                 ${isLocked ? 'disabled' : ''} 
                 placeholder="Tape un nom (ex: Doncic, Curry...)"
                 autocomplete="off"
-                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500] disabled:opacity-50"
+                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white disabled:opacity-50"
               >
               <div id="weekly-west-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
             </div>
@@ -1212,8 +1239,8 @@ function renderWeeklyPlayersCard() {
           onclick="saveWeeklyPlayers(${currentWeek})" 
           class="w-full ${
             hasChoices 
-              ? 'bg-[#1a1e2a] hover:bg-[#232838] text-slate-200 border border-[#2c3346]' 
-              : 'bg-[#ff5500] hover:bg-[#ff661a] text-black shadow-lg shadow-[#ff5500]/20'
+              ? 'bg-[#18181c] hover:bg-[#222228] text-zinc-200 border border-zinc-700' 
+              : 'bg-white hover:bg-zinc-200 text-black shadow-md'
           } font-condensed font-black text-xs uppercase tracking-wider py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
         >
           <span>${hasChoices ? '💾 Mettre à jour mes 2 choix' : '⚡ Valider mes 2 Joueurs de la Semaine'}</span>
@@ -1309,15 +1336,15 @@ async function renderProfile() {
 
   if (!state.currentUser) {
     container.innerHTML = `
-      <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
-        <div class="w-14 h-14 mx-auto rounded-full bg-[#ff5500]/10 border border-[#ff5500]/20 flex items-center justify-center text-2xl text-[#ff5500] shadow-lg shadow-[#ff5500]/10">
+      <div class="p-6 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.08)] text-center space-y-4 shadow-xl">
+        <div class="w-14 h-14 mx-auto rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-2xl text-white">
           👤
         </div>
         <div class="font-condensed font-black text-xl text-white">Connecte-toi pour voir ton profil</div>
-        <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+        <p class="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
           Accède à ton Winrate en direct, analyse tes cotes validées et débloque les badges officiels.
         </p>
-        <button onclick="openAuthModal('login')" class="bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-sm uppercase px-5 py-2.5 rounded-xl transition cursor-pointer shadow-lg shadow-[#ff5500]/25">
+        <button onclick="openAuthModal('login')" class="bg-white hover:bg-zinc-200 text-black font-condensed font-black text-sm uppercase px-5 py-2.5 rounded-xl transition cursor-pointer shadow-md">
           Connexion / Inscription
         </button>
       </div>
@@ -1346,23 +1373,23 @@ async function renderProfile() {
       <!-- Carte Joueur -->
       <div class="p-3.5 sm:p-4 surface-card flex items-center justify-between gap-3 shadow-xl">
         <div class="flex items-center space-x-3 min-w-0">
-          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-[#ff5500] to-[#b33c00] flex items-center justify-center font-condensed font-black text-lg text-black shadow-md shadow-[#ff5500]/25 shrink-0">
+          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#27272a] border border-white/20 flex items-center justify-center font-condensed font-black text-lg text-white shrink-0">
             ${initials}
           </div>
           <div class="min-w-0">
             <div class="font-condensed font-black text-lg sm:text-xl text-white leading-tight truncate">
               ${stats.username}
             </div>
-            <div class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[200px]">
-              ${stats.email || 'Membre NBA Prono'}
+            <div class="text-[11px] text-zinc-400 truncate max-w-[140px] sm:max-w-[200px]">
+              ${stats.email || 'Membre HOOPS Prono'}
             </div>
           </div>
         </div>
 
         <div class="text-right shrink-0">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Classement</div>
-          <div class="font-condensed font-black text-base sm:text-lg text-[#ff5500]">
-            #${stats.rank || '-'} <span class="text-xs text-slate-400">(${stats.total_points.toFixed(1)} pts)</span>
+          <div class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Classement</div>
+          <div class="font-condensed font-black text-base sm:text-lg text-white">
+            #${stats.rank || '-'} <span class="text-xs text-zinc-400">(${stats.total_points.toFixed(1)} pts)</span>
           </div>
         </div>
       </div>
@@ -1395,7 +1422,7 @@ async function renderProfile() {
         <!-- Plus grosse cote -->
         <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
           <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Max Cote</div>
-          <div class="font-condensed font-black text-xl sm:text-2xl text-[#ff5500] my-0.5">
+          <div class="font-condensed font-black text-xl sm:text-2xl text-white my-0.5">
             ${stats.max_odds > 0 ? stats.max_odds.toFixed(2) : '-'}
           </div>
           <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
@@ -1407,12 +1434,12 @@ async function renderProfile() {
 
       <!-- Actions Rapides Profil (Bilan Story & Défier) -->
       <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="openShareRecapModal()" class="btn-tactile p-2.5 rounded-xl bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-amber-400 cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-[#f59e0b]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <button onclick="openShareRecapModal()" class="btn-tactile p-2.5 rounded-xl bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-zinc-200 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           <span>Bilan Story</span>
         </button>
-        <button onclick="shareApp()" class="btn-tactile p-2.5 rounded-xl bg-[#141722] hover:bg-[#1d2232] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-[#ff5500] cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-[#ff5500]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+        <button onclick="shareApp()" class="btn-tactile p-2.5 rounded-xl bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-white cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
           <span>Défier des amis</span>
         </button>
       </div>
@@ -1525,9 +1552,9 @@ async function renderProfile() {
           </h3>
         </div>
 
-        <div class="space-y-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           ${stats.badges.map(badge => `
-            <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'} p-3.5 space-y-2.5">
+            <div class="badge-card ${badge.unlocked ? 'unlocked' : 'locked'} p-3.5 space-y-2.5 flex flex-col justify-between">
               <div class="flex items-start justify-between gap-3">
                 
                 <div class="flex items-center space-x-3">
@@ -1561,7 +1588,7 @@ async function renderProfile() {
               <!-- Barre de progression -->
               <div class="w-full bg-[#161824] rounded-full h-1.5 overflow-hidden border border-[#232738]">
                 <div 
-                  class="h-full transition-all duration-500 ${badge.unlocked ? 'bg-gradient-to-r from-[#ff5500] to-emerald-400' : 'bg-[#ff5500]'}" 
+                  class="h-full transition-all duration-500 ${badge.unlocked ? 'bg-white' : 'bg-zinc-600'}" 
                   style="width: ${badge.progress_pct}%"
                 ></div>
               </div>
@@ -1623,8 +1650,8 @@ function registerServiceWorker() {
 
 async function shareApp() {
   const shareData = {
-    title: 'NBA PRONO - Rejoins la ligue !',
-    text: 'Viens pronostiquer les matchs NBA avec nous en 1-clic ! Qui aura le meilleur classement ?',
+    title: 'HOOPS PRONO - Rejoins la ligue !',
+    text: 'Viens pronostiquer les matchs de basket avec nous en 1-clic ! Qui sera n°1 ?',
     url: window.location.origin
   };
 
@@ -1649,24 +1676,23 @@ async function shareApp() {
 function getUserAvatarHtml(username, size = 'sm') {
   const safeName = username || '?';
   const initials = safeName.substring(0, 2).toUpperCase();
-  const colors = [
-    'from-blue-600 to-indigo-800 text-blue-100',
-    'from-emerald-600 to-teal-800 text-emerald-100',
-    'from-purple-600 to-pink-800 text-purple-100',
-    'from-amber-500 to-orange-700 text-amber-100',
-    'from-rose-600 to-red-800 text-rose-100',
-    'from-cyan-600 to-blue-800 text-cyan-100'
+  const tones = [
+    'bg-[#27272a] text-zinc-200 border border-white/15',
+    'bg-[#18181b] text-white border border-white/25',
+    'bg-[#3f3f46] text-white border border-white/20',
+    'bg-[#202024] text-zinc-300 border border-white/15',
+    'bg-[#2e2e36] text-zinc-100 border border-white/20'
   ];
   let hash = 0;
   for (let i = 0; i < safeName.length; i++) {
     hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const colorClass = colors[Math.abs(hash) % colors.length];
+  const toneClass = tones[Math.abs(hash) % tones.length];
   const sizeClasses = size === 'lg' 
     ? 'w-11 h-11 text-sm font-black' 
     : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : 'w-7 h-7 text-[10px] font-black');
 
-  return `<div class="${sizeClasses} rounded-full bg-gradient-to-tr ${colorClass} flex items-center justify-center shadow-md uppercase tracking-wider shrink-0 border border-white/10">${initials}</div>`;
+  return `<div class="${sizeClasses} rounded-full ${toneClass} flex items-center justify-center shadow-sm uppercase tracking-wider shrink-0">${initials}</div>`;
 }
 
 async function loadAndRenderLeagues() {
@@ -1678,14 +1704,14 @@ async function loadAndRenderLeagues() {
     document.getElementById('league-detail-container').classList.add('hidden');
     listContainer.innerHTML = `
       <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
-        <div class="w-12 h-12 rounded-2xl bg-[#ff5500]/10 text-[#ff5500] mx-auto flex items-center justify-center text-2xl border border-[#ff5500]/20 shadow-lg shadow-[#ff5500]/10">
+        <div class="w-12 h-12 rounded-2xl bg-white/10 text-white mx-auto flex items-center justify-center text-2xl border border-white/20">
           🔒
         </div>
         <div class="font-condensed font-black text-lg text-white">Connexion requise</div>
         <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
           Connecte-toi ou crée un compte pour créer ta ligue privée ou rejoindre celle de tes amis avec un code d'invitation !
         </p>
-        <button onclick="openAuthModal('login')" class="px-5 py-2.5 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black uppercase text-xs tracking-wider transition shadow-lg shadow-[#ff5500]/20 cursor-pointer">
+        <button onclick="openAuthModal('login')" class="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black uppercase text-xs tracking-wider transition shadow-md cursor-pointer">
           Se connecter / S'inscrire
         </button>
       </div>
@@ -1734,7 +1760,7 @@ function renderLeaguesList() {
           <button onclick="openJoinLeagueModal()" class="px-4 py-2 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-bold text-xs uppercase tracking-wider transition cursor-pointer">
             🔑 Rejoindre
           </button>
-          <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-lg shadow-[#ff5500]/20 cursor-pointer">
+          <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer">
             + Créer une ligue
           </button>
         </div>
@@ -1748,34 +1774,26 @@ function renderLeaguesList() {
     const rankLabel = l.user_rank ? (l.user_rank === 1 ? '🥇 #1' : `#${l.user_rank}`) : '-';
 
     return `
-      <div class="bg-[#12141a] border border-[#1f222d] hover:border-[#ff5500]/40 rounded-2xl p-4 transition-all shadow-lg space-y-3">
-        <div class="flex items-start justify-between gap-2">
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="font-condensed font-black text-lg text-white uppercase tracking-tight">${l.name}</h3>
-              ${isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Créateur</span>' : ''}
-            </div>
-            <div class="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
-              <span>👥 ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
-              <span>•</span>
-              <span class="text-amber-400 font-bold">Mon rang : ${rankLabel}</span>
-            </div>
+      <div 
+        onclick="viewLeague(${l.id})" 
+        class="bg-[#12141a] hover:bg-[#161924] border border-[#1f222d] hover:border-amber-400/50 rounded-2xl p-4 transition-all duration-150 shadow-lg cursor-pointer group active:scale-[0.99] flex items-center justify-between gap-3"
+      >
+        <div class="space-y-1.5 flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="font-condensed font-black text-lg text-white group-hover:text-amber-300 uppercase tracking-tight transition truncate">${escapeHtml(l.name)}</h3>
+            ${isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Créateur</span>' : ''}
           </div>
-          <div class="flex items-center gap-1 bg-[#171a24] border border-[#232738] px-2 py-1 rounded-lg">
-            <span class="font-mono text-xs font-black text-amber-400 tracking-wider">${l.code}</span>
-            <button onclick="event.stopPropagation(); copyLeagueCode('${l.code}')" title="Copier le code" class="text-slate-400 hover:text-white p-0.5 transition cursor-pointer">
-              📋
-            </button>
+          <div class="flex items-center gap-3 text-xs text-slate-400">
+            <span class="flex items-center gap-1">👥 ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
+            <span>•</span>
+            <span class="text-amber-400 font-bold flex items-center gap-1">Mon rang : ${rankLabel}</span>
           </div>
         </div>
 
-        <div class="pt-1 flex items-center justify-between gap-2 border-t border-[#1b1e28]">
-          <button onclick="shareLeague('${l.code}', '${l.name.replace(/'/g, "\\'")}')" class="text-xs text-slate-300 hover:text-white font-bold flex items-center gap-1 transition cursor-pointer">
-            <span>📤</span> Inviter
-          </button>
-          <button onclick="viewLeague(${l.id})" class="px-3.5 py-1.5 rounded-xl bg-[#ff5500]/10 hover:bg-[#ff5500]/20 border border-[#ff5500]/30 text-[#ff5500] font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer">
-            Voir le classement →
-          </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-amber-400/20 group-hover:text-amber-300 text-slate-400 flex items-center justify-center transition text-sm font-black">
+            →
+          </div>
         </div>
       </div>
     `;
@@ -1787,6 +1805,19 @@ async function viewLeague(leagueId) {
     const detail = await API.getLeagueDetail(leagueId);
     state.activeLeague = detail;
     renderLeagueDetail(detail);
+
+    // Démarrage du rafraîchissement automatique du chat (toutes les 3.5s)
+    if (state.chatPollingInterval) {
+      clearInterval(state.chatPollingInterval);
+    }
+    state.chatPollingInterval = setInterval(() => {
+      if (state.activeLeague && state.activeLeague.id === leagueId) {
+        loadLeagueMessages(leagueId, true);
+      } else {
+        clearInterval(state.chatPollingInterval);
+        state.chatPollingInterval = null;
+      }
+    }, 3500);
   } catch (err) {
     console.error("Erreur consultation ligue:", err);
     notify(err.message || "Impossible d'accéder à cette ligue", "error");
@@ -1794,6 +1825,10 @@ async function viewLeague(leagueId) {
 }
 
 function backToLeaguesList() {
+  if (state.chatPollingInterval) {
+    clearInterval(state.chatPollingInterval);
+    state.chatPollingInterval = null;
+  }
   state.activeLeague = null;
   renderLeaguesList();
 }
@@ -1825,26 +1860,36 @@ function renderLeagueDetail(league) {
     <!-- Titre et infos ligue -->
     <div class="space-y-1">
       <div class="flex items-center gap-2">
-        <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">${league.name}</h2>
+        <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">${escapeHtml(league.name)}</h2>
         <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
           ${league.members_count} membre${league.members_count > 1 ? 's' : ''}
         </span>
       </div>
-      <p class="text-xs text-slate-400">Créée par <span class="text-slate-200 font-bold">${league.creator_username}</span></p>
+      <p class="text-xs text-slate-400">Créée par <span class="text-slate-200 font-bold">${escapeHtml(league.creator_username)}</span></p>
     </div>
 
-    <!-- Bloc d'invitation et de partage -->
-    <div class="p-3.5 bg-gradient-to-r from-amber-500/10 via-[#161822] to-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-      <div class="text-center sm:text-left">
-        <span class="text-[10px] font-black uppercase tracking-wider text-amber-400">Code d'invitation unique</span>
-        <div class="font-mono text-2xl font-black tracking-widest text-white">${league.code}</div>
+    <!-- Bloc d'invitation et de partage au sein de la ligue -->
+    <div class="p-4 bg-gradient-to-r from-amber-500/10 via-[#161822] to-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3 shadow-lg">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <span>🎟️</span> Inviter des amis dans la ligue
+          </div>
+          <div class="text-xs text-slate-300">Transmets ce code ou le lien direct pour qu'ils rejoignent ta ligue :</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="font-mono text-xl sm:text-2xl font-black tracking-widest text-amber-300 bg-[#12141c] border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner select-all">
+            ${league.code}
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto">
-        <button onclick="copyLeagueCode('${league.code}')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-[#202434] hover:bg-[#2b3147] border border-[#323850] text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-          <span>📋</span> Copier
+
+      <div class="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
+        <button onclick="copyLeagueCode('${league.code}')" class="px-3 py-2 rounded-xl bg-[#1e2230] hover:bg-[#282e42] border border-[#2e354c] text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>📋</span> Copier le code
         </button>
-        <button onclick="shareLeague('${league.code}', '${league.name.replace(/'/g, "\\'")}')" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-lg shadow-[#ff5500]/20 flex items-center justify-center gap-1.5 cursor-pointer">
-          <span>📤</span> Inviter des amis
+        <button onclick="shareLeague('${league.code}', '${escapeHtml(league.name).replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-md shadow-amber-400/20 flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>📤</span> Partager l'invit
         </button>
       </div>
     </div>
@@ -1902,7 +1947,7 @@ function renderLeagueDetail(league) {
 
           return `
             <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
-              isMe ? 'bg-[#ff5500]/10 font-bold text-white' : 'hover:bg-[#161821]'
+              isMe ? 'bg-white/10 font-bold text-white border-l-2 border-white' : 'hover:bg-white/5'
             }">
               <div class="col-span-2 text-center text-sm font-black">
                 ${rankBadge}
@@ -1913,14 +1958,14 @@ function renderLeagueDetail(league) {
                   <div class="font-bold flex items-center gap-1.5 truncate">
                     <span class="truncate">${member.username}</span>
                     ${member.is_creator ? '<span class="text-[9px] bg-amber-400/20 text-amber-400 px-1 rounded font-normal shrink-0">👑</span>' : ''}
-                    ${isMe ? '<span class="text-[9px] bg-[#ff5500]/30 text-[#ff5500] px-1 rounded uppercase tracking-wider shrink-0">Moi</span>' : ''}
+                    ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase tracking-wider shrink-0">Moi</span>' : ''}
                   </div>
                 </div>
               </div>
               <div class="col-span-2 text-center text-slate-400 font-mono text-[11px]">
                 ${member.won_count}/${member.predictions_count}
               </div>
-              <div class="col-span-2 text-right font-condensed font-black text-amber-400 text-sm">
+              <div class="col-span-2 text-right font-condensed font-black text-white text-sm">
                 ${member.total_points.toFixed(1)}
               </div>
             </div>
@@ -1978,11 +2023,11 @@ function renderLeagueDetail(league) {
           id="league-chat-input" 
           maxlength="280" 
           placeholder="Chambre tes potes... (ex: Préparez les mouchoirs 😈)" 
-          class="flex-1 bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#ff5500]"
+          class="flex-1 bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white"
         >
         <button 
           type="submit" 
-          class="px-3.5 py-2 rounded-xl bg-[#ff5500] hover:bg-[#ff661a] text-black font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow-md shadow-[#ff5500]/20"
+          class="px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow-md"
         >
           Envoyer
         </button>
@@ -2097,8 +2142,8 @@ async function copyLeagueCode(code) {
 async function shareLeague(code, name) {
   const shareUrl = `${window.location.origin}/?join=${code}`;
   const shareData = {
-    title: `Rejoins ma ligue NBA Prono : ${name}`,
-    text: `Rejoins ma ligue privée "${name}" sur NBA Prono avec le code : ${code} !`,
+    title: `Rejoins ma ligue HOOPS Prono : ${name}`,
+    text: `Rejoins ma ligue privée "${name}" sur HOOPS Prono avec le code : ${code} !`,
     url: shareUrl
   };
 
@@ -2187,7 +2232,7 @@ async function openLeagueMatchVotesModal(matchId, explicitLeagueId = null) {
 
   content.innerHTML = `
     <div class="text-center py-6 text-slate-400 text-xs flex items-center justify-center gap-2">
-      <div class="w-4 h-4 border-2 border-[#ff5500] border-t-transparent rounded-full animate-spin"></div>
+      <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       <span>Chargement des pronostics...</span>
     </div>
   `;
@@ -2233,7 +2278,7 @@ function renderLeagueMatchVotes(data, match) {
           Les choix d'équipes et les Bonus x2 seront révélés au coup d'envoi du match !
         </p>
         <div class="text-xs font-black text-white pt-1">
-          <span class="text-[#ff5500]">${data.voted_count}</span> / ${data.total_members} membres ont pronostiqué
+          <span class="text-white">${data.voted_count}</span> / ${data.total_members} membres ont pronostiqué
         </div>
       </div>
 
@@ -2247,7 +2292,7 @@ function renderLeagueMatchVotes(data, match) {
                 <div class="flex items-center gap-2">
                   ${getUserAvatarHtml(v.username, 'sm')}
                   <span class="font-bold text-white ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
-                  ${isMe ? '<span class="text-[9px] bg-[#ff5500]/20 text-[#ff5500] px-1 rounded uppercase">Moi</span>' : ''}
+                  ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase">Moi</span>' : ''}
                 </div>
                 <div>
                   ${v.has_voted 
@@ -2301,7 +2346,7 @@ function renderLeagueMatchVotes(data, match) {
                 <div class="flex items-center gap-2 truncate">
                   ${getUserAvatarHtml(v.username, 'sm')}
                   <span class="font-bold text-white truncate ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
-                  ${isMe ? '<span class="text-[9px] bg-[#ff5500]/20 text-[#ff5500] px-1 rounded uppercase shrink-0">Moi</span>' : ''}
+                  ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase shrink-0">Moi</span>' : ''}
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
                   ${v.has_voted ? `
@@ -2324,12 +2369,19 @@ function renderLeagueMatchVotes(data, match) {
 }
 
 // --- Améliorations MPP : Mur de Chambrage (Trash-Talk) ---
-async function loadLeagueMessages(leagueId) {
+async function loadLeagueMessages(leagueId, isBackground = false) {
   const container = document.getElementById('league-chat-messages');
   if (!container) return;
 
   try {
     const messages = await API.getLeagueMessages(leagueId);
+
+    // En polling d'arrière-plan : vérifier si de nouveaux messages sont arrivés pour éviter de redessiner inutilement
+    const prev = state.leagueMessages[leagueId] || [];
+    if (isBackground && prev.length === messages.length && prev.length > 0 && prev[prev.length - 1].id === messages[messages.length - 1].id) {
+      return;
+    }
+
     state.leagueMessages[leagueId] = messages;
 
     if (messages.length === 0) {
@@ -2341,29 +2393,37 @@ async function loadLeagueMessages(leagueId) {
       return;
     }
 
+    const wasNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < 70;
+
     container.innerHTML = messages.map(m => {
       const isMe = m.is_me;
-      const date = new Date(m.created_at);
-      const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      const timeStr = formatChatTime(m.created_at);
 
       return `
-        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-0.5">
-          <div class="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
-            <span class="font-bold text-slate-300">${isMe ? 'Moi' : m.username}</span>
-            <span>•</span>
-            <span>${timeStr}</span>
+        <div class="flex items-end gap-1.5 ${isMe ? 'justify-end' : 'justify-start'}">
+          ${!isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs')}</div>` : ''}
+          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] space-y-0.5">
+            <div class="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
+              <span class="font-bold text-slate-300">${isMe ? 'Moi' : escapeHtml(m.username)}</span>
+              ${timeStr ? `<span>•</span><span>${timeStr}</span>` : ''}
+            </div>
+            <div class="px-3.5 py-1.5 rounded-2xl text-xs leading-relaxed break-words ${isMe ? 'chat-bubble-me text-white' : 'chat-bubble-other text-slate-200'}">
+              ${escapeHtml(m.content)}
+            </div>
           </div>
-          <div class="px-3 py-1.5 rounded-2xl text-xs max-w-[85%] ${isMe ? 'chat-bubble-me text-white' : 'chat-bubble-other text-slate-200'}">
-            ${escapeHtml(m.content)}
-          </div>
+          ${isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs')}</div>` : ''}
         </div>
       `;
     }).join('');
 
     // Défilement automatique en bas
-    container.scrollTop = container.scrollHeight;
+    if (!isBackground || wasNearBottom) {
+      container.scrollTop = container.scrollHeight;
+    }
   } catch (err) {
-    console.error("Erreur chargement messages:", err);
+    if (!isBackground) {
+      console.error("Erreur chargement messages:", err);
+    }
   }
 }
 
@@ -2375,12 +2435,18 @@ async function handleSendLeagueMessage(e, leagueId) {
   const content = input.value.trim();
   if (!content) return;
 
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+
   try {
     await API.sendLeagueMessage(leagueId, content);
     input.value = '';
-    await loadLeagueMessages(leagueId);
+    await loadLeagueMessages(leagueId, false);
+    input.focus();
   } catch (err) {
     notify(err.message || "Erreur lors de l'envoi du message", "error");
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -2455,7 +2521,7 @@ function generateRecapShareText() {
   const user = state.currentUser ? state.currentUser.username : "Un joueur";
   const points = state.currentUser ? state.currentUser.total_points.toFixed(1) : "0.0";
   const currentWeek = state.selectedWeek === 'all' ? 1 : state.selectedWeek;
-  return `🏀 NBA PRONO - Semaine ${currentWeek}\n👤 ${user}\n🔥 Total : ${points} pts\nViens défier tes potes sur NBA Prono : ${window.location.origin}`;
+  return `🏀 HOOPS PRONO - Semaine ${currentWeek}\n👤 ${user}\n🔥 Total : ${points} pts\nViens défier tes potes sur HOOPS Prono : ${window.location.origin}`;
 }
 
 async function handleNativeShareRecap() {
@@ -2463,7 +2529,7 @@ async function handleNativeShareRecap() {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: "Mon Bilan NBA Prono",
+        title: "Mon Bilan HOOPS Prono",
         text: text,
         url: window.location.origin
       });
@@ -2515,3 +2581,17 @@ window.selectWeeklyPlayer = selectWeeklyPlayer;
 window.clearWeeklyPlayerSelection = clearWeeklyPlayerSelection;
 
 
+
+// --- Modale Mentions Légales & Fair Use ---
+function openLegalModal() {
+  const modal = document.getElementById('legal-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeLegalModal() {
+  const modal = document.getElementById('legal-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.openLegalModal = openLegalModal;
+window.closeLegalModal = closeLegalModal;

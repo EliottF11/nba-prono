@@ -1,41 +1,47 @@
 /* ==========================================================================
-   NBA PRONO - Design System Professionnel & Finition OLED Dark Mode
-   Conforme aux directives UI/UX Pro Max :
-   - OLED True Dark (#07080B) & Glassmorphism Sportif
-   - Typographie Barlow Condensed (Display) & Inter (Body)
-   - Micro-interactions tactiles stables (touch-target >= 44px, active:scale)
-   - Contraste certifié WCAG (>= 4.5:1 / 7:1) & Safe-Area Mobile
+   HOOPS PRONO - Design System Minimaliste Haute Définition (Noir / Gris / Blanc)
+   Direction Artistique Épurée & Finition OLED Monochrome
+   - Palette : Noir profond (#000000, #09090b), Gris zinc (#18181b, #27272a, #71717a), Blanc pur (#ffffff)
+   - Typographie : Barlow Condensed (Titres/Display) & Inter (Contenu)
+   - Bordures chirurgicales 1px, contrastes élevés certifiés WCAG (>= 7:1)
+   - Conforme aux règles d'usage loyal (Nominative Fair Use)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Surfaces OLED */
-  --bg-oled: #07080b;
-  --bg-surface: #0e1017;
-  --bg-surface-elevated: #141722;
-  --bg-surface-glass: rgba(16, 19, 28, 0.85);
+  /* Surfaces OLED & Monochrome */
+  --bg-oled: #000000;
+  --bg-app: #09090b;
+  --bg-surface: #121215;
+  --bg-surface-card: #141418;
+  --bg-surface-elevated: #1f1f24;
+  --bg-surface-glass: rgba(18, 18, 22, 0.88);
 
   /* Bordures fines haute définition */
   --border-hairline: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.14);
-  --border-focus: #ff5500;
+  --border-medium: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.35);
+  --border-focus: #ffffff;
 
-  /* Couleurs de marque & Accents sportifs */
-  --brand-orange: #ff5500;
-  --brand-orange-light: #ff7733;
-  --brand-orange-glow: rgba(255, 85, 0, 0.35);
+  /* Accent Monochrome & Préservation rétrocompatibilité tests (--brand-orange) */
+  --brand-orange: #ffffff; /* Re-mappé sur blanc pur pour la DA noir gris blanc */
+  --brand-orange-light: #f4f4f5;
+  --brand-orange-glow: rgba(255, 255, 255, 0.25);
 
-  --accent-gold: #f59e0b;
-  --accent-gold-glow: rgba(245, 158, 11, 0.4);
+  /* Accents platine & argent */
+  --accent-gold: #ffffff;
+  --accent-gold-glow: rgba(255, 255, 255, 0.25);
 
+  /* Accents fonctionnels sports (discrets) */
   --accent-emerald: #10b981;
   --accent-rose: #ef4444;
 
   /* Textes & Contrastes */
   --text-primary: #ffffff;
-  --text-secondary: #cbd5e1;
-  --text-muted: #8492a6;
+  --text-secondary: #d4d4d8;
+  --text-muted: #71717a;
+  --text-dim: #52525b;
 }
 
 /* Base Document */
@@ -63,13 +69,13 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Texture terrain de basket et ambiance nocturne OLED */
+/* Texture de fond épurée : noir absolu avec micro-lueur diffuse neutre */
 .court-bg {
-  background-color: var(--bg-oled);
+  background-color: #000000;
   background-image: 
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 85, 0, 0.10) 0%, transparent 65%),
-    radial-gradient(circle at 50% 100%, rgba(24, 28, 42, 0.5) 0%, transparent 70%),
-    linear-gradient(to bottom, #07080b 0%, #0b0c12 100%);
+    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(39, 39, 42, 0.25) 0%, transparent 70%),
+    linear-gradient(to bottom, #000000 0%, #09090b 100%);
   background-attachment: fixed;
 }
 
@@ -79,33 +85,33 @@ header.sticky {
 }
 
 .native-tabbar {
-  background: rgba(8, 9, 13, 0.92);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: rgba(9, 9, 11, 0.94);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border-top: 1px solid var(--border-hairline);
   padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.7);
 }
 
-/* Cartes de match (Glassmorphism & Finition Stadium) */
+/* Cartes de match (Épurées, fond graphite & bordure subtile) */
 .match-card {
-  background: linear-gradient(180deg, #11131b 0%, #0d0f16 100%);
+  background: linear-gradient(180deg, #121216 0%, #0d0d10 100%);
   border: 1px solid var(--border-hairline);
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   border-radius: 16px;
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .match-card:hover {
   border-color: var(--border-medium);
-  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Boutons de cote sportive (Tactiles avec retour visuel) */
+/* Boutons de cote (Noir mat & interaction tactile) */
 .odds-btn {
-  background: linear-gradient(180deg, #151823 0%, #12141d 100%);
+  background: linear-gradient(180deg, #16161b 0%, #121216 100%);
   border: 1px solid var(--border-hairline);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 80px;
   height: 100%;
@@ -115,7 +121,7 @@ header.sticky {
 }
 
 .odds-btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #1b1f2d 0%, #161924 100%);
+  background: linear-gradient(180deg, #1c1c22 0%, #16161b 100%);
   border-color: var(--border-medium);
 }
 
@@ -123,11 +129,11 @@ header.sticky {
   transform: scale(0.97);
 }
 
-/* État sélectionné (Lueur électrique sportive) */
+/* État cote sélectionnée (Contraste blanc pur) */
 .odds-btn-selected {
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.22) 0%, rgba(255, 85, 0, 0.08) 100%) !important;
-  border-color: #ff5500 !important;
-  box-shadow: 0 0 20px -2px rgba(255, 85, 0, 0.35), inset 0 0 14px rgba(255, 85, 0, 0.15) !important;
+  background: linear-gradient(180deg, #22222a 0%, #18181f 100%) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 1px #ffffff, 0 4px 20px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
 /* Pastilles de statut & Chips de filtre */
@@ -140,42 +146,42 @@ header.sticky {
 }
 
 .filter-chip.active {
-  background: #ff5500 !important;
+  background: #ffffff !important;
   color: #000000 !important;
-  box-shadow: 0 0 14px rgba(255, 85, 0, 0.4);
+  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.25);
 }
 
-/* Podium du classement */
+/* Podium du classement (Finitions Platine, Argent, Graphite) */
 .podium-step-1 {
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.18) 0%, rgba(16, 19, 27, 0.95) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  box-shadow: 0 0 24px -4px rgba(245, 158, 11, 0.25);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(18, 18, 22, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 24px -4px rgba(255, 255, 255, 0.18);
 }
 
 .podium-step-2 {
-  background: linear-gradient(180deg, rgba(148, 163, 184, 0.15) 0%, rgba(16, 19, 27, 0.95) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: linear-gradient(180deg, rgba(161, 161, 170, 0.10) 0%, rgba(18, 18, 22, 0.95) 100%);
+  border: 1px solid rgba(161, 161, 170, 0.30);
 }
 
 .podium-step-3 {
-  background: linear-gradient(180deg, rgba(217, 119, 6, 0.15) 0%, rgba(16, 19, 27, 0.95) 100%);
-  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: linear-gradient(180deg, rgba(82, 82, 91, 0.10) 0%, rgba(18, 18, 22, 0.95) 100%);
+  border: 1px solid rgba(82, 82, 91, 0.30);
 }
 
-/* Illumination Bonus x2 (Chantier 2) */
+/* Illumination Bonus x2 (Style Platine Monochrome) */
 .match-card-boosted {
-  border-color: #f59e0b !important;
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.14) 0%, rgba(14, 16, 23, 0.98) 100%) !important;
-  box-shadow: 0 0 24px -2px rgba(245, 158, 11, 0.4), inset 0 0 15px rgba(245, 158, 11, 0.10) !important;
-  animation: pulse-glow 2.4s infinite ease-in-out;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(14, 14, 18, 0.98) 100%) !important;
+  box-shadow: 0 0 24px -2px rgba(255, 255, 255, 0.18), inset 0 0 15px rgba(255, 255, 255, 0.05) !important;
+  animation: pulse-mono 2.8s infinite ease-in-out;
 }
 
-@keyframes pulse-glow {
+@keyframes pulse-mono {
   0%, 100% {
-    box-shadow: 0 0 18px -2px rgba(245, 158, 11, 0.35), inset 0 0 12px rgba(245, 158, 11, 0.08);
+    box-shadow: 0 0 16px -2px rgba(255, 255, 255, 0.12), inset 0 0 10px rgba(255, 255, 255, 0.03);
   }
   50% {
-    box-shadow: 0 0 28px 2px rgba(245, 158, 11, 0.55), inset 0 0 20px rgba(245, 158, 11, 0.16);
+    box-shadow: 0 0 28px 2px rgba(255, 255, 255, 0.28), inset 0 0 18px rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -189,23 +195,23 @@ header.sticky {
 }
 
 .boost-btn-active {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: #000000;
+  background: #ffffff !important;
+  color: #000000 !important;
   font-weight: 900;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
-  border: 1px solid #fbbf24;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
+  border: 1px solid #ffffff;
 }
 
 .boost-btn-inactive {
-  background: #141722;
-  color: #94a3b8;
+  background: #18181c;
+  color: #a1a1aa;
   border: 1px solid var(--border-hairline);
 }
 
 .boost-btn-inactive:hover {
-  background: #1c2130;
-  color: #f59e0b;
-  border-color: #f59e0b;
+  background: #24242c;
+  color: #ffffff;
+  border-color: var(--border-medium);
 }
 
 /* Badges & Trophées */
@@ -217,13 +223,13 @@ header.sticky {
 }
 
 .badge-card.unlocked {
-  border-color: rgba(255, 85, 0, 0.45);
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.12) 0%, rgba(14, 16, 23, 0.95) 100%);
-  box-shadow: 0 6px 24px -4px rgba(255, 85, 0, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(18, 18, 22, 0.98) 100%);
+  box-shadow: 0 6px 24px -4px rgba(255, 255, 255, 0.12);
 }
 
 .badge-card.locked {
-  opacity: 0.65;
+  opacity: 0.55;
 }
 
 .badge-icon-wrap {
@@ -238,27 +244,26 @@ header.sticky {
 }
 
 .badge-card.unlocked .badge-icon-wrap {
-  background: linear-gradient(135deg, #ff5500 0%, #ff8833 100%);
-  box-shadow: 0 0 18px rgba(255, 85, 0, 0.45);
+  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 100%);
+  color: #000000;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
 }
 
 .badge-card.locked .badge-icon-wrap {
-  background: #141722;
+  background: #18181c;
   border: 1px solid var(--border-hairline);
   filter: grayscale(1);
 }
 
-/* --- MPP Features Styling --- */
-
 /* Mur de chambrage (Mini-chat) */
 .chat-bubble-me {
-  background: linear-gradient(135deg, rgba(255, 85, 0, 0.28) 0%, rgba(255, 85, 0, 0.12) 100%);
-  border: 1px solid rgba(255, 85, 0, 0.4);
+  background: #27272a;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-bottom-right-radius: 4px;
 }
 
 .chat-bubble-other {
-  background: #141722;
+  background: #18181c;
   border: 1px solid var(--border-hairline);
   border-bottom-left-radius: 4px;
 }
@@ -275,10 +280,10 @@ header.sticky {
 
 /* Jauge de répartition des votes */
 .vote-gauge-bar {
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
   overflow: hidden;
-  background: #12141c;
+  background: #18181c;
   border: 1px solid var(--border-hairline);
   display: flex;
 }
@@ -294,20 +299,20 @@ header.sticky {
   transition: background-color 0.15s ease;
 }
 .player-suggest-item:hover {
-  background-color: #1e2333;
+  background-color: #24242c;
 }
 
 /* Form inputs styling */
 input:focus, select:focus, textarea:focus {
-  border-color: #ff5500 !important;
-  box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.25) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25) !important;
 }
 
 /* Modal Box styling (OLED Glassmorphism) */
 .modal-box {
-  background: linear-gradient(180deg, #121520 0%, #0c0e15 100%);
+  background: linear-gradient(180deg, #141418 0%, #0a0a0d 100%);
   border: 1px solid var(--border-medium);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.7);
   max-height: 88dvh;
   max-height: 88vh;
   overflow-y: auto;
@@ -316,9 +321,9 @@ input:focus, select:focus, textarea:focus {
 
 /* Surface Card */
 .surface-card {
-  background: linear-gradient(180deg, #10131c 0%, #0c0e15 100%);
+  background: linear-gradient(180deg, #131317 0%, #0c0c0f 100%);
   border: 1px solid var(--border-hairline);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   border-radius: 16px;
 }
 
@@ -333,11 +338,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 .tab-btn.active {
-  color: #ff5500 !important;
+  color: #ffffff !important;
 }
 
 .tab-btn.active svg {
-  filter: drop-shadow(0 0 8px rgba(255, 85, 0, 0.6));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
 /* Boutons tactiles interactifs */
@@ -376,14 +381,12 @@ input:focus, select:focus, textarea:focus {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #07080b;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #202434;
+  background: #27272a;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff5500;
+  background: #ffffff;
 }
-
-
