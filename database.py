@@ -42,6 +42,9 @@ def run_migrations():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
             "ALTER TABLE matches ADD COLUMN IF NOT EXISTS week_number INTEGER DEFAULT 1",
             "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
+            "CREATE TABLE IF NOT EXISTS league_messages (id SERIAL PRIMARY KEY, league_id INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, content VARCHAR(280) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+            "CREATE INDEX IF NOT EXISTS ix_league_messages_league_id ON league_messages (league_id)",
+            "CREATE INDEX IF NOT EXISTS ix_league_messages_user_id ON league_messages (user_id)",
         ]
         for stmt in statements:
             try:
@@ -67,4 +70,21 @@ def run_migrations():
                         conn.commit()
             except Exception:
                 pass
+
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS league_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        league_id INTEGER NOT NULL,
+                        user_id INTEGER NOT NULL,
+                        content VARCHAR(280) NOT NULL,
+                        created_at DATETIME NOT NULL,
+                        FOREIGN KEY(league_id) REFERENCES leagues(id) ON DELETE CASCADE,
+                        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                    )
+                """))
+                conn.commit()
+        except Exception:
+            pass
 

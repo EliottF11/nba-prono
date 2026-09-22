@@ -2017,15 +2017,17 @@ function renderLeagueDetail(league) {
       </div>
 
       <!-- Formulaire d'envoi -->
-      <form id="league-chat-form" onsubmit="handleSendLeagueMessage(event, ${league.id})" class="flex items-center gap-2">
+      <form id="league-chat-form" onsubmit="handleSendLeagueMessage(event, ${league.id}); return false;" class="flex items-center gap-2">
         <input 
           type="text" 
           id="league-chat-input" 
           maxlength="280" 
           placeholder="Chambre tes potes... (ex: Préparez les mouchoirs 😈)" 
           class="flex-1 bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); handleSendLeagueMessage(event, ${league.id}); }"
         >
         <button 
+          id="league-chat-submit-btn"
           type="submit" 
           class="px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer shrink-0 shadow-md"
         >
@@ -2423,20 +2425,31 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
   } catch (err) {
     if (!isBackground) {
       console.error("Erreur chargement messages:", err);
+      container.innerHTML = `
+        <div class="text-center text-rose-400 text-[11px] py-4 space-y-2">
+          <div>⚠️ ${escapeHtml(err.message || 'Impossible de charger les messages')}</div>
+          <button type="button" onclick="loadLeagueMessages(${leagueId})" class="px-2.5 py-1 rounded-lg bg-[#1c1f2e] text-zinc-300 hover:text-white border border-zinc-700 text-[10px] cursor-pointer">
+            🔄 Réessayer
+          </button>
+        </div>
+      `;
     }
   }
 }
 
 async function handleSendLeagueMessage(e, leagueId) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
   const input = document.getElementById('league-chat-input');
   if (!input) return;
 
   const content = input.value.trim();
   if (!content) return;
 
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  if (submitBtn) submitBtn.disabled = true;
+  const submitBtn = document.getElementById('league-chat-submit-btn') || (e.target && e.target.querySelector ? e.target.querySelector('button[type="submit"]') : null);
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '...';
+  }
 
   try {
     await API.sendLeagueMessage(leagueId, content);
@@ -2444,9 +2457,13 @@ async function handleSendLeagueMessage(e, leagueId) {
     await loadLeagueMessages(leagueId, false);
     input.focus();
   } catch (err) {
+    console.error("Erreur envoi message:", err);
     notify(err.message || "Erreur lors de l'envoi du message", "error");
   } finally {
-    if (submitBtn) submitBtn.disabled = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Envoyer';
+    }
   }
 }
 

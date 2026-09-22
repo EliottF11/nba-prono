@@ -168,6 +168,17 @@ def get_my_leagues(
     Renvoie la liste des ligues dont l'utilisateur actuel est membre,
     avec le nombre de participants et son rang dans chacune.
     """
+    # 1. Auto-rétablissement : inscrire le créateur s'il manque dans LeagueMember
+    created_leagues = db.query(League).filter(League.creator_id == current_user.id).all()
+    for cl in created_leagues:
+        exists = db.query(LeagueMember).filter(
+            LeagueMember.league_id == cl.id,
+            LeagueMember.user_id == current_user.id
+        ).first()
+        if not exists:
+            db.add(LeagueMember(league_id=cl.id, user_id=current_user.id))
+    db.commit()
+
     memberships = db.query(LeagueMember).filter(LeagueMember.user_id == current_user.id).all()
     summaries = []
 
@@ -220,11 +231,17 @@ def get_league_detail(
     if not league:
         raise HTTPException(status_code=404, detail="Ligue introuvable.")
 
-    # Vérifier l'appartenance à la ligue
+    # Vérifier l'appartenance à la ligue (auto-inscription si créateur)
     membership = db.query(LeagueMember).filter(
         LeagueMember.league_id == league.id,
         LeagueMember.user_id == current_user.id
     ).first()
+
+    if not membership and league.creator_id == current_user.id:
+        membership = LeagueMember(league_id=league.id, user_id=current_user.id)
+        db.add(membership)
+        db.commit()
+        db.refresh(league)
 
     if not membership:
         raise HTTPException(status_code=403, detail="Vous devez rejoindre cette ligue pour consulter son classement.")
@@ -418,6 +435,12 @@ def get_league_messages(
         LeagueMember.league_id == league.id,
         LeagueMember.user_id == current_user.id
     ).first()
+
+    if not membership and league.creator_id == current_user.id:
+        membership = LeagueMember(league_id=league.id, user_id=current_user.id)
+        db.add(membership)
+        db.commit()
+
     if not membership:
         raise HTTPException(status_code=403, detail="Vous devez être membre de la ligue pour voir le mur de chambrage.")
 
@@ -465,6 +488,12 @@ def post_league_message(
         LeagueMember.league_id == league.id,
         LeagueMember.user_id == current_user.id
     ).first()
+
+    if not membership and league.creator_id == current_user.id:
+        membership = LeagueMember(league_id=league.id, user_id=current_user.id)
+        db.add(membership)
+        db.commit()
+
     if not membership:
         raise HTTPException(status_code=403, detail="Vous devez être membre de la ligue pour écrire sur le mur.")
 

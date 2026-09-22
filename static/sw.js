@@ -1,10 +1,10 @@
 // Service Worker pour HOOPS Prono (PWA)
-const CACHE_NAME = 'hoops-prono-v10';
+const CACHE_NAME = 'hoops-prono-v11';
 const STATIC_ASSETS = [
   '/',
   '/static/css/style.css',
-  '/static/js/api.js',
-  '/static/js/app.js',
+  '/static/js/api.js?v=11',
+  '/static/js/app.js?v=11',
   '/static/manifest.json',
   '/static/icons/icon.svg'
 ];
@@ -29,15 +29,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Stratégie Network-First pour éviter que les vieux scripts ne soient servis depuis le cache
 self.addEventListener('fetch', (event) => {
-  // Les requêtes API passent toujours par le réseau en direct
+  // Les requêtes API passent toujours en direct sans interférence
   if (event.request.url.includes('/api/')) {
     return;
   }
   
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === 'GET') {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
