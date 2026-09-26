@@ -203,6 +203,10 @@ const API = {
       method: 'POST',
       body: JSON.stringify({ content })
     });
+  },
+
+  async getMyWrapped(period = 'weekly') {
+    return await this.request(`/api/users/me/wrapped?period=${period}`);
   }
 };
 

@@ -658,6 +658,7 @@ async function handleToggleBoost(matchId, event) {
         }
       });
       state.boostedPredictions[matchId] = true;
+      launchConfetti();
       notify(`Bonus x2 activé pour la Semaine ${week} ! ⚡ (Points doublés)`, "success");
     } else {
       delete state.boostedPredictions[matchId];
@@ -1430,6 +1431,26 @@ async function renderProfile() {
           </div>
         </div>
 
+      </div>
+
+      <!-- Équipe Fétiche & Chat Noir -->
+      <div class="grid grid-cols-2 gap-2">
+        <div class="surface-card p-2.5 rounded-xl border border-white/5 space-y-0.5">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+            <span>🍀</span> Équipe Fétiche
+          </div>
+          <div class="font-condensed font-black text-sm text-white truncate">
+            ${stats.favorite_team || 'En cours...'}
+          </div>
+        </div>
+        <div class="surface-card p-2.5 rounded-xl border border-white/5 space-y-0.5">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1">
+            <span>🐈‍⬛</span> Chat Noir
+          </div>
+          <div class="font-condensed font-black text-sm text-white truncate">
+            ${stats.nemesis_team || 'Aucun 🛡️'}
+          </div>
+        </div>
       </div>
 
       <!-- Actions Rapides Profil (Bilan Story & Défier) -->
@@ -2475,8 +2496,145 @@ function insertEmojiToChat(emoji) {
   }
 }
 
-// --- Améliorations MPP : Carte Bilan Partageable ---
-function openShareRecapModal(preferredLeagueId = null) {
+// --- Animation Confettis (Canvas Native, Ultra-Légère, 0 Dépendance) ---
+function launchConfetti() {
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '99999';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const pieces = [];
+    const colors = ['#ffffff', '#e4e4e7', '#facc15', '#60a5fa', '#f87171', '#34d399', '#fb923c'];
+    for (let i = 0; i < 65; i++) {
+      pieces.push({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 80,
+        y: canvas.height / 3 + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 14,
+        vy: Math.random() * -12 - 4,
+        size: Math.random() * 6 + 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rotSpeed: (Math.random() - 0.5) * 12,
+        opacity: 1
+      });
+    }
+
+    let animationFrame;
+    const startTime = Date.now();
+
+    function update() {
+      const elapsed = Date.now() - startTime;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let p of pieces) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.38;
+        p.rotation += p.rotSpeed;
+        if (elapsed > 1800) {
+          p.opacity -= 0.035;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+        ctx.restore();
+      }
+
+      if (elapsed < 2800) {
+        animationFrame = requestAnimationFrame(update);
+      } else {
+        cancelAnimationFrame(animationFrame);
+        canvas.remove();
+      }
+    }
+    animationFrame = requestAnimationFrame(update);
+  } catch (e) {
+    console.warn("Confetti non disponible:", e);
+  }
+}
+
+// --- HOOPS WRAPPED (Hebdomadaire & Fin de Saison) ---
+let currentWrappedPeriod = 'weekly';
+let currentWrappedShareText = '';
+
+async function loadWrappedData(period = 'weekly') {
+  currentWrappedPeriod = period;
+  const modal = document.getElementById('share-recap-modal');
+  if (!modal) return;
+
+  const btnWeekly = document.getElementById('wrapped-tab-weekly');
+  const btnSeason = document.getElementById('wrapped-tab-season');
+  if (btnWeekly && btnSeason) {
+    if (period === 'weekly') {
+      btnWeekly.className = "py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer bg-white text-black shadow";
+      btnSeason.className = "py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer text-zinc-400 hover:text-white";
+    } else {
+      btnSeason.className = "py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer bg-white text-black shadow";
+      btnWeekly.className = "py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer text-zinc-400 hover:text-white";
+    }
+  }
+
+  try {
+    const data = await API.getMyWrapped(period);
+    if (!data) return;
+
+    currentWrappedShareText = data.share_text;
+
+    const weekBadge = document.getElementById('recap-week-badge');
+    const avatarEl = document.getElementById('recap-avatar');
+    const usernameEl = document.getElementById('recap-username');
+    const rankBadgeEl = document.getElementById('recap-rank-badge');
+    const titleEl = document.getElementById('recap-title');
+    const pointsEl = document.getElementById('recap-points');
+    const winrateEl = document.getElementById('recap-winrate');
+    const accuracyEl = document.getElementById('recap-accuracy');
+    const favTeamEl = document.getElementById('recap-favorite-team');
+    const nemTeamEl = document.getElementById('recap-nemesis-team');
+    const punchlineEl = document.getElementById('recap-punchline');
+
+    if (weekBadge) weekBadge.textContent = data.period_title;
+    if (avatarEl) avatarEl.innerHTML = getUserAvatarHtml(data.username, 'lg');
+    if (usernameEl) usernameEl.textContent = data.username;
+    if (rankBadgeEl) rankBadgeEl.textContent = data.rank ? `#${data.rank}` : '-';
+    if (pointsEl) pointsEl.textContent = (period === 'weekly' ? data.points : data.total_points).toFixed(1);
+    if (winrateEl) winrateEl.textContent = `${data.winrate}%`;
+    if (accuracyEl) accuracyEl.textContent = data.max_odds_won > 0 ? data.max_odds_won.toFixed(2) : `${data.won_predictions}/${data.total_predictions}`;
+    if (favTeamEl) favTeamEl.textContent = data.favorite_team || 'En cours...';
+    if (nemTeamEl) nemTeamEl.textContent = data.nemesis_team || 'Aucun 🛡️';
+
+    if (titleEl) {
+      if (data.winrate >= 70) titleEl.textContent = "🔥 Précision chirurgicale";
+      else if (data.winrate >= 50) titleEl.textContent = "🏀 Clutch Player";
+      else titleEl.textContent = "🎯 En pleine montée en puissance";
+    }
+
+    if (punchlineEl) {
+      if (data.winrate >= 60) {
+        punchlineEl.textContent = "« MVP sur le parquet ! Qui peut rivaliser ? Venez tester vos pronos ! »";
+      } else {
+        punchlineEl.textContent = "« La saison est encore longue, préparez-vous au comeback ! 🚀 »";
+      }
+    }
+  } catch (err) {
+    console.error("Erreur chargement Wrapped:", err);
+  }
+}
+
+async function openShareRecapModal(preferredLeagueId = null) {
   if (!state.currentUser) {
     openAuthModal('login');
     notify("Connecte-toi pour générer ton bilan !", "info");
@@ -2486,47 +2644,14 @@ function openShareRecapModal(preferredLeagueId = null) {
   const modal = document.getElementById('share-recap-modal');
   if (!modal) return;
 
-  const currentWeek = state.selectedWeek === 'all' ? 1 : parseInt(state.selectedWeek);
-  const weekBadge = document.getElementById('recap-week-badge');
-  const avatarEl = document.getElementById('recap-avatar');
-  const usernameEl = document.getElementById('recap-username');
-  const titleEl = document.getElementById('recap-title');
-  const pointsEl = document.getElementById('recap-points');
-  const winrateEl = document.getElementById('recap-winrate');
-  const accuracyEl = document.getElementById('recap-accuracy');
-  const punchlineEl = document.getElementById('recap-punchline');
-
-  if (weekBadge) weekBadge.textContent = `Semaine ${currentWeek}`;
-  if (usernameEl) usernameEl.textContent = state.currentUser.username;
-  if (avatarEl) avatarEl.innerHTML = getUserAvatarHtml(state.currentUser.username, 'lg');
-
-  const totalPoints = state.currentUser.total_points || 0.0;
-  if (pointsEl) pointsEl.textContent = totalPoints.toFixed(1);
-
-  // Stats calculées
-  const preds = Object.keys(state.myPredictions).length;
-  const wonMatches = state.matches.filter(m => m.status === 'finished' && state.myPredictions[m.id] === m.winner_team_id).length;
-  const finishedPredicted = state.matches.filter(m => m.status === 'finished' && !!state.myPredictions[m.id]).length;
-  const winRate = finishedPredicted > 0 ? Math.round((wonMatches / finishedPredicted) * 100) : 0;
-
-  if (winrateEl) winrateEl.textContent = `${winRate}%`;
-  if (accuracyEl) accuracyEl.textContent = `${wonMatches}/${finishedPredicted || preds}`;
-
-  if (titleEl) {
-    if (winRate >= 70) titleEl.textContent = "🔥 Précision chirurgicale";
-    else if (winRate >= 50) titleEl.textContent = "🏀 Clutch Player";
-    else titleEl.textContent = "🎯 En pleine montée en puissance";
-  }
-
-  if (punchlineEl) {
-    if (winRate >= 70) {
-      punchlineEl.textContent = "« MVP de la semaine ! Qui peut rivaliser ? Venez tester vos pronos ! »";
-    } else {
-      punchlineEl.textContent = "« La saison est encore longue, préparez-vous au comeback ! 🚀 »";
-    }
-  }
-
   modal.classList.remove('hidden');
+  await loadWrappedData('weekly');
+  launchConfetti();
+}
+
+function switchWrappedPeriod(period) {
+  loadWrappedData(period);
+  launchConfetti();
 }
 
 function closeShareRecapModal() {
@@ -2534,24 +2659,17 @@ function closeShareRecapModal() {
   if (modal) modal.classList.add('hidden');
 }
 
-function generateRecapShareText() {
-  const user = state.currentUser ? state.currentUser.username : "Un joueur";
-  const points = state.currentUser ? state.currentUser.total_points.toFixed(1) : "0.0";
-  const currentWeek = state.selectedWeek === 'all' ? 1 : state.selectedWeek;
-  return `🏀 HOOPS PRONO - Semaine ${currentWeek}\n👤 ${user}\n🔥 Total : ${points} pts\nViens défier tes potes sur HOOPS Prono : ${window.location.origin}`;
-}
-
 async function handleNativeShareRecap() {
-  const text = generateRecapShareText();
+  const text = currentWrappedShareText || (state.currentUser ? `🏀 HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
   if (navigator.share) {
     try {
       await navigator.share({
-        title: "Mon Bilan HOOPS Prono",
+        title: "Mon Wrapped HOOPS Prono",
         text: text,
         url: window.location.origin
       });
     } catch {
-      // Ignoré si annulé
+      // Annulé par l'utilisateur
     }
   } else {
     try {
@@ -2564,7 +2682,7 @@ async function handleNativeShareRecap() {
 }
 
 async function handleCopyRecapText() {
-  const text = generateRecapShareText();
+  const text = currentWrappedShareText || (state.currentUser ? `🏀 HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
   try {
     await navigator.clipboard.writeText(text);
     notify("Texte récapitulatif copié dans le presse-papier ! 📋", "success");
@@ -2593,6 +2711,8 @@ window.handleSendLeagueMessage = handleSendLeagueMessage;
 window.insertEmojiToChat = insertEmojiToChat;
 window.openShareRecapModal = openShareRecapModal;
 window.closeShareRecapModal = closeShareRecapModal;
+window.switchWrappedPeriod = switchWrappedPeriod;
+window.launchConfetti = launchConfetti;
 window.filterPlayerSuggestions = filterPlayerSuggestions;
 window.selectWeeklyPlayer = selectWeeklyPlayer;
 window.clearWeeklyPlayerSelection = clearWeeklyPlayerSelection;

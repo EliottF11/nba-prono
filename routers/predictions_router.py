@@ -14,7 +14,7 @@ from database import get_db
 from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, SeasonPrediction, LeagueMember
 from schemas import (
     MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
-    UserStatsResponse, BadgeResponse, BoostResponse
+    UserStatsResponse, BadgeResponse, BoostResponse, WrappedResponse
 )
 from auth import get_current_user
 
@@ -410,9 +410,15 @@ def get_my_stats(
     underdog_count = 0  # cotes >= 3.00 validées
     boost_won_count = 0  # pronos boostés victorieux
 
+    team_stats = {}
     for pred, match in predictions:
         if match.status == "finished" and match.winner_team_id is not None:
             finished_preds += 1
+            team_id = pred.selected_team_id
+            city = pred.selected_team.city if pred.selected_team else f"Team #{team_id}"
+            if team_id not in team_stats:
+                team_stats[team_id] = {"city": city, "wins": 0, "losses": 0, "points": 0.0}
+
             if pred.selected_team_id == match.winner_team_id:
                 won_preds += 1
                 current_win_streak += 1
@@ -420,6 +426,9 @@ def get_my_stats(
                     max_win_streak = current_win_streak
                 current_loss_streak = 0
                 
+                team_stats[team_id]["wins"] += 1
+                team_stats[team_id]["points"] += pred.points_won
+
                 odds = match.home_odds if pred.selected_team_id == match.home_team_id else match.away_odds
                 won_odds_list.append(odds)
                 
@@ -435,10 +444,23 @@ def get_my_stats(
                 if current_loss_streak > max_loss_streak:
                     max_loss_streak = current_loss_streak
                 current_win_streak = 0
+                team_stats[team_id]["losses"] += 1
 
     winrate = round((won_preds / finished_preds * 100), 1) if finished_preds > 0 else 0.0
     avg_odds = round(sum(won_odds_list) / len(won_odds_list), 2) if won_odds_list else 0.0
     max_odds = round(max(won_odds_list), 2) if won_odds_list else 0.0
+
+    favorite_team = None
+    nemesis_team = None
+    if team_stats:
+        winning = [t for t in team_stats.values() if t["wins"] > 0]
+        if winning:
+            best = max(winning, key=lambda x: (x["wins"], x["points"]))
+            favorite_team = f"{best['city']} ({best['wins']}V - {best['losses']}D)"
+        losing = [t for t in team_stats.values() if t["losses"] > 0]
+        if losing:
+            worst = max(losing, key=lambda x: (x["losses"], -x["wins"]))
+            nemesis_team = f"{worst['city']} ({worst['losses']}D)"
 
     # 3. Badges d'accomplissements visuels (10 badges)
     rookie_target = 5
@@ -590,6 +612,129 @@ def get_my_stats(
         "winrate": winrate,
         "avg_odds": avg_odds,
         "max_odds": max_odds,
+        "favorite_team": favorite_team,
+        "nemesis_team": nemesis_team,
         "badges": badges
     }
+
+
+@router.get("/users/me/wrapped", response_model=WrappedResponse, tags=["Profil & Statistiques"])
+def get_my_wrapped(
+    period: str = "weekly",  # "weekly" ou "season"
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Retourne le bilan Wrapped ultra-visuel (hebdomadaire ou de fin de saison)
+    avec texte optimisé pour le partage en story (Instagram / WhatsApp / LinkedIn).
+    """
+    all_users = db.query(User).order_by(User.total_points.desc(), User.id.asc()).all()
+    total_users = len(all_users)
+    user_rank = None
+    for idx, u in enumerate(all_users, start=1):
+        if u.id == current_user.id:
+            user_rank = idx
+            break
+
+    query = (
+        db.query(Prediction, Match)
+        .join(Match, Prediction.match_id == Match.id)
+        .filter(Prediction.user_id == current_user.id)
+    )
+
+    latest_match = db.query(Match).order_by(Match.week_number.desc()).first()
+    current_week = latest_match.week_number if latest_match else 1
+
+    if period == "weekly":
+        query = query.filter(Match.week_number == current_week)
+        period_title = f"Bilan Semaine {current_week}"
+    else:
+        period_title = "Bilan Fin de Saison"
+
+    predictions = query.order_by(Match.deadline.asc()).all()
+
+    total_preds = len(predictions)
+    finished_preds = 0
+    won_preds = 0
+    won_odds_list = []
+    points_period = 0.0
+    current_streak = 0
+    best_streak = 0
+    team_stats = {}
+
+    for pred, match in predictions:
+        if match.status == "finished" and match.winner_team_id is not None:
+            finished_preds += 1
+            team_id = pred.selected_team_id
+            city = pred.selected_team.city if pred.selected_team else f"Team #{team_id}"
+            if team_id not in team_stats:
+                team_stats[team_id] = {"city": city, "wins": 0, "losses": 0, "points": 0.0}
+
+            if pred.selected_team_id == match.winner_team_id:
+                won_preds += 1
+                points_period += pred.points_won
+                current_streak += 1
+                if current_streak > best_streak:
+                    best_streak = current_streak
+                team_stats[team_id]["wins"] += 1
+                team_stats[team_id]["points"] += pred.points_won
+                odds = match.home_odds if pred.selected_team_id == match.home_team_id else match.away_odds
+                won_odds_list.append(odds)
+            else:
+                current_streak = 0
+                team_stats[team_id]["losses"] += 1
+
+    winrate = round((won_preds / finished_preds * 100), 1) if finished_preds > 0 else 0.0
+    max_odds_won = round(max(won_odds_list), 2) if won_odds_list else 0.0
+
+    favorite_team = None
+    nemesis_team = None
+    if team_stats:
+        winning = [t for t in team_stats.values() if t["wins"] > 0]
+        if winning:
+            best = max(winning, key=lambda x: (x["wins"], x["points"]))
+            favorite_team = f"{best['city']} ({best['wins']}V)"
+        losing = [t for t in team_stats.values() if t["losses"] > 0]
+        if losing:
+            worst = max(losing, key=lambda x: (x["losses"], -x["wins"]))
+            nemesis_team = f"{worst['city']} ({worst['losses']}D)"
+
+    stats_data = get_my_stats(current_user=current_user, db=db)
+    unlocked_badges = sum(1 for b in stats_data["badges"] if b["unlocked"])
+
+    rank_str = f"#{user_rank}/{total_users}" if user_rank else "Non classé"
+    fav_line = f"🍀 Fétiche : {favorite_team}\n" if favorite_team else ""
+    nem_line = f"🐈‍⬛ Chat noir : {nemesis_team}\n" if nemesis_team else ""
+
+    share_text = (
+        f"🏀 MON WRAPPED HOOPS PRONO ({period_title}) 🏀\n"
+        f"👤 Joueur : {current_user.username}\n"
+        f"🏆 Classement : {rank_str}\n"
+        f"⭐ Points : +{round(points_period, 1)} pts (Total : {round(current_user.total_points, 1)})\n"
+        f"🎯 Réussite : {won_preds}/{finished_preds} ({winrate}%)\n"
+        f"🔥 Plus grosse cote : {max_odds_won if max_odds_won > 0 else '-'}\n"
+        f"{fav_line}{nem_line}"
+        f"👉 Viens me défier sur https://hoops-prono.onrender.com !"
+    )
+
+    return {
+        "user_id": current_user.id,
+        "username": current_user.username,
+        "period": period,
+        "period_title": period_title,
+        "points": round(points_period, 2),
+        "total_points": round(current_user.total_points, 2),
+        "rank": user_rank,
+        "total_users": total_users,
+        "total_predictions": total_preds,
+        "won_predictions": won_preds,
+        "winrate": winrate,
+        "max_odds_won": max_odds_won,
+        "favorite_team": favorite_team,
+        "nemesis_team": nemesis_team,
+        "best_streak": best_streak,
+        "unlocked_badges_count": unlocked_badges,
+        "share_text": share_text
+    }
+
 

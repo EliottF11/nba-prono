@@ -118,7 +118,30 @@ class UserStatsResponse(BaseModel):
     winrate: float
     avg_odds: float
     max_odds: float
+    favorite_team: Optional[str] = None
+    nemesis_team: Optional[str] = None
     badges: List[BadgeResponse]
+
+
+class WrappedResponse(BaseModel):
+    user_id: int
+    username: str
+    period: str  # "weekly" ou "season"
+    period_title: str
+    points: float
+    total_points: float
+    rank: Optional[int] = None
+    total_users: int
+    total_predictions: int
+    won_predictions: int
+    winrate: float
+    max_odds_won: float
+    favorite_team: Optional[str] = None
+    nemesis_team: Optional[str] = None
+    best_streak: int
+    unlocked_badges_count: int
+    share_text: str
+
 
 
 # --- Schémas Pronostics d'Avant-Saison (Chantier 3) ---

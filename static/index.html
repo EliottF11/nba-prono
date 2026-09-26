@@ -20,10 +20,10 @@
   <!-- Feuille de style dédiée Noir / Gris / Blanc -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="court-bg min-h-screen pb-20 text-zinc-100">
+<body class="court-bg min-h-screen pb-20 text-zinc-100 w-full overflow-x-hidden select-none">
 
-  <!-- Wrapper Mobile-First -->
-  <div class="max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col border-x border-[rgba(255,255,255,0.08)] bg-[#09090b] shadow-2xl relative">
+  <!-- Wrapper Mobile-First Anti-Débordement -->
+  <div class="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col border-x border-[rgba(255,255,255,0.08)] bg-[#09090b] shadow-2xl relative overflow-x-hidden">
     
     <!-- Top Bar Sportive Ultra-Épurée -->
     <header class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
@@ -507,64 +507,93 @@
       </div>
     </div>
 
-    <!-- Modale Carte Bilan Partageable (Format Story / WhatsApp) -->
-    <div id="share-recap-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-      <div class="modal-box rounded-2xl w-full max-w-sm p-4 shadow-2xl relative max-h-[95vh] flex flex-col space-y-3.5">
-        <button id="close-share-recap-modal" class="absolute top-3.5 right-3.5 text-zinc-400 hover:text-white transition cursor-pointer z-10">
+    <!-- Modale HOOPS Wrapped Partageable (Format Story / WhatsApp / LinkedIn) -->
+    <div id="share-recap-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+      <div class="modal-box rounded-2xl w-full max-w-sm p-4 shadow-2xl relative max-h-[95vh] flex flex-col space-y-3">
+        <button id="close-share-recap-modal" class="absolute top-3 right-3 text-zinc-400 hover:text-white transition cursor-pointer z-10 p-1">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
-        <div class="text-center pt-1">
-          <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center justify-center gap-1.5">
-            <span>📸</span> Bilan Partageable
-          </h3>
-          <p class="text-[11px] text-zinc-400">Partage tes performances avec tes potes !</p>
+        <div class="text-center pt-0.5">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-condensed font-black tracking-widest uppercase text-white mb-1">
+            <span>🎁</span> HOOPS WRAPPED
+          </div>
+          <p class="text-[11px] text-zinc-400">Ton bilan officiel à partager en Story ou sur les réseaux</p>
         </div>
 
-        <!-- Carte Visuelle Récapitulative Minimaliste -->
-        <div id="share-recap-card" class="bg-gradient-to-br from-[#18181e] via-[#101014] to-[#0a0a0d] border border-zinc-700/60 rounded-2xl p-4 space-y-3 text-center shadow-xl relative overflow-hidden">
+        <!-- Sélecteur de période : Semaine vs Saison -->
+        <div class="grid grid-cols-2 gap-1.5 bg-[#141418] p-1 rounded-xl border border-white/10 text-center">
+          <button id="wrapped-tab-weekly" onclick="switchWrappedPeriod('weekly')" class="py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer bg-white text-black shadow">
+            🏀 Semaine
+          </button>
+          <button id="wrapped-tab-season" onclick="switchWrappedPeriod('season')" class="py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer text-zinc-400 hover:text-white">
+            🏆 Fin de Saison
+          </button>
+        </div>
+
+        <!-- Carte Visuelle Récapitulative Ultra-Stylée (Story Card) -->
+        <div id="share-recap-card" class="bg-gradient-to-br from-[#1c1c24] via-[#101014] to-[#08080a] border border-white/15 rounded-2xl p-3.5 space-y-2.5 text-center shadow-2xl relative overflow-hidden">
           <div class="flex items-center justify-between border-b border-white/10 pb-2">
             <div class="flex items-center space-x-1.5">
               <img src="/static/icons/icon.svg" alt="HOOPS Prono" class="w-5 h-5 rounded shadow">
               <span class="font-condensed font-black text-xs tracking-wider text-white">HOOPS <span class="text-zinc-400">PRONO</span></span>
             </div>
-            <span class="text-[10px] font-bold text-zinc-200 uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-full border border-white/20" id="recap-week-badge">Semaine 1</span>
+            <span class="text-[10px] font-bold text-white uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded-full border border-white/20" id="recap-week-badge">Semaine 1</span>
           </div>
 
-          <!-- Profil Joueur -->
-          <div class="space-y-1 py-1">
-            <div id="recap-avatar" class="flex justify-center"></div>
-            <div class="font-condensed font-black text-lg text-white tracking-wide" id="recap-username">Joueur</div>
-            <div class="text-[11px] text-zinc-400 font-semibold" id="recap-title">Précision chirurgicale 🎯</div>
+          <!-- Profil & Rang -->
+          <div class="space-y-0.5 py-0.5">
+            <div id="recap-avatar" class="flex justify-center mb-1"></div>
+            <div class="font-condensed font-black text-xl text-white tracking-wide flex items-center justify-center gap-1.5">
+              <span id="recap-username">Joueur</span>
+              <span id="recap-rank-badge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">#1</span>
+            </div>
+            <div class="text-[11px] text-zinc-300 font-semibold" id="recap-title">Précision chirurgicale 🎯</div>
           </div>
 
           <!-- Stats Chiffrées -->
-          <div class="grid grid-cols-3 gap-2 bg-black/50 p-2.5 rounded-xl border border-white/5">
+          <div class="grid grid-cols-3 gap-1.5 bg-black/60 p-2 rounded-xl border border-white/10">
             <div>
-              <div class="text-[9px] font-bold uppercase text-zinc-400">Points</div>
+              <div class="text-[8px] font-bold uppercase text-zinc-400">Points</div>
               <div class="font-condensed font-black text-base text-white" id="recap-points">0.0</div>
             </div>
             <div>
-              <div class="text-[9px] font-bold uppercase text-zinc-400">Réussite</div>
+              <div class="text-[8px] font-bold uppercase text-zinc-400">Réussite</div>
               <div class="font-condensed font-black text-base text-zinc-200" id="recap-winrate">0%</div>
             </div>
             <div>
-              <div class="text-[9px] font-bold uppercase text-zinc-400">Pronos</div>
-              <div class="font-condensed font-black text-base text-white" id="recap-accuracy">0/0</div>
+              <div class="text-[8px] font-bold uppercase text-zinc-400">Max Cote</div>
+              <div class="font-condensed font-black text-base text-white" id="recap-accuracy">-</div>
             </div>
           </div>
 
-          <div class="text-[10px] italic text-zinc-400" id="recap-punchline">
+          <!-- Fétiche & Chat Noir Décalés -->
+          <div class="grid grid-cols-2 gap-1.5 text-left text-[10px]">
+            <div class="bg-white/5 border border-white/10 p-2 rounded-lg space-y-0.5">
+              <div class="font-bold text-emerald-400 flex items-center gap-1">
+                <span>🍀</span> Fétiche
+              </div>
+              <div class="font-condensed font-bold text-white truncate" id="recap-favorite-team">-</div>
+            </div>
+            <div class="bg-white/5 border border-white/10 p-2 rounded-lg space-y-0.5">
+              <div class="font-bold text-rose-400 flex items-center gap-1">
+                <span>🐈‍⬛</span> Chat Noir
+              </div>
+              <div class="font-condensed font-bold text-white truncate" id="recap-nemesis-team">-</div>
+            </div>
+          </div>
+
+          <div class="text-[10px] italic text-zinc-400 pt-0.5" id="recap-punchline">
             « Qui peut rivaliser cette saison ? Viens tenter ta chance ! »
           </div>
         </div>
 
         <!-- Boutons d'action de partage -->
-        <div class="space-y-2 pt-1">
+        <div class="space-y-1.5 pt-0.5">
           <button id="btn-native-share" class="w-full bg-white hover:bg-zinc-200 text-black font-condensed font-black text-sm uppercase tracking-wider py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
-            <span>📲</span> Partager (WhatsApp / Story)
+            <span>📲</span> Partager en Story / WhatsApp
           </button>
-          <button id="btn-copy-recap-text" class="w-full bg-[#18181c] hover:bg-[#222228] border border-[#27272a] text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <button id="btn-copy-recap-text" class="w-full bg-[#18181c] hover:bg-[#222228] border border-white/10 text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
             <span>📋</span> Copier le texte récapitulatif
           </button>
         </div>
@@ -618,7 +647,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=11"></script>
-  <script src="/static/js/app.js?v=11"></script>
+  <script src="/static/js/api.js?v=12"></script>
+  <script src="/static/js/app.js?v=12"></script>
 </body>
 </html>
