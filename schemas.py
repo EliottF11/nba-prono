@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     username: str
     email: Optional[str] = None
     total_points: float
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -88,6 +89,7 @@ class LeaderboardEntry(BaseModel):
     user_id: int
     username: str
     total_points: float
+    avatar_url: Optional[str] = None
     predictions_count: int = 0
     won_count: int = 0
 
@@ -110,6 +112,7 @@ class UserStatsResponse(BaseModel):
     username: str
     email: Optional[str] = None
     total_points: float
+    avatar_url: Optional[str] = None
     rank: Optional[int] = None
     total_predictions: int
     finished_predictions: int
@@ -126,6 +129,7 @@ class UserStatsResponse(BaseModel):
 class WrappedResponse(BaseModel):
     user_id: int
     username: str
+    avatar_url: Optional[str] = None
     period: str  # "weekly" ou "season"
     period_title: str
     points: float
@@ -141,6 +145,11 @@ class WrappedResponse(BaseModel):
     best_streak: int
     unlocked_badges_count: int
     share_text: str
+
+
+class AvatarUpdateRequest(BaseModel):
+    avatar_url: str
+
 
 
 
@@ -205,6 +214,7 @@ class LeagueJoin(BaseModel):
 class LeagueMemberResponse(BaseModel):
     user_id: int
     username: str
+    avatar_url: Optional[str] = None
     total_points: float
     rank: int
     joined_at: datetime
@@ -275,6 +285,7 @@ class LeagueMessageResponse(BaseModel):
     league_id: int
     user_id: int
     username: str
+    avatar_url: Optional[str] = None
     content: str
     created_at: datetime
     is_me: bool = False

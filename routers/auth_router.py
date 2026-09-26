@@ -8,10 +8,55 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
-from schemas import UserRegister, UserLogin, UserResponse, TokenResponse
+from schemas import UserRegister, UserLogin, UserResponse, TokenResponse, AvatarUpdateRequest
 from auth import hash_password, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentification"])
+
+AVAILABLE_AVATARS = [
+    {
+        "id": "harden_side_eye",
+        "title": "Side-Eye Harden",
+        "meme": "Jugement & Gêne lunaire 👀",
+        "url": "/static/avatars/harden_side_eye.jpg"
+    },
+    {
+        "id": "alonzo_acceptance",
+        "title": "L'Acceptation d'Alonzo",
+        "meme": "It is what it is... 🤷‍♂️",
+        "url": "/static/avatars/alonzo_acceptance.jpg"
+    },
+    {
+        "id": "westbrook_confused",
+        "title": "Westbrook 'What?!'",
+        "meme": "Qu'est-ce que tu racontes man ? 🤔",
+        "url": "/static/avatars/westbrook_confused.jpg"
+    },
+    {
+        "id": "emo_jimmy",
+        "title": "Emo Jimmy Butler",
+        "meme": "Mon état émotionnel actuel 🖤",
+        "url": "/static/avatars/emo_jimmy.jpg"
+    },
+    {
+        "id": "stank_face",
+        "title": "Stank Face DeAndre",
+        "meme": "Validation & Dégoût suprême 😤",
+        "url": "/static/avatars/stank_face.jpg"
+    },
+    {
+        "id": "windhorst_why",
+        "title": "Windhorst 'Why is that?'",
+        "meme": "Théorie du complot NBA ☝️☝️",
+        "url": "/static/avatars/windhorst_why.jpg"
+    },
+    {
+        "id": "iverson_stepover",
+        "title": "The Stepover d'Iverson",
+        "meme": "Le manque de respect maîtrisé 👑",
+        "url": "/static/avatars/iverson_stepover.jpg"
+    }
+]
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserRegister, db: Session = Depends(get_db)):
@@ -104,3 +149,25 @@ def get_me(current_user: User = Depends(get_current_user)):
     Récupère les informations du joueur actuellement connecté via son jeton Bearer.
     """
     return current_user
+
+@router.get("/avatars")
+def get_avatars():
+    """
+    Retourne la liste des avatars Memes NBA cultes disponibles.
+    """
+    return AVAILABLE_AVATARS
+
+@router.put("/avatar", response_model=UserResponse)
+def update_avatar(
+    payload: AvatarUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Met à jour l'avatar du joueur connecté.
+    """
+    current_user.avatar_url = payload.avatar_url
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+

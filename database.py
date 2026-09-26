@@ -40,6 +40,7 @@ def run_migrations():
     if is_postgres:
         statements = [
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255)",
             "ALTER TABLE matches ADD COLUMN IF NOT EXISTS week_number INTEGER DEFAULT 1",
             "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
             "CREATE TABLE IF NOT EXISTS league_messages (id SERIAL PRIMARY KEY, league_id INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, content VARCHAR(280) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
@@ -57,6 +58,7 @@ def run_migrations():
         # SQLite
         migrations = [
             ("users", "email", "ALTER TABLE users ADD COLUMN email VARCHAR(120)"),
+            ("users", "avatar_url", "ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255)"),
             ("matches", "week_number", "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"),
             ("predictions", "is_boosted", "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"),
         ]

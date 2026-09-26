@@ -207,6 +207,17 @@ const API = {
 
   async getMyWrapped(period = 'weekly') {
     return await this.request(`/api/users/me/wrapped?period=${period}`);
+  },
+
+  async getAvatars() {
+    return await this.request('/api/auth/avatars');
+  },
+
+  async setMyAvatar(avatarUrl) {
+    return await this.request('/api/auth/avatar', {
+      method: 'PUT',
+      body: JSON.stringify({ avatar_url: avatarUrl })
+    });
   }
 };
 

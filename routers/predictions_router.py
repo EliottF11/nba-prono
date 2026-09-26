@@ -281,6 +281,7 @@ def get_leaderboard(db: Session = Depends(get_db)):
             user_id=user.id,
             username=user.username,
             total_points=user.total_points,
+            avatar_url=user.avatar_url,
             predictions_count=len(preds),
             won_count=won
         ))
@@ -614,6 +615,7 @@ def get_my_stats(
         "max_odds": max_odds,
         "favorite_team": favorite_team,
         "nemesis_team": nemesis_team,
+        "avatar_url": current_user.avatar_url,
         "badges": badges
     }
 
@@ -720,6 +722,7 @@ def get_my_wrapped(
     return {
         "user_id": current_user.id,
         "username": current_user.username,
+        "avatar_url": current_user.avatar_url,
         "period": period,
         "period_title": period_title,
         "points": round(points_period, 2),

@@ -65,6 +65,7 @@ def build_league_detail(league: League, current_user: User) -> LeagueDetailRespo
         ranked_members.append(LeagueMemberResponse(
             user_id=u.id,
             username=u.username,
+            avatar_url=u.avatar_url,
             total_points=u.total_points,
             rank=rank_idx,
             joined_at=m.joined_at,
@@ -458,6 +459,7 @@ def get_league_messages(
             league_id=m.league_id,
             user_id=m.user_id,
             username=m.user.username if m.user else "Anonyme",
+            avatar_url=m.user.avatar_url if m.user else None,
             content=m.content,
             created_at=m.created_at,
             is_me=(m.user_id == current_user.id)
@@ -511,6 +513,7 @@ def post_league_message(
         league_id=msg.league_id,
         user_id=msg.user_id,
         username=current_user.username,
+        avatar_url=current_user.avatar_url,
         content=msg.content,
         created_at=msg.created_at,
         is_me=True

@@ -600,6 +600,27 @@
       </div>
     </div>
 
+    <!-- Modale Galerie d'Avatars Memes NBA -->
+    <div id="avatar-selector-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+      <div class="modal-box rounded-2xl w-full max-w-sm p-4 shadow-2xl relative max-h-[90vh] flex flex-col space-y-3">
+        <button onclick="closeAvatarSelectorModal()" class="absolute top-3 right-3 text-zinc-400 hover:text-white transition cursor-pointer z-10 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <div class="text-center pt-0.5">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-condensed font-black tracking-widest uppercase text-white mb-1">
+            <span>🎭</span> Galerie Memes NBA
+          </div>
+          <p class="text-[11px] text-zinc-400">Choisis ton avatar culte pour ton profil, le chat et le Wrapped</p>
+        </div>
+
+        <!-- Grille des Avatars -->
+        <div id="avatars-grid" class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[60vh]">
+          <!-- Injecté dynamiquement par app.js -->
+        </div>
+      </div>
+    </div>
+
     <!-- Modale Mentions Légales & Fair Use (Conformité Droits) -->
     <div id="legal-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
       <div class="modal-box rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative max-h-[85vh] flex flex-col">
@@ -647,7 +668,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=12"></script>
-  <script src="/static/js/app.js?v=12"></script>
+  <script src="/static/js/api.js?v=13"></script>
+  <script src="/static/js/app.js?v=13"></script>
 </body>
 </html>

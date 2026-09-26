@@ -748,7 +748,8 @@ function renderLeaderboard() {
     <!-- 2ème Place -->
     <div class="podium-step-2 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[110px]">
       ${top2 ? `
-        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-zinc-300 text-black font-black text-xs flex items-center justify-center">2</div>
+        <div class="flex justify-center mb-1">${getUserAvatarHtml(top2.username, 'sm', top2.avatar_url)}</div>
+        <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-zinc-300 text-black font-black text-[10px] flex items-center justify-center">2</div>
         <div class="font-bold text-xs text-white truncate">${top2.username}</div>
         <div class="font-condensed font-black text-sm text-zinc-300">${top2.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
       ` : '<div class="text-zinc-600 text-xs">-</div>'}
@@ -757,7 +758,8 @@ function renderLeaderboard() {
     <!-- 1ère Place (Au centre, surélevé) -->
     <div class="podium-step-1 rounded-xl p-3 text-center border flex flex-col justify-end min-h-[135px]">
       ${top1 ? `
-        <div class="w-7 h-7 mx-auto mb-1.5 rounded-full bg-white text-black font-black text-sm flex items-center justify-center shadow-md">1</div>
+        <div class="flex justify-center mb-1.5">${getUserAvatarHtml(top1.username, 'md', top1.avatar_url)}</div>
+        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-white text-black font-black text-xs flex items-center justify-center shadow-md">1</div>
         <div class="font-black text-xs text-white truncate">${top1.username}</div>
         <div class="font-condensed font-black text-base text-white">${top1.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
       ` : '<div class="text-zinc-600 text-xs">-</div>'}
@@ -766,7 +768,8 @@ function renderLeaderboard() {
     <!-- 3ème Place -->
     <div class="podium-step-3 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[95px]">
       ${top3 ? `
-        <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-zinc-700 text-zinc-100 font-black text-xs flex items-center justify-center">3</div>
+        <div class="flex justify-center mb-1">${getUserAvatarHtml(top3.username, 'sm', top3.avatar_url)}</div>
+        <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-zinc-700 text-zinc-100 font-black text-[10px] flex items-center justify-center">3</div>
         <div class="font-bold text-xs text-white truncate">${top3.username}</div>
         <div class="font-condensed font-black text-sm text-zinc-400">${top3.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
       ` : '<div class="text-zinc-600 text-xs">-</div>'}
@@ -784,7 +787,8 @@ function renderLeaderboard() {
         <div class="col-span-2 text-center font-condensed font-black text-slate-400">
           #${player.rank}
         </div>
-        <div class="col-span-6 flex items-center space-x-1.5 truncate">
+        <div class="col-span-6 flex items-center gap-2 truncate">
+          ${getUserAvatarHtml(player.username, 'xs', player.avatar_url)}
           <span class="truncate ${isMe ? 'text-white font-black' : 'text-zinc-200'}">${player.username}</span>
           ${isMe ? '<span class="text-[9px] uppercase tracking-wider bg-white text-black font-black px-1 rounded">Moi</span>' : ''}
         </div>
@@ -1371,11 +1375,14 @@ async function renderProfile() {
     const winrateColor = stats.winrate >= 55 ? 'text-emerald-400' : stats.winrate >= 40 ? 'text-[#ff5500]' : 'text-slate-200';
 
     container.innerHTML = `
-      <!-- Carte Joueur -->
+      <!-- Carte Joueur avec Avatar Culte -->
       <div class="p-3.5 sm:p-4 surface-card flex items-center justify-between gap-3 shadow-xl">
         <div class="flex items-center space-x-3 min-w-0">
-          <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#27272a] border border-white/20 flex items-center justify-center font-condensed font-black text-lg text-white shrink-0">
-            ${initials}
+          <div class="relative cursor-pointer group" onclick="openAvatarSelectorModal()" title="Changer d'avatar">
+            ${getUserAvatarHtml(stats.username, 'lg', stats.avatar_url)}
+            <div class="absolute -bottom-1 -right-1 bg-white text-black p-0.5 rounded-full shadow border border-black/40 text-[9px] flex items-center justify-center w-4 h-4">
+              ✏️
+            </div>
           </div>
           <div class="min-w-0">
             <div class="font-condensed font-black text-lg sm:text-xl text-white leading-tight truncate">
@@ -1394,6 +1401,11 @@ async function renderProfile() {
           </div>
         </div>
       </div>
+
+      <!-- Bouton Changer Avatar Meme -->
+      <button onclick="openAvatarSelectorModal()" class="w-full bg-[#16161a] hover:bg-[#202026] border border-white/10 p-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-condensed font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition cursor-pointer shadow-sm">
+        <span>🎭</span> Choisir mon avatar Meme NBA
+      </button>
 
       <!-- Grille des Statistiques du Joueur -->
       <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
@@ -1694,8 +1706,17 @@ async function shareApp() {
 
 // --- Ligues Privées & Partage (Chantier 5) ---
 
-function getUserAvatarHtml(username, size = 'sm') {
+function getUserAvatarHtml(username, size = 'sm', avatarUrl = null) {
   const safeName = username || '?';
+  const url = avatarUrl || (state.currentUser && state.currentUser.username === username ? state.currentUser.avatar_url : null);
+  const sizeClasses = size === 'lg' 
+    ? 'w-12 h-12 text-sm font-black' 
+    : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : (size === 'xs' ? 'w-6 h-6 text-[9px] font-black' : 'w-7 h-7 text-[10px] font-black'));
+
+  if (url) {
+    return `<img src="${url}" alt="${safeName}" class="${sizeClasses} rounded-xl object-cover border border-white/20 shadow-md shrink-0 bg-[#18181b]" onerror="this.style.display='none'" />`;
+  }
+
   const initials = safeName.substring(0, 2).toUpperCase();
   const tones = [
     'bg-[#27272a] text-zinc-200 border border-white/15',
@@ -1709,11 +1730,8 @@ function getUserAvatarHtml(username, size = 'sm') {
     hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
   }
   const toneClass = tones[Math.abs(hash) % tones.length];
-  const sizeClasses = size === 'lg' 
-    ? 'w-11 h-11 text-sm font-black' 
-    : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : 'w-7 h-7 text-[10px] font-black');
 
-  return `<div class="${sizeClasses} rounded-full ${toneClass} flex items-center justify-center shadow-sm uppercase tracking-wider shrink-0">${initials}</div>`;
+  return `<div class="${sizeClasses} rounded-xl ${toneClass} flex items-center justify-center shadow-sm uppercase tracking-wider shrink-0 font-condensed font-black">${initials}</div>`;
 }
 
 async function loadAndRenderLeagues() {
@@ -1921,7 +1939,7 @@ function renderLeagueDetail(league) {
         <!-- 2ème Place -->
         <div class="podium-step-2 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[110px]">
           ${top2 ? `
-            <div class="flex justify-center mb-1">${getUserAvatarHtml(top2.username, 'md')}</div>
+            <div class="flex justify-center mb-1">${getUserAvatarHtml(top2.username, 'md', top2.avatar_url)}</div>
             <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-slate-300 text-black font-black text-[10px] flex items-center justify-center">2</div>
             <div class="font-bold text-xs text-white truncate">${top2.username}</div>
             <div class="font-condensed font-black text-sm text-slate-300">${top2.total_points.toFixed(1)} <span class="text-[9px]">pts</span></div>
@@ -1931,7 +1949,7 @@ function renderLeagueDetail(league) {
         <!-- 1ère Place (Au centre, surélevé) -->
         <div class="podium-step-1 rounded-xl p-3 text-center border flex flex-col justify-end min-h-[135px]">
           ${top1 ? `
-            <div class="flex justify-center mb-1.5">${getUserAvatarHtml(top1.username, 'lg')}</div>
+            <div class="flex justify-center mb-1.5">${getUserAvatarHtml(top1.username, 'lg', top1.avatar_url)}</div>
             <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-amber-400 text-black font-black text-xs flex items-center justify-center shadow-lg shadow-amber-400/30">1</div>
             <div class="font-black text-xs text-white truncate">${top1.username}</div>
             <div class="font-condensed font-black text-base text-amber-400">${top1.total_points.toFixed(1)} <span class="text-[10px]">pts</span></div>
@@ -1941,7 +1959,7 @@ function renderLeagueDetail(league) {
         <!-- 3ème Place -->
         <div class="podium-step-3 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[95px]">
           ${top3 ? `
-            <div class="flex justify-center mb-1">${getUserAvatarHtml(top3.username, 'md')}</div>
+            <div class="flex justify-center mb-1">${getUserAvatarHtml(top3.username, 'md', top3.avatar_url)}</div>
             <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-amber-700 text-white font-black text-[10px] flex items-center justify-center">3</div>
             <div class="font-bold text-xs text-white truncate">${top3.username}</div>
             <div class="font-condensed font-black text-sm text-amber-500">${top3.total_points.toFixed(1)} <span class="text-[9px]">pts</span></div>
@@ -1974,7 +1992,7 @@ function renderLeagueDetail(league) {
                 ${rankBadge}
               </div>
               <div class="col-span-6 flex items-center gap-2 truncate">
-                ${getUserAvatarHtml(member.username, 'sm')}
+                ${getUserAvatarHtml(member.username, 'sm', member.avatar_url)}
                 <div class="truncate">
                   <div class="font-bold flex items-center gap-1.5 truncate">
                     <span class="truncate">${member.username}</span>
@@ -2313,7 +2331,7 @@ function renderLeagueMatchVotes(data, match) {
             return `
               <div class="flex items-center justify-between px-3 py-2 text-xs">
                 <div class="flex items-center gap-2">
-                  ${getUserAvatarHtml(v.username, 'sm')}
+                  ${getUserAvatarHtml(v.username, 'sm', v.avatar_url)}
                   <span class="font-bold text-white ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
                   ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase">Moi</span>' : ''}
                 </div>
@@ -2367,7 +2385,7 @@ function renderLeagueMatchVotes(data, match) {
             return `
               <div class="flex items-center justify-between px-3 py-2 text-xs">
                 <div class="flex items-center gap-2 truncate">
-                  ${getUserAvatarHtml(v.username, 'sm')}
+                  ${getUserAvatarHtml(v.username, 'sm', v.avatar_url)}
                   <span class="font-bold text-white truncate ${isMe ? 'text-[#ff5500]' : ''}">${v.username}</span>
                   ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase shrink-0">Moi</span>' : ''}
                 </div>
@@ -2424,7 +2442,7 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
 
       return `
         <div class="flex items-end gap-1.5 ${isMe ? 'justify-end' : 'justify-start'}">
-          ${!isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs')}</div>` : ''}
+          ${!isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs', m.avatar_url)}</div>` : ''}
           <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[85%] space-y-0.5">
             <div class="flex items-center gap-1.5 text-[10px] text-slate-400 px-1">
               <span class="font-bold text-slate-300">${isMe ? 'Moi' : escapeHtml(m.username)}</span>
@@ -2434,7 +2452,7 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
               ${escapeHtml(m.content)}
             </div>
           </div>
-          ${isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs')}</div>` : ''}
+          ${isMe ? `<div class="shrink-0 mb-0.5">${getUserAvatarHtml(m.username, 'xs', m.avatar_url)}</div>` : ''}
         </div>
       `;
     }).join('');
@@ -2607,7 +2625,7 @@ async function loadWrappedData(period = 'weekly') {
     const punchlineEl = document.getElementById('recap-punchline');
 
     if (weekBadge) weekBadge.textContent = data.period_title;
-    if (avatarEl) avatarEl.innerHTML = getUserAvatarHtml(data.username, 'lg');
+    if (avatarEl) avatarEl.innerHTML = getUserAvatarHtml(data.username, 'lg', data.avatar_url);
     if (usernameEl) usernameEl.textContent = data.username;
     if (rankBadgeEl) rankBadgeEl.textContent = data.rank ? `#${data.rank}` : '-';
     if (pointsEl) pointsEl.textContent = (period === 'weekly' ? data.points : data.total_points).toFixed(1);
@@ -2732,3 +2750,78 @@ function closeLegalModal() {
 
 window.openLegalModal = openLegalModal;
 window.closeLegalModal = closeLegalModal;
+
+// --- Modale Galerie d'Avatars Memes NBA ---
+let availableAvatarsCache = null;
+
+async function openAvatarSelectorModal() {
+  const modal = document.getElementById('avatar-selector-modal');
+  const grid = document.getElementById('avatars-grid');
+  if (!modal || !grid) return;
+
+  modal.classList.remove('hidden');
+
+  try {
+    if (!availableAvatarsCache) {
+      grid.innerHTML = `
+        <div class="py-8 text-center text-zinc-500 text-xs flex items-center justify-center gap-2">
+          <div class="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full"></div>
+          Chargement des avatars cultes...
+        </div>
+      `;
+      availableAvatarsCache = await API.getAvatars();
+    }
+
+    const currentUrl = state.currentUser ? state.currentUser.avatar_url : null;
+
+    grid.innerHTML = availableAvatarsCache.map(av => {
+      const isSelected = currentUrl === av.url;
+      return `
+        <div onclick="handleSelectAvatar('${av.url}')" class="flex items-center gap-3 p-2.5 rounded-xl border transition cursor-pointer select-none ${
+          isSelected 
+            ? 'bg-white/10 border-white shadow-lg' 
+            : 'bg-[#141417] hover:bg-[#1f1f24] border-white/10 hover:border-white/30'
+        }">
+          <img src="${av.url}" alt="${av.title}" class="w-12 h-12 rounded-xl object-cover border ${isSelected ? 'border-white ring-2 ring-white/50' : 'border-white/20'} bg-[#18181b] shrink-0 shadow" />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1">
+              <span class="font-condensed font-bold text-sm text-white truncate">${av.title}</span>
+              ${isSelected ? '<span class="text-[10px] font-condensed font-black px-1.5 py-0.5 rounded bg-white text-black uppercase">Actif</span>' : ''}
+            </div>
+            <p class="text-[11px] text-zinc-400 truncate">${av.meme}</p>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    grid.innerHTML = `<div class="p-4 text-center text-rose-400 text-xs">Erreur de chargement des avatars.</div>`;
+  }
+}
+
+function closeAvatarSelectorModal() {
+  const modal = document.getElementById('avatar-selector-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function handleSelectAvatar(avatarUrl) {
+  try {
+    const updated = await API.setMyAvatar(avatarUrl);
+    if (state.currentUser) {
+      state.currentUser.avatar_url = updated.avatar_url;
+    }
+    notify("Avatar Meme NBA sélectionné ! 🔥", "success");
+    if (typeof launchConfetti === 'function') {
+      launchConfetti();
+    }
+    closeAvatarSelectorModal();
+    if (typeof renderProfile === 'function') {
+      renderProfile();
+    }
+  } catch (err) {
+    notify(err.message || "Erreur lors du choix de l'avatar", "error");
+  }
+}
+
+window.openAvatarSelectorModal = openAvatarSelectorModal;
+window.closeAvatarSelectorModal = closeAvatarSelectorModal;
+window.handleSelectAvatar = handleSelectAvatar;
