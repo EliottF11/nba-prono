@@ -55,6 +55,18 @@ AVAILABLE_AVATARS = [
         "title": "The Stepover d'Iverson",
         "meme": "Le manque de respect maîtrisé 👑",
         "url": "/static/avatars/iverson_stepover.jpg"
+    },
+    {
+        "id": "kobe_barnes",
+        "title": "Kobe Inflexible vs Barnes",
+        "meme": "Stoïcisme absolu face au danger 🐍",
+        "url": "/static/avatars/kobe_barnes.jpg"
+    },
+    {
+        "id": "wade_lebron",
+        "title": "Célébration Wade & LeBron",
+        "meme": "Synergie & Alchimie parfaite ✈️🔥",
+        "url": "/static/avatars/wade_lebron.jpg"
     }
 ]
 
