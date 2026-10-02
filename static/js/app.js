@@ -311,8 +311,16 @@ function selectTab(tab) {
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     const isCurrent = btn.getAttribute('data-tab') === tab;
+    btn.classList.toggle('active', isCurrent);
     btn.classList.toggle('text-white', isCurrent);
     btn.classList.toggle('text-zinc-500', !isCurrent);
+    if (isCurrent) {
+      btn.classList.remove('tab-rebound');
+      void btn.offsetWidth;
+      btn.classList.add('tab-rebound');
+    } else {
+      btn.classList.remove('tab-rebound');
+    }
   });
 
   const matchesView = document.getElementById('matches-view');
