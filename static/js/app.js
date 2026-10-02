@@ -487,7 +487,7 @@ async function handleRegisterSubmit(e) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
       <span class="inline-flex items-center gap-2">
-        <span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+        <img src="/static/icons/logo-secondaire.png" class="arcade-ball-loader-sm" alt="" />
         Création de ton compte...
       </span>
     `;
@@ -530,7 +530,7 @@ async function handleLoginSubmit(e) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
       <span class="inline-flex items-center gap-2">
-        <span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+        <img src="/static/icons/logo-secondaire.png" class="arcade-ball-loader-sm" alt="" />
         Connexion en cours...
       </span>
     `;
@@ -2567,8 +2567,8 @@ async function renderProfile() {
   }
 
   container.innerHTML = `
-    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex items-center justify-center gap-2">
-      <div class="animate-spin w-5 h-5 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex flex-col items-center justify-center gap-2.5">
+      <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="arcade-ball-loader" />
       <span class="uppercase tracking-wider">Chargement de tes statistiques...</span>
     </div>
   `;
@@ -3406,8 +3406,8 @@ async function openLeagueMatchVotesModal(matchId, explicitLeagueId = null) {
   }
 
   content.innerHTML = `
-    <div class="text-center py-6 text-slate-400 text-xs flex items-center justify-center gap-2">
-      <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    <div class="text-center py-6 text-zinc-400 text-xs flex items-center justify-center gap-2.5">
+      <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="arcade-ball-loader" />
       <span>Chargement des pronostics...</span>
     </div>
   `;
@@ -3892,8 +3892,8 @@ async function openAvatarSelectorModal() {
   modal.classList.remove('hidden');
 
   grid.innerHTML = `
-    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex flex-col items-center justify-center gap-2">
-      <div class="animate-spin w-6 h-6 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex flex-col items-center justify-center gap-2.5">
+      <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="arcade-ball-loader-lg" />
       <span class="uppercase tracking-wider">Chargement des superstars NBA...</span>
     </div>
   `;
@@ -4151,8 +4151,8 @@ async function renderResultsView() {
   if (!container) return;
 
   container.innerHTML = `
-    <div class="py-10 text-center text-zinc-400 font-condensed text-sm flex items-center justify-center gap-2">
-      <div class="animate-spin w-4 h-4 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+    <div class="py-10 text-center text-zinc-400 font-condensed text-sm flex items-center justify-center gap-2.5">
+      <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="arcade-ball-loader" />
       <span>Chargement des scores TV US...</span>
     </div>
   `;
@@ -4267,11 +4267,12 @@ async function renderResultsView() {
             <span class="tv-team-score">${match.away_score !== null && match.away_score !== undefined ? match.away_score : '--'}</span>
           </div>
 
-          <!-- Bloc central : Logo de l'application "NBA Pro" sur fond sombre à la place de l'horloge -->
+          <!-- Bloc central : Logo de l'application (ballon logo-secondaire) sur fond sombre à la place de l'horloge -->
           <div class="tv-center-bug">
             <div class="tv-logo-badge">
-              <span class="tv-logo-nba">NBA</span>
-              <span class="tv-logo-pro">PRO</span>
+              <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="tv-center-logo-ball select-none" />
+              <span class="tv-logo-nba sr-only hidden" style="display:none;">NBA</span>
+              <span class="tv-logo-pro sr-only hidden" style="display:none;">PRO</span>
             </div>
             <div class="tv-status-final">
               <span class="status-dot"></span>

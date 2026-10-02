@@ -1,11 +1,16 @@
 // Service Worker pour Pick 'n' Swipe (PWA)
-const CACHE_NAME = 'pick-n-swipe-v27';
+const CACHE_NAME = 'pick-n-swipe-v28';
 const STATIC_ASSETS = [
   '/',
-  '/static/css/style.css?v=27',
-  '/static/js/api.js?v=27',
-  '/static/js/app.js?v=27',
+  '/static/css/style.css?v=28',
+  '/static/js/api.js?v=28',
+  '/static/js/app.js?v=28',
   '/static/manifest.json',
+  '/static/icons/logo-principal.png',
+  '/static/icons/logo-secondaire.png',
+  '/static/icons/icon-192.png',
+  '/static/icons/icon-512.png',
+  '/static/icons/apple-touch-icon.png',
   '/static/icons/icon.svg'
 ];
 

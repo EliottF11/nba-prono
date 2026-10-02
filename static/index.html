@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pick 'n' Swipe - Pronostics NBA Clean Arcade</title>
   
-  <!-- Configuration PWA (Progressive Web App) -->
+  <!-- Configuration PWA (Progressive Web App) & Favicons avec logo-secondaire.png -->
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#121212">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pick 'n' Swipe">
-  <link rel="apple-touch-icon" href="/static/icons/icon.svg">
-  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+  
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+  <link rel="icon" type="image/png" href="/static/icons/logo-secondaire.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/static/icons/logo-secondaire.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
   
   <!-- Typographie Google Fonts Neo-Brutalisme (Bebas Neue, Jersey 10, Inter) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,14 +50,14 @@
   </script>
   
   <!-- Feuille de style Neo-Brutalisme Dark Mode (Clean Arcade) -->
-  <link rel="stylesheet" href="/static/css/style.css?v=27">
+  <link rel="stylesheet" href="/static/css/style.css?v=28">
 </head>
 <body class="court-bg min-h-screen pb-20 text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
 
   <!-- ==========================================================================
        ÉCRAN D'ANIMATION DE LANCEMENT (SPLASH SCREEN OFFICIEL)
        ========================================================================== -->
-  <div id="app-splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-between p-6 select-none bg-black">
+  <div id="app-splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-between p-6 select-none bg-[#121212]">
     
     <!-- Bouton passer rapide en haut à droite -->
     <div class="w-full max-w-md flex justify-end">
@@ -61,36 +66,21 @@
       </button>
     </div>
 
-    <!-- Centre immersif : Ballon 3D, Glow & Titre NBA -->
-    <div class="flex flex-col items-center text-center space-y-4 my-auto">
-      <div class="splash-ball-wrapper mb-2">
+    <!-- Centre immersif : Logo Principal en grand sur fond gris asphalte (#121212) -->
+    <div class="flex flex-col items-center text-center space-y-4 my-auto w-full px-4">
+      <div class="splash-ball-wrapper mb-1">
         <div class="splash-ball-glow"></div>
-        <!-- Ballon de basket haute définition avec dégradé chaud et relief -->
-        <svg class="w-20 h-20 text-amber-500 relative z-10 drop-shadow-[0_10px_25px_rgba(245,158,11,0.5)]" viewBox="0 0 100 100" fill="none">
-          <circle cx="50" cy="50" r="46" fill="url(#ball-gradient)" stroke="#ffffff" stroke-width="2.5"/>
-          <path d="M4 50H96" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
-          <path d="M50 4V96" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
-          <path d="M18 18C34 32 34 68 18 82" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
-          <path d="M82 18C66 32 66 68 82 82" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/>
-          <defs>
-            <radialGradient id="ball-gradient" cx="35%" cy="30%" r="70%">
-              <stop offset="0%" stop-color="#fb923c"/>
-              <stop offset="55%" stop-color="#ea580c"/>
-              <stop offset="100%" stop-color="#9a3412"/>
-            </radialGradient>
-          </defs>
-        </svg>
+        <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="w-20 h-20 object-contain relative z-10 drop-shadow-[0_10px_25px_rgba(217,93,57,0.5)] animate-pulse select-none" />
       </div>
 
-      <div class="space-y-1.5">
-        <div class="font-condensed font-black text-4xl sm:text-5xl tracking-tight leading-none text-[#F4F4F0] flex items-center justify-center gap-2">
-          <span>PICK 'N'</span>
-          <span class="text-[#D95D39]">SWIPE</span>
-        </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#1a1a20] border-2 border-black text-[11px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000]">
-          <span>🏀</span> Clean Arcade NBA
-        </div>
+      <div class="w-full max-w-[280px] sm:max-w-[320px] mx-auto">
+        <img src="/static/icons/logo-principal.png" alt="PICK 'N' SWIPE" class="w-full h-auto object-contain filter drop-shadow-[4px_4px_0px_#000000] select-none" />
       </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#1a1a20] border-2 border-black text-[11px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000]">
+        <span>🏀</span> Clean Arcade NBA
+      </div>
+
       <p class="text-xs text-zinc-400 max-w-xs font-medium leading-relaxed">
         L'arène Clean Arcade 100% Swipe des pronostics NBA entre amis
       </p>
@@ -110,22 +100,29 @@
   <!-- Wrapper Mobile-First Anti-Débordement Neo-Brutaliste -->
   <div class="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col sm:border-x-[3px] sm:border-black bg-[#121212] sm:shadow-[8px_8px_0px_#000000] relative overflow-x-hidden">
     
-    <!-- Top Bar Sportive Clean Arcade -->
-    <header class="sticky top-0 z-30 bg-[#16161b] border-b-[3px] border-black px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 shadow-[0_4px_0px_#000000]">
-      <div class="flex items-center space-x-2.5 shrink-0">
-        <!-- Logo minimaliste basket avec relief noir -->
-        <img src="/static/icons/icon.svg" alt="Pick 'n' Swipe" class="w-8 h-8 rounded-[8px] border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0">
-        <div>
-          <div class="font-condensed font-black text-xl tracking-tight leading-none text-[#F4F4F0] flex items-center gap-1.5">
-            <span>PICK 'N'</span>
-            <span class="text-[#D95D39]">SWIPE</span>
-          </div>
-          <div class="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase">Clean Arcade NBA</div>
-        </div>
+    <!-- Top Bar Sportive Clean Arcade Neo-Brutaliste -->
+    <header class="sticky top-0 z-30 bg-[#16161b] border-b-[3px] border-black px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shadow-[0_4px_0px_#000000] min-h-[52px]">
+      
+      <!-- Côté Gauche : Icône secondaire miniature cliquable -->
+      <div class="w-10 sm:w-16 flex items-center shrink-0">
+        <button onclick="selectTab('matches')" class="p-1 rounded-[6px] border-2 border-black bg-[#121216] shadow-[2px_2px_0px_#000000] hover:bg-[#1f1f26] transition cursor-pointer" title="Pick 'n' Swipe">
+          <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="w-6 h-6 object-contain select-none">
+        </button>
       </div>
 
-      <!-- Section Utilisateur Simple & Épurée (Zéro Débordement) -->
-      <div class="flex items-center space-x-2 shrink-0">
+      <!-- Centre : Logo Principal Typographique centré et responsive (max-h: 38px) -->
+      <div class="flex-1 flex justify-center items-center px-1">
+        <button onclick="selectTab('matches')" class="inline-flex items-center justify-center cursor-pointer transition-transform active:scale-95" title="Accueil Pronostics">
+          <img 
+            src="/static/icons/logo-principal.png" 
+            alt="Pick 'n' Swipe" 
+            class="h-8 sm:h-9 max-h-[38px] w-auto max-w-[170px] sm:max-w-[210px] object-contain select-none filter drop-shadow-[2px_2px_0px_#000000]"
+          >
+        </button>
+      </div>
+
+      <!-- Côté Droit : Streak & Utilisateur alignés horizontalement au même niveau -->
+      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 justify-end">
         <!-- Badge Streak (Série de victoires consécutives) -->
         <div id="user-streak-badge" class="flex items-center space-x-1.5 bg-[#18181e] border-2 border-black px-2 sm:px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] shrink-0" title="Série de victoires consécutives (Streak)">
           <span class="streak-flame text-sm leading-none select-none">🔥</span>
@@ -974,7 +971,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=27"></script>
-  <script src="/static/js/app.js?v=27"></script>
+  <script src="/static/js/api.js?v=28"></script>
+  <script src="/static/js/app.js?v=28"></script>
 </body>
 </html>
