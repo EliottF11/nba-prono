@@ -99,6 +99,45 @@ body {
 }
 
 /* ==========================================================================
+   SYSTÈME D'ICÔNES INLINE LUCIDE (Remplace tous les emojis par des SVG pro)
+   ========================================================================== */
+
+/* Base : SVG inline aligné au texte */
+.lucide-inline {
+  display: inline-block;
+  vertical-align: middle;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+}
+
+/* Tailles */
+.lucide-xs { width: 12px; height: 12px; }
+.lucide-sm { width: 14px; height: 14px; }
+.lucide-md { width: 16px; height: 16px; }
+.lucide-lg { width: 20px; height: 20px; }
+.lucide-xl { width: 24px; height: 24px; }
+.lucide-2xl { width: 32px; height: 32px; }
+
+/* Variantes de couleur */
+.lucide-orange { stroke: #D95D39; }
+.lucide-orange-fill { stroke: #D95D39; fill: #D95D39; }
+.lucide-amber { stroke: #FFB703; }
+.lucide-amber-fill { stroke: #FFB703; fill: #FFB703; }
+.lucide-green { stroke: #00E676; }
+.lucide-green-fill { stroke: #00E676; fill: #00E676; }
+.lucide-red { stroke: #FF3D00; }
+.lucide-white { stroke: #F4F4F0; }
+.lucide-muted { stroke: #8A8A84; }
+.lucide-gold { stroke: #FFD700; fill: #FFD700; }
+.lucide-silver { stroke: #C0C0C0; fill: #C0C0C0; }
+.lucide-bronze { stroke: #CD7F32; fill: #CD7F32; }
+
+
+/* ==========================================================================
    TYPOGRAPHIE ARCADE NEO-BRUTALISTE
    ========================================================================== */
 h1, h2, h3, h4, h5, h6,

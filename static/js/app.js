@@ -61,13 +61,13 @@ function initSplashScreen() {
 
   setTimeout(() => {
     if (statusEl && !splashDismissed) {
-      statusEl.textContent = "⚡ Synchronisation des cotes NBA...";
+      statusEl.textContent = "Synchronisation des cotes NBA...";
     }
   }, 600);
 
   setTimeout(() => {
     if (statusEl && !splashDismissed) {
-      statusEl.textContent = "🔥 Coup d'envoi imminent !";
+      statusEl.textContent = "Coup d'envoi imminent !";
     }
   }, 1250);
 
@@ -404,7 +404,7 @@ async function populateWelcomeAvatars() {
         }" style="width: 72px;">
           <div class="relative">
             <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-12 h-12 rounded-xl object-cover border ${isSelected ? 'border-white' : 'border-white/20'} bg-[#18181b]" />
-            ${isSelected ? '<span class="absolute -top-1 -right-1 bg-white text-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold shadow">✓</span>' : ''}
+            ${isSelected ? '<span class="absolute -top-1 -right-1 bg-white text-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold shadow"><svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg></span>' : ''}
           </div>
           <span class="text-[10px] font-condensed font-bold text-zinc-300 truncate w-full text-center leading-tight">${escapeHtml(av.title.split(' ').pop())}</span>
         </div>
@@ -509,7 +509,7 @@ async function handleRegisterSubmit(e) {
     if (typeof launchConfetti === 'function') {
       launchConfetti();
     }
-    notify(`Bienvenue sur le parquet, ${res.user.username} ! 🎉`, 'success');
+    notify(`Bienvenue sur le parquet, ${res.user.username} !`, 'success');
     await refreshData();
     if (state.activeTab === 'profile') renderProfile();
   } catch (err) {
@@ -520,7 +520,7 @@ async function handleRegisterSubmit(e) {
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = `Créer mon compte & Jouer 🏀`;
+      submitBtn.innerHTML = `Créer mon compte & Jouer `;
     }
   }
 }
@@ -552,7 +552,7 @@ async function handleLoginSubmit(e) {
     if (typeof launchConfetti === 'function') {
       launchConfetti();
     }
-    notify(`Ravi de te revoir, ${res.user.username} ! 🏀`, 'success');
+    notify(`Ravi de te revoir, ${res.user.username} !`, 'success');
     await refreshData();
     if (state.activeTab === 'profile') renderProfile();
   } catch (err) {
@@ -871,7 +871,7 @@ function renderTinderDeck(container, filtered) {
         <!-- En-tête de fin de pile Arcade -->
         <div class="space-y-1.5 pt-1">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#14131A] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
-            <span>🏀</span> Tous les matchs sont pronostiqués !
+            <svg class='lucide-inline lucide-md lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg> Tous les matchs sont pronostiqués !
           </div>
           <h3 class="font-condensed font-black text-2xl sm:text-3xl uppercase tracking-wider text-[#F4F4F0] leading-none pt-1">
             Pile de la nuit terminée
@@ -914,7 +914,7 @@ function renderTinderDeck(container, filtered) {
             onclick="openNightRecapModal()" 
             class="btn-arcade-recap btn-tactile w-full py-3.5 px-4 rounded-[10px] bg-gradient-to-r from-[#D95D39] via-[#FF5722] to-[#FF9800] text-white font-condensed font-black text-base sm:text-lg uppercase tracking-wider border-[3px] border-black shadow-[5px_5px_0px_#000000] cursor-pointer flex items-center justify-center gap-2.5"
           >
-            <span class="text-xl">📊</span>
+            <svg class='lucide-inline lucide-xl lucide-orange' viewBox='0 0 24 24'><line x1='12' x2='12' y1='20' y2='10'/><line x1='18' x2='18' y1='20' y2='4'/><line x1='6' x2='6' y1='20' y2='16'/></svg>
             <span>Voir le récapitulatif de mes pronostics</span>
           </button>
 
@@ -977,14 +977,14 @@ function renderTinderDeck(container, filtered) {
           }"
           title="Bonus x2 : double les points en cas de victoire (1 seul par semaine)"
         >
-          <span>⚡</span>
+          <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg>
           <span>${isBoosted ? 'x2 Actif' : 'Bonus x2'}</span>
         </button>
       `;
     } else if (isBoosted) {
       boostButton = `
         <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-white/10 text-white border border-white/25 flex items-center gap-1">
-          <span>⚡</span> x2 Joué
+          <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg> x2 Joué
         </span>
       `;
     }
@@ -1027,7 +1027,7 @@ function renderTinderDeck(container, filtered) {
         <div class="flex items-center gap-1.5">
           ${isBoosted ? `
             <span class="px-2 py-0.5 rounded-[6px] bg-[#FF5722] text-white border-2 border-black font-condensed font-black text-[10px] shadow-[1px_1px_0px_#000000] flex items-center gap-1">
-              <span>🔥</span> x2 ACTIF
+              <svg class='lucide-inline lucide-md lucide-orange-fill' viewBox='0 0 24 24'><path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/></svg> x2 ACTIF
             </span>
           ` : ''}
           <button 
@@ -1087,7 +1087,7 @@ function renderTinderDeck(container, filtered) {
 
           ${awaySelected ? `
             <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
-              ✓ Ton choix
+              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
             </div>
           ` : ''}
         </div>
@@ -1134,7 +1134,7 @@ function renderTinderDeck(container, filtered) {
 
           ${homeSelected ? `
             <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-white bg-[#0077FE] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
-              ✓ Ton choix
+              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
             </div>
           ` : ''}
         </div>
@@ -1153,7 +1153,7 @@ function renderTinderDeck(container, filtered) {
         >
           <div class="arcade-btn-collar">
             <div class="arcade-btn-plunger">
-              <span class="arcade-btn-icon">⚡</span>
+              <span class="arcade-btn-icon"><svg class='lucide-inline lucide-lg lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg></span>
               <span class="arcade-btn-label">x2</span>
               <span class="arcade-btn-status">${isBoosted ? 'x2 LOCKÉ' : 'BONUS'}</span>
             </div>
@@ -1164,13 +1164,13 @@ function renderTinderDeck(container, filtered) {
       <!-- Indicateur VS central & Guidage swipe -->
       <div class="flex items-center justify-between px-3 py-1.5 rounded-[8px] bg-black/60 border-2 border-black/80 text-[10px] text-zinc-400 font-bold uppercase tracking-wider relative z-20">
         <span class="flex items-center gap-1 font-condensed font-black" style="color: ${awayColor};">
-          <span>👈</span> ${escapeHtml(match.away_team.code)}
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='m12 19-7-7 7-7'/><path d='M19 12H5'/></svg> ${escapeHtml(match.away_team.code)}
         </span>
         <span class="px-2 py-0.5 rounded-[4px] bg-[#121216] border border-white/20 text-[#F4F4F0] font-condensed font-black text-xs shadow-[1px_1px_0px_#000000]">
           VS
         </span>
         <span class="flex items-center gap-1 font-condensed font-black" style="color: ${homeColor};">
-          ${escapeHtml(match.home_team.code)} <span>👉</span>
+          ${escapeHtml(match.home_team.code)} <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M5 12h14'/><path d='m12 5 7 7-7 7'/></svg>
         </span>
       </div>
 
@@ -1474,12 +1474,12 @@ async function triggerSwipeAction(match, direction) {
       try {
         await API.toggleBoost(match.id);
         launchConfetti();
-        notify(`Prono validé avec Bonus x2 : ${chosenTeam.city} ! ⚡🔥 (Points doublés)`, "success");
+        notify(`Prono validé avec Bonus x2 : ${chosenTeam.city} ! (Points doublés)`, "success");
       } catch (err) {
-        notify(`Prono validé : ${chosenTeam.city} ! 🏀`, "success");
+        notify(`Prono validé : ${chosenTeam.city} !`, "success");
       }
     } else {
-      notify(`Prono validé : ${chosenTeam.city} ! 🏀`, "success");
+      notify(`Prono validé : ${chosenTeam.city} ! `, "success");
     }
   } catch (err) {
     notify(err.message, "error");
@@ -1589,7 +1589,7 @@ function renderMatchesListView(container, filtered) {
           onclick="setMatchesViewMode('list')" 
           class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]"
         >
-          📋 Liste
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><line x1='8' x2='21' y1='6' y2='6'/><line x1='8' x2='21' y1='12' y2='12'/><line x1='8' x2='21' y1='18' y2='18'/><line x1='3' x2='3.01' y1='6' y2='6'/><line x1='3' x2='3.01' y1='12' y2='12'/><line x1='3' x2='3.01' y1='18' y2='18'/></svg> Liste
         </button>
       </div>
 
@@ -1644,7 +1644,7 @@ function renderMatchesListView(container, filtered) {
         >
           <div class="arcade-btn-collar scale-90">
             <div class="arcade-btn-plunger py-1 px-2.5">
-              <span class="arcade-btn-icon text-xs">⚡</span>
+              <span class="arcade-btn-icon"><svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg></span>
               <span class="arcade-btn-label text-sm">x2</span>
               <span class="arcade-btn-status text-[9px]">${isBoosted ? 'LOCKÉ' : 'BONUS'}</span>
             </div>
@@ -1654,7 +1654,7 @@ function renderMatchesListView(container, filtered) {
     } else if (isBoosted) {
       boostButton = `
         <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#FF5722] text-white border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000]">
-          <span>⚡</span> x2 Joué
+          <svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg> x2 Joué
         </span>
       `;
     }
@@ -1833,7 +1833,7 @@ async function handleArcadeBonusClick(matchId, event) {
         }
       });
       state.boostedPredictions[matchId] = true;
-      notify(`Bonus x2 armé pour la Semaine ${week} ! ⚡ Glisse la carte pour valider ton équipe boostée !`, "success");
+      notify(`Bonus x2 armé pour la Semaine ${week} ! Glisse la carte pour valider ton équipe boostée !`, "success");
     }
     renderMatchesList();
     return;
@@ -1851,7 +1851,7 @@ async function handleArcadeBonusClick(matchId, event) {
       });
       state.boostedPredictions[matchId] = true;
       launchConfetti();
-      notify(`Bonus x2 activé pour la Semaine ${week} ! ⚡ (Points doublés)`, "success");
+      notify(`Bonus x2 activé pour la Semaine ${week} ! (Points doublés)`, "success");
     } else {
       delete state.boostedPredictions[matchId];
       notify("Bonus x2 désactivé sur ce match.", "info");
@@ -1884,7 +1884,7 @@ async function voteForTeam(matchId, teamId, isFinished) {
   const wp = state.weeklyPlayersMap[weekNum];
 
   if (!wp || !wp.east_player || !wp.west_player) {
-    notify(`⚠️ Choisis d'abord tes 2 Joueurs de la Semaine pour la Week ${weekNum} !`, "error");
+    notify(`Choisis d'abord tes 2 Joueurs de la Semaine pour la Week ${weekNum} !`, "error");
     const container = document.getElementById('weekly-players-container');
     if (container) {
       container.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2061,7 +2061,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-gradient-to-r from-[#171924] via-[#1b1e2c] to-[#171924] rounded-2xl border border-amber-500/20 shadow-lg flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0 text-amber-400">
-            🏆
+            <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2091,7 +2091,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-[#12141a] rounded-2xl border border-[#23273a] shadow-lg flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-lg shrink-0 text-slate-400">
-            🔒
+            <svg class='lucide-inline lucide-md lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2113,7 +2113,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-gradient-to-r from-[#121b18] via-[#13221e] to-[#121b18] rounded-2xl border border-emerald-500/30 shadow-lg flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-xl shrink-0 text-emerald-400">
-            ✨
+            <svg class='lucide-inline lucide-md lucide-amber' viewBox='0 0 24 24'><path d='M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'/><path d='M20 3v4'/><path d='M22 5h-4'/></svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2135,7 +2135,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.12)] shadow-md flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0 text-white">
-            🏆
+            <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2198,14 +2198,14 @@ async function openSeasonModal() {
     selects.forEach(s => { if (s) s.disabled = true; });
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.textContent = "🔒 Pronostics Verrouillés";
+      submitBtn.textContent = '<svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Pronostics Verrouillés';
       submitBtn.className = "w-full bg-[#18181c] text-zinc-500 font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl transition cursor-not-allowed mt-2 border border-zinc-800";
     }
     if (lockAlert) {
       lockAlert.className = "mb-3 p-2.5 rounded-xl border text-xs font-semibold bg-rose-500/10 border-rose-500/30 text-rose-400";
       lockAlert.innerHTML = `
         <div class="flex items-center gap-1.5 font-bold uppercase">
-          <span>🔒</span> Pronostics Définitivement Verrouillés
+          <svg class='lucide-inline lucide-md lucide-red' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Pronostics Définitivement Verrouillés
         </div>
         <p class="mt-1 text-[11px] text-slate-300 font-normal">
           Le premier match officiel de la saison a débuté. Les choix sont gravés dans le marbre !
@@ -2281,7 +2281,7 @@ async function handleSeasonSubmit(e) {
     closeSeasonModal();
     renderSeasonBanner();
     if (state.activeTab === 'profile') renderProfile();
-    notify("🏆 Tes 5 pronostics de saison sont enregistrés !", "success");
+    notify("Tes 5 pronostics de saison sont enregistrés !", "success");
   } catch (err) {
     if (errBox) {
       errBox.textContent = err.message;
@@ -2324,7 +2324,7 @@ function renderWeeklyPlayersCard() {
     <div class="p-3.5 bg-[#121216] rounded-2xl border ${hasChoices ? 'border-white/20' : 'border-[rgba(255,255,255,0.10)]'} shadow-md space-y-3 transition-all duration-300">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
-          <span class="text-base">🌟</span>
+          <svg class='lucide-inline lucide-lg lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>
           <div>
             <div class="flex items-center gap-1.5">
               <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">
@@ -2337,7 +2337,7 @@ function renderWeeklyPlayersCard() {
                     ? 'bg-white text-black font-bold' 
                     : 'bg-white/10 text-white border border-white/20'
               }">
-                ${isLocked ? '🔒 Verrouillé' : hasChoices ? '✅ 2/2 Validés' : '⚡ Obligatoire'}
+                ${isLocked ? '<svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Verrouillé' : hasChoices ? '<svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> 2/2 Validés' : '<svg class='lucide-inline lucide-sm lucide-amber' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg> Obligatoire'}
               </span>
             </div>
             <p class="text-[10px] text-zinc-400 leading-tight mt-0.5">
@@ -2366,7 +2366,7 @@ function renderWeeklyPlayersCard() {
           ${matchedEast ? `
             <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
               <div class="flex items-center space-x-2 truncate">
-                <span class="text-zinc-300 font-bold text-xs">🏀</span>
+                <svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg>
                 <span class="font-bold text-xs text-white truncate">${matchedEast}</span>
               </div>
               ${!isLocked ? `
@@ -2406,7 +2406,7 @@ function renderWeeklyPlayersCard() {
           ${matchedWest ? `
             <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
               <div class="flex items-center space-x-2 truncate">
-                <span class="text-zinc-300 font-bold text-xs">🏀</span>
+                <span class="text-zinc-300 font-bold text-xs"></span>
                 <span class="font-bold text-xs text-white truncate">${matchedWest}</span>
               </div>
               ${!isLocked ? `
@@ -2442,7 +2442,7 @@ function renderWeeklyPlayersCard() {
               : 'bg-white hover:bg-zinc-200 text-black shadow-md'
           } font-condensed font-black text-xs uppercase tracking-wider py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
         >
-          <span>${hasChoices ? '💾 Mettre à jour mes 2 choix' : '⚡ Valider mes 2 Joueurs de la Semaine'}</span>
+          <span>${hasChoices ? '<svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z'/><path d='M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7'/><path d='M7 3v4a1 1 0 0 0 1 1h7'/></svg> Mettre à jour mes 2 choix' : '<svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg> Valider mes 2 Joueurs de la Semaine'}</span>
         </button>
       ` : ''}
     </div>
@@ -2560,7 +2560,7 @@ async function renderProfile() {
     container.innerHTML = `
       <div class="p-6 bg-[#18181e] rounded-[8px] border-[3px] border-black text-center space-y-4 shadow-[6px_6px_0px_#000000]">
         <div class="w-16 h-16 mx-auto rounded-full bg-[#121216] border-[3px] border-black flex items-center justify-center text-3xl shadow-[3px_3px_0px_#000000]">
-          👤
+          <svg class='lucide-inline lucide-xl lucide-muted' viewBox='0 0 24 24'><path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>
         </div>
         <div class="font-condensed font-black text-2xl text-[#F4F4F0] uppercase tracking-wide">Connecte-toi pour voir ton profil</div>
         <p class="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
@@ -2617,7 +2617,7 @@ async function renderProfile() {
           </h1>
           <div class="flex items-center justify-center gap-2 pt-0.5">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-[#1a1924] border-2 border-black text-xs font-condensed font-black uppercase text-[#FFB703] shadow-[2px_2px_0px_#000000]">
-              <span>🏆</span> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
+              <svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
             </span>
           </div>
           <p class="text-[11px] text-zinc-400 font-medium">
@@ -2627,7 +2627,7 @@ async function renderProfile() {
 
         <!-- Bouton Neo-Brutaliste Changer Avatar -->
         <button onclick="openAvatarSelectorModal()" class="btn-tactile bg-[#1a1a22] hover:bg-[#252530] text-zinc-200 border-[2.5px] border-black px-4 py-2 rounded-[8px] font-condensed font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#000000] cursor-pointer flex items-center gap-2">
-          <span>🏀</span> Choisir mon avatar Superstar NBA
+          <svg class='lucide-inline lucide-md lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg> Choisir mon avatar Superstar NBA
         </button>
       </div>
 
@@ -2673,7 +2673,7 @@ async function renderProfile() {
       <div class="grid grid-cols-2 gap-2">
         <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 space-y-0.5">
           <div class="text-[9px] font-condensed font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-            <span>🍀</span> Équipe Fétiche
+            <svg class='lucide-inline lucide-md lucide-green' viewBox='0 0 24 24'><path d='M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s1 4.5-1 10.5a7 7 0 0 1-8 9Z'/><path d='M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12'/></svg> Équipe Fétiche
           </div>
           <div class="font-condensed font-black text-base text-white truncate">
             ${stats.favorite_team || 'En cours...'}
@@ -2681,10 +2681,10 @@ async function renderProfile() {
         </div>
         <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 space-y-0.5">
           <div class="text-[9px] font-condensed font-black uppercase tracking-wider text-rose-400 flex items-center gap-1">
-            <span>🐈‍⬛</span> Chat Noir
+            <svg class='lucide-inline lucide-md' viewBox='0 0 24 24'><path d='M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z'/><path d='M8 14v.5'/><path d='M16 14v.5'/><path d='M11.25 16.25h1.5L12 17l-.75-.75Z'/></svg> Chat Noir
           </div>
           <div class="font-condensed font-black text-base text-white truncate">
-            ${stats.nemesis_team || 'Aucun 🛡️'}
+            ${stats.nemesis_team || 'Aucun'}
           </div>
         </div>
       </div>
@@ -2694,7 +2694,7 @@ async function renderProfile() {
         <div class="flex items-center justify-between">
           <div>
             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#1a1924] border-2 border-black text-[10px] font-condensed font-black tracking-widest uppercase text-[#FFB703] shadow-[1px_1px_0px_#000000]">
-              <span>★</span> Trading Cards Neo-Brutales
+              <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg> Trading Cards Neo-Brutales
             </div>
             <h3 class="font-condensed font-black text-xl uppercase tracking-tight text-white flex items-center gap-1.5 mt-1">
               <span>Badges & Cartes Rares</span>
@@ -2722,11 +2722,11 @@ async function renderProfile() {
                   </span>
                   ${badge.unlocked ? `
                     <span class="px-2 py-0.5 rounded-[4px] bg-black text-[#FFD54F] border border-black shadow-[1px_1px_0px_#000000] flex items-center gap-1">
-                      <span>✨</span> DÉBLOQUÉ
+                      <svg class='lucide-inline lucide-md lucide-amber' viewBox='0 0 24 24'><path d='M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z'/><path d='M20 3v4'/><path d='M22 5h-4'/></svg> DÉBLOQUÉ
                     </span>
                   ` : `
                     <span class="px-2 py-0.5 rounded-[4px] bg-[#111016] text-zinc-400 border border-black shadow-[1px_1px_0px_#000000] flex items-center gap-1">
-                      <span>🔒</span> ${badge.current} / ${badge.target}
+                      <svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> ${badge.current} / ${badge.target}
                     </span>
                   `}
                 </div>
@@ -2761,7 +2761,7 @@ async function renderProfile() {
                     ></div>
                   </div>
                   <div class="collector-holo-stamp pt-0.5 ${badge.unlocked ? 'text-black/80 font-black' : 'text-zinc-500'}">
-                    ★ PICK 'N' SWIPE • OFFICIAL COLLECTOR CARD ★
+                    <svg class='lucide-inline lucide-xs lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg> PICK 'N' SWIPE • OFFICIAL COLLECTOR CARD <svg class='lucide-inline lucide-xs lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>
                   </div>
                 </div>
 
@@ -2886,7 +2886,7 @@ async function loadAndRenderLeagues() {
     listContainer.innerHTML = `
       <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
         <div class="w-12 h-12 rounded-2xl bg-white/10 text-white mx-auto flex items-center justify-center text-2xl border border-white/20">
-          🔒
+          <svg class='lucide-inline lucide-md lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg>
         </div>
         <div class="font-condensed font-black text-lg text-white">Connexion requise</div>
         <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
@@ -2931,7 +2931,7 @@ function renderLeaguesList() {
     listContainer.innerHTML = `
       <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
         <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center text-2xl border border-amber-500/20 shadow-lg shadow-amber-500/10">
-          🏆
+          <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
         </div>
         <div class="font-condensed font-black text-lg text-white">Aucune ligue pour le moment</div>
         <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
@@ -2939,7 +2939,7 @@ function renderLeaguesList() {
         </p>
         <div class="flex items-center justify-center gap-2 pt-1">
           <button onclick="openJoinLeagueModal()" class="px-4 py-2 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-bold text-xs uppercase tracking-wider transition cursor-pointer">
-            🔑 Rejoindre
+            <svg class='lucide-inline lucide-sm lucide-amber' viewBox='0 0 24 24'><path d='m15.5 7.5 2.3-2.3a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4L18 10'/><path d='m2.1 21.8 6.4-6.3'/><path d='M8.5 15.5 10 14'/><circle cx='15' cy='9' r='5'/></svg> Rejoindre
           </button>
           <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer">
             + Créer une ligue
@@ -2952,7 +2952,7 @@ function renderLeaguesList() {
 
   listContainer.innerHTML = leagues.map(l => {
     const isCreator = state.currentUser && state.currentUser.id === l.creator_id;
-    const rankLabel = l.user_rank ? (l.user_rank === 1 ? '🥇 #1' : `#${l.user_rank}`) : '-';
+    const rankLabel = l.user_rank ? (l.user_rank === 1 ? '<svg class='lucide-inline lucide-sm lucide-gold' viewBox='0 0 24 24'><path d='M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15'/><path d='M11 12 5.12 2.2'/><path d='m13 12 5.88-9.8'/><path d='M8 7h8'/><circle cx='12' cy='17' r='5'/><path d='M12 18v-2h-.5'/></svg> #1' : `#${l.user_rank}`) : '-';
 
     return `
       <div 
@@ -2965,7 +2965,7 @@ function renderLeaguesList() {
             ${isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Créateur</span>' : ''}
           </div>
           <div class="flex items-center gap-3 text-xs text-slate-400">
-            <span class="flex items-center gap-1">👥 ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
+            <span class="flex items-center gap-1"><svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg> ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
             <span>•</span>
             <span class="text-amber-400 font-bold flex items-center gap-1">Mon rang : ${rankLabel}</span>
           </div>
@@ -3054,7 +3054,7 @@ function renderLeagueDetail(league) {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <span>🎟️</span> Inviter des amis dans la ligue
+            <svg class='lucide-inline lucide-md lucide-amber' viewBox='0 0 24 24'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2'/><path d='M13 17v2'/><path d='M13 11v2'/></svg> Inviter des amis dans la ligue
           </div>
           <div class="text-xs text-slate-300">Transmets ce code ou le lien direct pour qu'ils rejoignent ta ligue :</div>
         </div>
@@ -3067,10 +3067,10 @@ function renderLeagueDetail(league) {
 
       <div class="grid grid-cols-2 gap-2 pt-1 border-t border-white/5">
         <button onclick="copyLeagueCode('${league.code}')" class="px-3 py-2 rounded-xl bg-[#1e2230] hover:bg-[#282e42] border border-[#2e354c] text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
-          <span>📋</span> Copier le code
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><rect width='8' height='4' x='8' y='2' rx='1' ry='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/></svg> Copier le code
         </button>
         <button onclick="shareLeague('${league.code}', '${escapeHtml(league.name).replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-md shadow-amber-400/20 flex items-center justify-center gap-1.5 cursor-pointer">
-          <span>📤</span> Partager l'invit
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'/><polyline points='16 6 12 2 8 6'/><line x1='12' x2='12' y1='2' y2='15'/></svg> Partager l'invit
         </button>
       </div>
     </div>
@@ -3122,9 +3122,9 @@ function renderLeagueDetail(league) {
         ${members.map(member => {
           const isMe = state.currentUser && state.currentUser.id === member.user_id;
           let rankBadge = `<span class="text-slate-400 font-bold">${member.rank}</span>`;
-          if (member.rank === 1) rankBadge = '🥇';
-          else if (member.rank === 2) rankBadge = '🥈';
-          else if (member.rank === 3) rankBadge = '🥉';
+          if (member.rank === 1) rankBadge = '<svg class='lucide-inline lucide-sm lucide-gold' viewBox='0 0 24 24'><path d='M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15'/><path d='M11 12 5.12 2.2'/><path d='m13 12 5.88-9.8'/><path d='M8 7h8'/><circle cx='12' cy='17' r='5'/><path d='M12 18v-2h-.5'/></svg>';
+          else if (member.rank === 2) rankBadge = '<svg class='lucide-inline lucide-sm lucide-silver' viewBox='0 0 24 24'><path d='M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15'/><path d='M11 12 5.12 2.2'/><path d='m13 12 5.88-9.8'/><path d='M8 7h8'/><circle cx='12' cy='17' r='5'/><path d='M12 18v-2h-.5'/></svg>';
+          else if (member.rank === 3) rankBadge = '<svg class='lucide-inline lucide-sm lucide-bronze' viewBox='0 0 24 24'><path d='M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15'/><path d='M11 12 5.12 2.2'/><path d='m13 12 5.88-9.8'/><path d='M8 7h8'/><circle cx='12' cy='17' r='5'/><path d='M12 18v-2h-.5'/></svg>';
 
           return `
             <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
@@ -3138,7 +3138,7 @@ function renderLeagueDetail(league) {
                 <div class="truncate">
                   <div class="font-bold flex items-center gap-1.5 truncate">
                     <span class="truncate">${member.username}</span>
-                    ${member.is_creator ? '<span class="text-[9px] bg-amber-400/20 text-amber-400 px-1 rounded font-normal shrink-0">👑</span>' : ''}
+                    ${member.is_creator ? '<span class="text-[9px] bg-amber-400/20 text-amber-400 px-1 rounded font-normal shrink-0"><svg class="lucide-inline lucide-xs lucide-amber-fill" viewBox="0 0 24 24"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5.21 16.5h13.58"/></svg></span>' : ''}
                     ${isMe ? '<span class="text-[9px] bg-white text-black font-black px-1 rounded uppercase tracking-wider shrink-0">Moi</span>' : ''}
                   </div>
                 </div>
@@ -3161,7 +3161,7 @@ function renderLeagueDetail(league) {
         onclick="openShareRecapModal(${league.id})" 
         class="w-full bg-[#181a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
       >
-        <span>📸</span> Carte Bilan Partageable (Story & WhatsApp)
+        <svg class='lucide-inline lucide-md lucide-white' viewBox='0 0 24 24'><path d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/><circle cx='12' cy='13' r='3'/></svg> Carte Bilan Partageable (Story & WhatsApp)
       </button>
     </div>
 
@@ -3169,14 +3169,14 @@ function renderLeagueDetail(league) {
     <div class="bg-[#12141a] border border-[#1f222d] rounded-2xl p-3.5 space-y-3 shadow-lg">
       <div class="flex items-center justify-between pb-2 border-b border-[#1b1e28]">
         <div class="flex items-center space-x-2">
-          <span class="text-base">💬</span>
+          <svg class='lucide-inline lucide-lg lucide-white' viewBox='0 0 24 24'><path d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z'/></svg>
           <div>
             <h3 class="font-condensed font-black text-sm uppercase tracking-wide text-white">Mur de chambrage</h3>
             <p class="text-[10px] text-slate-400">Trash-talk en direct entre membres de la ligue</p>
           </div>
         </div>
         <button onclick="loadLeagueMessages(${league.id})" class="text-[11px] text-slate-400 hover:text-white p-1 cursor-pointer" title="Rafraîchir les messages">
-          🔄
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8'/><path d='M21 3v5h-5'/><path d='M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16'/><path d='M8 16H3v5'/></svg>
         </button>
       </div>
 
@@ -3187,8 +3187,8 @@ function renderLeagueDetail(league) {
 
       <!-- Barre d'emojis rapides -->
       <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <button type="button" onclick="insertEmojiToChat('🏀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🏀</button>
-        <button type="button" onclick="insertEmojiToChat('🔥')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🔥</button>
+        <button type="button" onclick="insertEmojiToChat('')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer"></button>
+        <button type="button" onclick="insertEmojiToChat('')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer"></button>
         <button type="button" onclick="insertEmojiToChat('🗑️')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🗑️</button>
         <button type="button" onclick="insertEmojiToChat('👀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">👀</button>
         <button type="button" onclick="insertEmojiToChat('🐐')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🐐</button>
@@ -3203,7 +3203,7 @@ function renderLeagueDetail(league) {
           type="text" 
           id="league-chat-input" 
           maxlength="280" 
-          placeholder="Chambre tes potes... (ex: Préparez les mouchoirs 😈)" 
+          placeholder="Chambre tes potes... (ex: Préparez les mouchoirs...)" 
           class="flex-1 bg-[#181a24] border border-[#282c3e] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white"
           onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); handleSendLeagueMessage(event, ${league.id}); }"
         >
@@ -3446,8 +3446,8 @@ function renderLeagueMatchVotes(data, match) {
 
   if (modalSub) {
     modalSub.textContent = data.is_revealed 
-      ? "🔓 Coup d'envoi sifflé : les pronostics sont révélés !"
-      : "🔒 Avant coup d'envoi : les choix restent secrets !";
+      ? "<svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 9.9-1'/></svg> Coup d'envoi sifflé : les pronostics sont révélés !"
+      : "<svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Avant coup d'envoi : les choix restent secrets !";
   }
 
   if (!data.is_revealed) {
@@ -3455,7 +3455,7 @@ function renderLeagueMatchVotes(data, match) {
     content.innerHTML = `
       <div class="p-3 bg-gradient-to-r from-amber-500/10 to-[#181a24] border border-amber-500/30 rounded-xl space-y-1.5 text-center">
         <div class="text-xs font-bold text-amber-400 flex items-center justify-center gap-1.5">
-          <span>🔒</span> Pronostics secrets (Suspense MPP)
+          <svg class='lucide-inline lucide-md lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Pronostics secrets (Suspense MPP)
         </div>
         <p class="text-[11px] text-slate-300">
           Les choix d'équipes et les Bonus x2 seront révélés au coup d'envoi du match !
@@ -3479,7 +3479,7 @@ function renderLeagueMatchVotes(data, match) {
                 </div>
                 <div>
                   ${v.has_voted 
-                    ? '<span class="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1"><span>✅</span> A voté</span>'
+                    ? '<span class="text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1"><span><svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg></span> A voté</span>'
                     : '<span class="text-[10px] font-bold uppercase text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">⏳ En attente</span>'
                   }
                 </div>
@@ -3536,7 +3536,7 @@ function renderLeagueMatchVotes(data, match) {
                     <span class="font-condensed font-black text-xs px-2 py-0.5 rounded bg-[#202535] border border-[#2c3348] text-white">
                       ${v.selected_team_code || v.selected_team_city}
                     </span>
-                    ${v.is_boosted ? '<span class="text-[10px] font-black text-amber-400 bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 rounded" title="Bonus x2 joué !">⚡ x2</span>' : ''}
+                    ${v.is_boosted ? '<span class="text-[10px] font-black text-amber-400 bg-amber-400/15 border border-amber-400/30 px-1.5 py-0.5 rounded" title="Bonus x2 joué !"> x2</span>' : ''}
                     ${v.points_won > 0 ? `<span class="font-condensed font-black text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">+${v.points_won.toFixed(1)}</span>` : ''}
                   ` : `
                     <span class="text-[10px] text-slate-500 italic">Pas de prono</span>
@@ -3570,7 +3570,7 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
     if (messages.length === 0) {
       container.innerHTML = `
         <div class="text-center text-slate-500 text-[11px] py-6">
-          Aucun message pour le moment.<br>Sois le premier à chambrer tes potes ! 🔥
+          Aucun message pour le moment.<br>Sois le premier à chambrer tes potes !
         </div>
       `;
       return;
@@ -3608,9 +3608,9 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
       console.error("Erreur chargement messages:", err);
       container.innerHTML = `
         <div class="text-center text-rose-400 text-[11px] py-4 space-y-2">
-          <div>⚠️ ${escapeHtml(err.message || 'Impossible de charger les messages')}</div>
+          <div><svg class='lucide-inline lucide-md lucide-red' viewBox='0 0 24 24'><path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/><path d='M12 9v4'/><path d='M12 17h.01'/></svg> ${escapeHtml(err.message || 'Impossible de charger les messages')}</div>
           <button type="button" onclick="loadLeagueMessages(${leagueId})" class="px-2.5 py-1 rounded-lg bg-[#1c1f2e] text-zinc-300 hover:text-white border border-zinc-700 text-[10px] cursor-pointer">
-            🔄 Réessayer
+            <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8'/><path d='M21 3v5h-5'/><path d='M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16'/><path d='M8 16H3v5'/></svg> Réessayer
           </button>
         </div>
       `;
@@ -3774,19 +3774,19 @@ async function loadWrappedData(period = 'weekly') {
     if (winrateEl) winrateEl.textContent = `${data.winrate}%`;
     if (accuracyEl) accuracyEl.textContent = data.max_odds_won > 0 ? data.max_odds_won.toFixed(2) : `${data.won_predictions}/${data.total_predictions}`;
     if (favTeamEl) favTeamEl.textContent = data.favorite_team || 'En cours...';
-    if (nemTeamEl) nemTeamEl.textContent = data.nemesis_team || 'Aucun 🛡️';
+    if (nemTeamEl) nemTeamEl.textContent = data.nemesis_team || 'Aucun';
 
     if (titleEl) {
-      if (data.winrate >= 70) titleEl.textContent = "🔥 Précision chirurgicale";
-      else if (data.winrate >= 50) titleEl.textContent = "🏀 Clutch Player";
-      else titleEl.textContent = "🎯 En pleine montée en puissance";
+      if (data.winrate >= 70) titleEl.textContent = "Précision chirurgicale";
+      else if (data.winrate >= 50) titleEl.textContent = "Clutch Player";
+      else titleEl.textContent = "En pleine montée en puissance";
     }
 
     if (punchlineEl) {
       if (data.winrate >= 60) {
         punchlineEl.textContent = "« MVP sur le parquet ! Qui peut rivaliser ? Venez tester vos pronos ! »";
       } else {
-        punchlineEl.textContent = "« La saison est encore longue, préparez-vous au comeback ! 🚀 »";
+        punchlineEl.textContent = "« La saison est encore longue, préparez-vous au comeback ! »";
       }
     }
   } catch (err) {
@@ -3820,7 +3820,7 @@ function closeShareRecapModal() {
 }
 
 async function handleNativeShareRecap() {
-  const text = currentWrappedShareText || (state.currentUser ? `🏀 HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
+  const text = currentWrappedShareText || (state.currentUser ? `PICK 'N' SWIPE - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
   if (navigator.share) {
     try {
       await navigator.share({
@@ -3834,7 +3834,7 @@ async function handleNativeShareRecap() {
   } else {
     try {
       await navigator.clipboard.writeText(text);
-      notify("Bilan copié ! Colle-le dans WhatsApp ou ta Story 📸", "success");
+      notify("Bilan copié ! Colle-le dans WhatsApp ou ta Story", "success");
     } catch {
       notify("Impossible de copier le bilan.", "error");
     }
@@ -3842,10 +3842,10 @@ async function handleNativeShareRecap() {
 }
 
 async function handleCopyRecapText() {
-  const text = currentWrappedShareText || (state.currentUser ? `🏀 HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
+  const text = currentWrappedShareText || (state.currentUser ? ` HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
   try {
     await navigator.clipboard.writeText(text);
-    notify("Texte récapitulatif copié dans le presse-papier ! 📋", "success");
+    notify("Texte récapitulatif copié dans le presse-papier !", "success");
   } catch {
     notify("Erreur lors de la copie.", "error");
   }
@@ -3938,7 +3938,7 @@ async function openAvatarSelectorModal() {
                 />
                 ${isSelected ? `
                   <div class="absolute -top-1 -right-1 w-4 h-4 bg-[#D95D39] text-white rounded-full border border-black flex items-center justify-center text-[9px] font-black">
-                    ✓
+                    <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg>
                   </div>
                 ` : ''}
               </div>
@@ -3977,7 +3977,7 @@ async function handleSelectAvatar(avatarUrl) {
     if (state.currentUser) {
       state.currentUser.avatar_url = updated.avatar_url;
     }
-    notify("Avatar Superstar NBA sélectionné ! 🏀", "success");
+    notify("Avatar Superstar NBA sélectionné !", "success");
     if (typeof launchConfetti === 'function') {
       launchConfetti();
     }
@@ -4033,7 +4033,7 @@ function openNightRecapModal() {
       <div class="p-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000]">
         <div class="text-[9px] font-condensed font-black text-zinc-400 uppercase tracking-wider">Bonus x2</div>
         <div class="text-[11px] font-black uppercase leading-tight pt-1 ${boostedMatch ? 'text-[#FF5722]' : 'text-zinc-500'}">
-          ${boostedMatch ? '🔥 LOCKÉ' : 'NON UTILISÉ'}
+          ${boostedMatch ? '<svg class='lucide-inline lucide-sm lucide-orange-fill' viewBox='0 0 24 24'><path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/></svg> LOCKÉ' : 'NON UTILISÉ'}
         </div>
       </div>
       <div class="p-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000]">
@@ -4064,7 +4064,7 @@ function openNightRecapModal() {
               <div class="flex items-center gap-1.5">
                 ${isBoosted ? `
                   <span class="text-[9px] font-condensed font-black px-1.5 py-0.5 rounded-[4px] bg-[#FF5722] text-white border border-black shadow-[1px_1px_0px_#000000] flex items-center gap-0.5">
-                    <span>⚡</span> x2
+                    <span></span> x2
                   </span>
                 ` : ''}
                 <span class="text-[10px] text-zinc-400 font-mono">${formatMatchTime(new Date(match.deadline))}</span>
@@ -4082,7 +4082,7 @@ function openNightRecapModal() {
                     <div class="font-condensed font-black text-xs text-white leading-tight">
                       ${escapeHtml(chosenTeam.city)} ${escapeHtml(chosenTeam.name)}
                     </div>
-                    <div class="text-[9px] text-[#00E676] font-bold">✓ Pronostic validé</div>
+                    <div class="text-[9px] text-[#00E676] font-bold"><svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Pronostic validé</div>
                   </div>
                 </div>
                 <div class="text-right">
@@ -4222,7 +4222,7 @@ async function renderResultsView() {
     if (displayed.length === 0) {
       container.innerHTML = `
         <div class="p-8 text-center bg-[#18181e] border-[3px] border-black rounded-[10px] shadow-[4px_4px_0px_#000000] space-y-2">
-          <div class="text-3xl">🏀</div>
+          <div class="text-3xl"><svg class='lucide-inline lucide-2xl lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg></div>
           <div class="font-condensed font-black text-lg text-white uppercase tracking-wider">Aucun match terminé</div>
           <p class="text-xs text-zinc-400">Les résultats s'afficheront ici en direct dès la clôture des rencontres.</p>
         </div>
@@ -4244,17 +4244,17 @@ async function renderResultsView() {
 
       if (userPickId) {
         const isPickWon = userPickId === match.winner_team_id;
-        const multiplier = isBoosted ? ' ⚡x2' : '';
+        const multiplier = isBoosted ? ' x2' : '';
         if (isPickWon) {
           pronoBadgeHtml = `
             <div class="tv-prono-indicator tv-prono-won" title="Pronostic réussi !">
-              ✓ PRONO GAGNÉ${multiplier}
+              <svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> PRONO GAGNÉ${multiplier}
             </div>
           `;
         } else {
           pronoBadgeHtml = `
             <div class="tv-prono-indicator tv-prono-lost" title="Pronostic manqué">
-              ✗ MANQUÉ
+              <svg class='lucide-inline lucide-sm lucide-red' viewBox='0 0 24 24'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg> MANQUÉ
             </div>
           `;
         }
@@ -4358,7 +4358,7 @@ function openMatchResultDetails(matchId) {
         <div class="flex items-center justify-between text-[11px] font-condensed font-black uppercase">
           <span class="text-zinc-300">Ton Pronostic</span>
           <span class="${isWon ? 'text-[#00E676]' : 'text-red-400'}">
-            ${isWon ? '✓ GAGNÉ' : '✗ MANQUÉ'} ${isBoosted ? '⚡ x2 ACTIF' : ''}
+            ${isWon ? '<svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> GAGNÉ' : '<svg class='lucide-inline lucide-sm lucide-red' viewBox='0 0 24 24'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg> MANQUÉ'} ${isBoosted ? '<svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z'/></svg> x2 ACTIF' : ''}
           </span>
         </div>
         <div class="flex items-center justify-between">

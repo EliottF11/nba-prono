@@ -62,7 +62,7 @@
     <!-- Bouton passer rapide en haut à droite -->
     <div class="w-full max-w-md flex justify-end">
       <button id="splash-skip-btn" onclick="dismissSplashScreen()" class="text-[11px] font-condensed font-bold uppercase tracking-wider text-zinc-500 hover:text-white px-3 py-1 rounded-full border border-white/10 bg-white/5 transition cursor-pointer">
-        Passer ✕
+        Passer <svg class="lucide-inline lucide-xs lucide-white" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
 
@@ -78,7 +78,7 @@
       </div>
 
       <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#1a1a20] border-2 border-black text-[11px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000]">
-        <span>🏀</span> Clean Arcade NBA
+        <svg class="lucide-inline lucide-md lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg> Clean Arcade NBA
       </div>
 
       <p class="text-xs text-zinc-400 max-w-xs font-medium leading-relaxed">
@@ -254,7 +254,7 @@
             </div>
             <div class="flex items-center gap-2">
               <button id="btn-open-join-league" class="btn-tactile px-3 py-1.5 rounded-xl bg-[#141418] hover:bg-[#1f1f26] border border-[rgba(255,255,255,0.12)] text-zinc-200 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-                <span>🔑</span> Rejoindre
+                <svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3-2.3a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4L18 10"/><path d="m2.1 21.8 6.4-6.3"/><path d="M8.5 15.5 10 14"/><circle cx="15" cy="9" r="5"/></svg> Rejoindre
               </button>
               <button id="btn-open-create-league" class="btn-tactile px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-md flex items-center gap-1 cursor-pointer">
                 <span>+</span> Créer
@@ -368,7 +368,7 @@
         
         <!-- Bouton fermer universel -->
         <button id="close-auth-modal" onclick="closeAuthModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white w-8 h-8 rounded-[8px] bg-[#1a1a22] border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center transition cursor-pointer z-30 font-black">
-          ✕
+          <svg class="lucide-inline lucide-sm lucide-white" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
 
         <!-- Message d'erreur partagé -->
@@ -381,7 +381,7 @@
         <div id="auth-view-welcome" class="auth-step-pane flex flex-col space-y-3.5">
           <div>
             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#1a1a22] border-2 border-black text-[10px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000] mb-2">
-              <span>🏀</span> Saison Régulière 2026/2027
+              <svg class="lucide-inline lucide-md lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg> Saison Régulière 2026/2027
             </div>
             <h2 class="font-condensed font-black text-2xl sm:text-3xl text-[#F4F4F0] uppercase tracking-tight leading-tight">
               Bienvenue sur <span class="text-[#D95D39]">NBA PRO</span> <span class="text-xs text-zinc-400 font-bold">(HOOPS PRONO)</span>
@@ -394,7 +394,7 @@
           <!-- Vitrine défilante des 25 Nouveaux Avatars NBA -->
           <div class="p-2.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1.5">
             <div class="flex items-center justify-between text-[10px] font-condensed font-bold uppercase tracking-wider text-zinc-400 px-0.5">
-              <span class="flex items-center gap-1 text-white"><span>👑</span> 25 Superstars NBA disponibles</span>
+              <span class="flex items-center gap-1 text-white"><svg class="lucide-inline lucide-md lucide-amber-fill" viewBox="0 0 24 24"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5.21 16.5h13.58"/></svg> 25 Superstars NBA disponibles</span>
               <span class="text-amber-400 font-black">Nouveau</span>
             </div>
             <div class="avatar-strip-container py-1">
@@ -407,21 +407,21 @@
           <!-- 3 Piliers de l'application -->
           <div class="grid grid-cols-1 gap-2 text-left">
             <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm shrink-0">🎯</div>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm shrink-0"><svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
               <div class="min-w-0">
                 <div class="text-xs font-condensed font-bold uppercase tracking-wider text-white">Pronos 1-Clic & Cotes Live</div>
                 <div class="text-[11px] text-zinc-400 truncate">Empoche la cote exacte en points et active ton Boost x2.</div>
               </div>
             </div>
             <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-sm shrink-0">🏆</div>
+              <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-sm shrink-0"><svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div>
               <div class="min-w-0">
                 <div class="text-xs font-condensed font-bold uppercase tracking-wider text-white">Ligues Privées & Chat Live</div>
                 <div class="text-[11px] text-zinc-400 truncate">Rejoins tes amis en un clic avec un code et chambre au direct.</div>
               </div>
             </div>
             <div class="flex items-center space-x-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-sm shrink-0">📊</div>
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-sm shrink-0"><svg class="lucide-inline lucide-md lucide-green" viewBox="0 0 24 24"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></div>
               <div class="min-w-0">
                 <div class="text-xs font-condensed font-bold uppercase tracking-wider text-white">Statistiques & Bilan Wrapped</div>
                 <div class="text-[11px] text-zinc-400 truncate">Suis ton winrate, ton équipe fétiche et partage ta story.</div>
@@ -516,7 +516,7 @@
               id="reg-submit-btn" 
               class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer mt-2"
             >
-              Créer mon compte & Jouer 🏀
+              Créer mon compte & Jouer <svg class="lucide-inline lucide-md lucide-white" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
             </button>
           </form>
 
@@ -594,12 +594,12 @@
       <div class="modal-box rounded-2xl w-full max-w-sm p-5 shadow-2xl relative max-h-[90vh] flex flex-col">
         
         <button id="close-season-modal" class="absolute top-4 right-4 text-zinc-400 hover:text-white text-lg p-1 focus:outline-none cursor-pointer">
-          ✕
+          <svg class="lucide-inline lucide-sm lucide-white" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
 
         <div class="mb-3">
           <div class="font-condensed text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-            <span>🏆 Pronostics de Saison</span>
+            <svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Pronostics de Saison
           </div>
           <p class="text-xs text-zinc-400">
             Fais tes 5 choix majeurs pour la saison régulière 2026/2027.
@@ -617,7 +617,7 @@
           <!-- 1. Champion de la Ligue -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1 flex items-center justify-between">
-              <span>🏆 Champion de la Ligue</span>
+              <svg class="lucide-inline lucide-md lucide-amber-fill" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Champion de la Ligue
             </label>
             <select id="season-champion" required class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white">
               <option value="">Sélectionne le champion...</option>
@@ -627,7 +627,7 @@
           <!-- 2. Vainqueur Tournoi de mi-saison -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1 flex items-center justify-between">
-              <span>🥇 Vainqueur Tournoi de mi-saison</span>
+              <svg class="lucide-inline lucide-md lucide-gold" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg> Vainqueur Tournoi de mi-saison
             </label>
             <select id="season-cup" required class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white">
               <option value="">Sélectionne le vainqueur du tournoi...</option>
@@ -647,7 +647,7 @@
           <!-- 4. DPOY -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1 flex items-center justify-between">
-              <span>🛡️ Défenseur de l'année (DPOY)</span>
+              <svg class="lucide-inline lucide-md lucide-green" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg> Défenseur de l'année (DPOY)
             </label>
             <select id="season-dpoy" required class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white">
               <option value="">Sélectionne le DPOY...</option>
@@ -657,7 +657,7 @@
           <!-- 5. ROY -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1 flex items-center justify-between">
-              <span>👶 Rookie de l'année (ROY)</span>
+              <svg class="lucide-inline lucide-md" viewBox="0 0 24 24"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg> Rookie de l'année (ROY)
             </label>
             <select id="season-roy" required class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white">
               <option value="">Sélectionne le Rookie de l'année...</option>
@@ -684,7 +684,7 @@
         </button>
         <div class="space-y-1">
           <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center gap-2">
-            <span>🏆</span> Créer une Ligue Privée
+            <svg class="lucide-inline lucide-md lucide-amber-fill" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Créer une Ligue Privée
           </h3>
           <p class="text-xs text-zinc-400">Un code d'invitation unique à 6 caractères sera généré pour inviter tes amis.</p>
         </div>
@@ -708,7 +708,7 @@
         </button>
         <div class="space-y-1">
           <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center gap-2">
-            <span>🔑</span> Rejoindre une Ligue
+            <svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3-2.3a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4L18 10"/><path d="m2.1 21.8 6.4-6.3"/><path d="M8.5 15.5 10 14"/><circle cx="15" cy="9" r="5"/></svg> Rejoindre une Ligue
           </h3>
           <p class="text-xs text-zinc-400">Saisis le code à 6 caractères partagé par un ami.</p>
         </div>
@@ -733,7 +733,7 @@
         
         <div class="space-y-1 mb-3">
           <div class="flex items-center gap-2">
-            <span class="text-base">👥</span>
+            <svg class="lucide-inline lucide-lg lucide-white" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight" id="lmv-modal-title">
               Pronos de Ligue
             </h3>
@@ -766,7 +766,7 @@
 
         <div class="text-center pt-0.5">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-condensed font-black tracking-widest uppercase text-white mb-1">
-            <span>🎁</span> HOOPS WRAPPED
+            <svg class="lucide-inline lucide-md lucide-orange" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg> HOOPS WRAPPED
           </div>
           <p class="text-[11px] text-zinc-400">Ton bilan officiel à partager en Story ou sur les réseaux</p>
         </div>
@@ -774,10 +774,10 @@
         <!-- Sélecteur de période : Semaine vs Saison -->
         <div class="grid grid-cols-2 gap-1.5 bg-[#141418] p-1 rounded-xl border border-white/10 text-center">
           <button id="wrapped-tab-weekly" onclick="switchWrappedPeriod('weekly')" class="py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer bg-white text-black shadow">
-            🏀 Semaine
+            <svg class="lucide-inline lucide-sm lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg> Semaine
           </button>
           <button id="wrapped-tab-season" onclick="switchWrappedPeriod('season')" class="py-1.5 px-2 rounded-lg font-condensed font-black text-xs uppercase tracking-wider transition cursor-pointer text-zinc-400 hover:text-white">
-            🏆 Fin de Saison
+            <svg class="lucide-inline lucide-sm lucide-amber" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/><path d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg> Fin de Saison
           </button>
         </div>
 
@@ -798,7 +798,7 @@
               <span id="recap-username">Joueur</span>
               <span id="recap-rank-badge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">#1</span>
             </div>
-            <div class="text-[11px] text-zinc-300 font-semibold" id="recap-title">Précision chirurgicale 🎯</div>
+            <div class="text-[11px] text-zinc-300 font-semibold" id="recap-title">Précision chirurgicale <svg class="lucide-inline lucide-sm lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
           </div>
 
           <!-- Stats Chiffrées -->
@@ -821,13 +821,13 @@
           <div class="grid grid-cols-2 gap-1.5 text-left text-[10px]">
             <div class="bg-white/5 border border-white/10 p-2 rounded-lg space-y-0.5">
               <div class="font-bold text-emerald-400 flex items-center gap-1">
-                <span>🍀</span> Fétiche
+                <svg class="lucide-inline lucide-md lucide-green" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 20 .5 20 .5s1 4.5-1 10.5a7 7 0 0 1-8 9Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg> Fétiche
               </div>
               <div class="font-condensed font-bold text-white truncate" id="recap-favorite-team">-</div>
             </div>
             <div class="bg-white/5 border border-white/10 p-2 rounded-lg space-y-0.5">
               <div class="font-bold text-rose-400 flex items-center gap-1">
-                <span>🐈‍⬛</span> Chat Noir
+                <svg class="lucide-inline lucide-md" viewBox="0 0 24 24"><path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/></svg> Chat Noir
               </div>
               <div class="font-condensed font-bold text-white truncate" id="recap-nemesis-team">-</div>
             </div>
@@ -841,10 +841,10 @@
         <!-- Boutons d'action de partage Neo-Brutalistes -->
         <div class="space-y-1.5 pt-0.5">
           <button id="btn-native-share" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed font-black text-sm uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition flex items-center justify-center gap-2 cursor-pointer">
-            <span>📲</span> Partager en Story / WhatsApp
+            <svg class="lucide-inline lucide-md lucide-white" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg> Partager en Story / WhatsApp
           </button>
           <button id="btn-copy-recap-text" class="btn-tactile w-full bg-[#1e1e24] hover:bg-[#282830] border-[2.5px] border-black text-[#F4F4F0] font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-[8px] shadow-[3px_3px_0px_#000000] transition flex items-center justify-center gap-1.5 cursor-pointer">
-            <span>📋</span> Copier le texte récapitulatif
+            <svg class="lucide-inline lucide-md lucide-white" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copier le texte récapitulatif
           </button>
         </div>
       </div>
@@ -859,7 +859,7 @@
 
         <div class="text-center pt-0.5">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-[#121216] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000] mb-1">
-            <span>🏀</span> Superstars & Joueurs NBA
+            <svg class="lucide-inline lucide-md lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg> Superstars & Joueurs NBA
           </div>
           <p class="text-[11px] text-zinc-400">Choisis ton joueur NBA officiel pour ton profil et tes pronostics</p>
         </div>
@@ -879,7 +879,7 @@
         </button>
         <div class="space-y-1">
           <h3 class="font-condensed font-black text-xl text-white uppercase tracking-tight flex items-center gap-2">
-            <span>⚖️</span> Mentions Légales & Fair Use
+            <svg class="lucide-inline lucide-md lucide-muted" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg> Mentions Légales & Fair Use
           </h3>
           <p class="text-xs text-zinc-400">Avertissement relatif aux droits de propriété intellectuelle</p>
         </div>
@@ -922,7 +922,7 @@
         <!-- Titre & Badge -->
         <div class="space-y-1 text-center pt-1">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#100F15] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
-            <span>🏀</span> Bilan de tes Choix
+            <svg class="lucide-inline lucide-md lucide-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg> Bilan de tes Choix
           </div>
           <h3 class="font-condensed font-black text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none">
             Récapitulatif des Pronos
@@ -943,7 +943,7 @@
         <!-- Actions : Partager / Bilan Wrapped et Fermer -->
         <div class="pt-2 space-y-2">
           <button onclick="openShareRecapModal(); closeNightRecapModal();" class="btn-tactile w-full py-2.5 px-4 rounded-[8px] bg-gradient-to-r from-[#D95D39] to-[#FF5722] text-white font-condensed font-black text-xs uppercase tracking-wider border-[2.5px] border-black shadow-[3px_3px_0px_#000000] cursor-pointer flex items-center justify-center gap-2">
-            <span>📲</span>
+            <svg class="lucide-inline lucide-md lucide-white" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
             <span>Partager en Story / WhatsApp</span>
           </button>
           <button onclick="closeNightRecapModal()" class="btn-tactile w-full py-2 px-4 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer">
@@ -963,7 +963,7 @@
         <!-- Titre & Badge TV -->
         <div class="space-y-1 text-center pt-1">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#100F15] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
-            <span>📺</span> Match Recap & Détails
+            <svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg> Match Recap & Détails
           </div>
           <h3 class="font-condensed font-black text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none">
             Rapport Officiel
