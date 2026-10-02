@@ -344,18 +344,31 @@ function selectTab(tab) {
 }
 
 // --- Portail d'Accueil & Authentification Professionnelle ---
+let availableAvatarsCache = null;
 let selectedSignupAvatarUrl = '/static/avatars/wembanyama_spurs.jpg';
 
 async function fetchAvatarsList() {
-  if (!availableAvatarsCache) {
-    try {
+  if (availableAvatarsCache && Array.isArray(availableAvatarsCache) && availableAvatarsCache.length > 0) {
+    return availableAvatarsCache;
+  }
+  try {
+    if (typeof API !== 'undefined' && API.getAvatars) {
       availableAvatarsCache = await API.getAvatars();
-    } catch (e) {
-      console.error("Erreur chargement avatars:", e);
+    } else {
+      const res = await fetch('/api/auth/avatars');
+      availableAvatarsCache = await res.json();
+    }
+  } catch (e) {
+    console.warn("Erreur chargement avatars via API, tentative fetch direct:", e);
+    try {
+      const res = await fetch('/api/auth/avatars');
+      availableAvatarsCache = await res.json();
+    } catch (err2) {
+      console.error("Échec fallback fetch avatars:", err2);
       availableAvatarsCache = [];
     }
   }
-  return availableAvatarsCache;
+  return availableAvatarsCache || [];
 }
 
 async function populateWelcomeAvatars() {
@@ -1405,6 +1418,13 @@ async function triggerSwipeAction(match, direction) {
   const chosenTeam = direction === 'right' ? match.home_team : match.away_team;
   const isFinished = match.status === 'finished';
 
+  // Haptic feedback Arcade sur validation de swipe
+  if (navigator.vibrate) {
+    try {
+      navigator.vibrate(50);
+    } catch (e) {}
+  }
+
   if (isFinished) {
     notify("Match terminé : passage au match suivant", "info");
     state.tinderDeckIndex++;
@@ -1415,22 +1435,6 @@ async function triggerSwipeAction(match, direction) {
   if (!state.currentUser) {
     openAuthModal('login');
     notify("Connecte-toi pour pronostiquer", "info");
-    setTimeout(() => renderMatchesList(), 240);
-    return;
-  }
-
-  // Chantier 4 : Obligation de choisir ses Joueurs de la Semaine
-  const weekNum = match.week_number || 1;
-  const wp = state.weeklyPlayersMap[weekNum];
-  if (!wp || !wp.east_player || !wp.west_player) {
-    notify(`⚠️ Choisis d'abord tes 2 Joueurs de la Semaine ${weekNum} dans l'onglet Profil !`, "error");
-    selectTab('profile');
-    setTimeout(() => {
-      const container = document.getElementById('weekly-players-container');
-      if (container) {
-        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 120);
     setTimeout(() => renderMatchesList(), 240);
     return;
   }
@@ -2539,28 +2543,22 @@ function getBadgePopGradient(badgeId) {
 }
 window.getBadgePopGradient = getBadgePopGradient;
 
-// --- Rendu du Profil & Statistiques (Chantier 1) ---
+// --- Rendu du Profil & Statistiques (Clean Arcade Neo-Brutaliste) ---
 async function renderProfile() {
   const container = document.getElementById('profile-content');
   if (!container) return;
 
-  // Actualisation des bannières placées en haut de l'onglet Profil
-  try {
-    renderSeasonBanner();
-    renderWeeklyPlayersCard();
-  } catch (e) {}
-
   if (!state.currentUser) {
     container.innerHTML = `
-      <div class="p-6 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.08)] text-center space-y-4 shadow-xl">
-        <div class="w-14 h-14 mx-auto rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-2xl text-white">
+      <div class="p-6 bg-[#18181e] rounded-[8px] border-[3px] border-black text-center space-y-4 shadow-[6px_6px_0px_#000000]">
+        <div class="w-16 h-16 mx-auto rounded-full bg-[#121216] border-[3px] border-black flex items-center justify-center text-3xl shadow-[3px_3px_0px_#000000]">
           👤
         </div>
-        <div class="font-condensed font-black text-xl text-white">Connecte-toi pour voir ton profil</div>
+        <div class="font-condensed font-black text-2xl text-[#F4F4F0] uppercase tracking-wide">Connecte-toi pour voir ton profil</div>
         <p class="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
-          Accède à ton Winrate en direct, analyse tes cotes validées et débloque les badges officiels.
+          Accède à ton Winrate en direct, analyse tes cotes validées et collectionne les cartes de badges.
         </p>
-        <button onclick="openAuthModal('login')" class="bg-white hover:bg-zinc-200 text-black font-condensed font-black text-sm uppercase px-5 py-2.5 rounded-xl transition cursor-pointer shadow-md">
+        <button onclick="openAuthModal('login')" class="bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed font-black text-sm uppercase px-5 py-2.5 rounded-[8px] border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer">
           Connexion / Inscription
         </button>
       </div>
@@ -2569,87 +2567,94 @@ async function renderProfile() {
   }
 
   container.innerHTML = `
-    <div class="p-8 text-center text-slate-500 text-xs font-semibold">
-      Chargement de tes statistiques...
+    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex items-center justify-center gap-2">
+      <div class="animate-spin w-5 h-5 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+      <span class="uppercase tracking-wider">Chargement de tes statistiques...</span>
     </div>
   `;
 
   try {
-    const [stats, seasonPred] = await Promise.all([
-      API.getMyStats(),
-      API.getSeasonPrediction()
-    ]);
+    const stats = await API.getMyStats();
     if (!stats) return;
-    state.seasonPrediction = seasonPred;
 
     const initials = stats.username.substring(0, 2).toUpperCase();
-    const winrateColor = stats.winrate >= 55 ? 'text-emerald-400' : stats.winrate >= 40 ? 'text-[#ff5500]' : 'text-slate-200';
+    const winrateColor = stats.winrate >= 55 ? 'text-emerald-400' : stats.winrate >= 40 ? 'text-[#FF9800]' : 'text-[#F4F4F0]';
+    const avatarUrl = stats.avatar_url || (state.currentUser ? state.currentUser.avatar_url : null);
 
     container.innerHTML = `
-      <!-- Carte Joueur avec Avatar Culte -->
-      <div class="p-3.5 sm:p-4 surface-card flex items-center justify-between gap-3 shadow-xl">
-        <div class="flex items-center space-x-3 min-w-0">
-          <div class="relative cursor-pointer group" onclick="openAvatarSelectorModal()" title="Changer d'avatar">
-            ${getUserAvatarHtml(stats.username, 'lg', stats.avatar_url)}
-            <div class="absolute -bottom-1 -right-1 bg-white text-black p-0.5 rounded-full shadow border border-black/40 text-[9px] flex items-center justify-center w-4 h-4">
-              ✏️
-            </div>
+      <!-- EN-TÊTE DU PROFIL NÉO-BRUTALISTE : GRAND AVATAR ROND CENTRÉ & PSEUDO GÉANT -->
+      <div class="flex flex-col items-center justify-center text-center pt-2 pb-2 space-y-3">
+        
+        <!-- Très grand avatar rond tout en haut et au centre de l'écran -->
+        <div class="relative cursor-pointer group" onclick="openAvatarSelectorModal()" title="Changer d'avatar Superstar NBA">
+          <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-[4px] border-black shadow-[6px_6px_0px_#000000] overflow-hidden bg-[#18181e] flex items-center justify-center mx-auto transition-transform group-hover:scale-105 active:scale-95">
+            ${avatarUrl ? `
+              <img src="${avatarUrl}" alt="${escapeHtml(stats.username)}" class="w-full h-full object-cover rounded-full" />
+            ` : `
+              <div class="w-full h-full rounded-full bg-[#1c1b24] flex items-center justify-center text-white font-condensed font-black text-4xl">
+                ${initials}
+              </div>
+            `}
           </div>
-          <div class="min-w-0">
-            <div class="font-condensed font-black text-lg sm:text-xl text-white leading-tight truncate">
-              ${stats.username}
-            </div>
-            <div class="text-[11px] text-zinc-400 truncate max-w-[140px] sm:max-w-[200px]">
-              ${stats.email || 'Membre HOOPS Prono'}
-            </div>
+          <!-- Bouton circulaire flottant modifier avatar -->
+          <div class="absolute bottom-0 right-0 sm:right-1 bg-[#D95D39] text-white p-2 rounded-full border-[2.5px] border-black shadow-[3px_3px_0px_#000000] hover:bg-[#FF5722] transition flex items-center justify-center cursor-pointer" title="Modifier mon avatar">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
           </div>
         </div>
 
-        <div class="text-right shrink-0">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Classement</div>
-          <div class="font-condensed font-black text-base sm:text-lg text-white">
-            #${stats.rank || '-'} <span class="text-xs text-zinc-400">(${stats.total_points.toFixed(1)} pts)</span>
+        <!-- Pseudo écrit en très grand juste en dessous -->
+        <div class="space-y-1">
+          <h1 class="font-condensed font-black text-3xl sm:text-4xl text-[#F4F4F0] uppercase tracking-tight leading-none">
+            ${escapeHtml(stats.username)}
+          </h1>
+          <div class="flex items-center justify-center gap-2 pt-0.5">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-[#1a1924] border-2 border-black text-xs font-condensed font-black uppercase text-[#FFB703] shadow-[2px_2px_0px_#000000]">
+              <span>🏆</span> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
+            </span>
           </div>
+          <p class="text-[11px] text-zinc-400 font-medium">
+            ${escapeHtml(stats.email || 'Membre Pick \'n\' Swipe')}
+          </p>
         </div>
+
+        <!-- Bouton Neo-Brutaliste Changer Avatar -->
+        <button onclick="openAvatarSelectorModal()" class="btn-tactile bg-[#1a1a22] hover:bg-[#252530] text-zinc-200 border-[2.5px] border-black px-4 py-2 rounded-[8px] font-condensed font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#000000] cursor-pointer flex items-center gap-2">
+          <span>🏀</span> Choisir mon avatar Superstar NBA
+        </button>
       </div>
 
-      <!-- Bouton Changer Avatar Meme -->
-      <button onclick="openAvatarSelectorModal()" class="w-full bg-[#16161a] hover:bg-[#202026] border border-white/10 p-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-condensed font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition cursor-pointer shadow-sm">
-        <span>🎭</span> Choisir mon avatar Meme NBA
-      </button>
-
-      <!-- Grille des Statistiques du Joueur -->
+      <!-- Grille des Statistiques du Joueur Neo-Brutales -->
       <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
         
         <!-- Winrate -->
-        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Winrate</div>
-          <div class="font-condensed font-black text-xl sm:text-2xl ${winrateColor} my-0.5">
+        <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400 truncate">Winrate</div>
+          <div class="font-condensed font-black text-2xl sm:text-3xl ${winrateColor} my-0.5 leading-none">
             ${stats.winrate.toFixed(1)}%
           </div>
-          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
+          <div class="text-[9px] sm:text-[10px] text-zinc-400 font-bold truncate">
             ${stats.won_predictions}/${stats.finished_predictions} validés
           </div>
         </div>
 
         <!-- Cote moyenne trouvée -->
-        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Cote Moy.</div>
-          <div class="font-condensed font-black text-xl sm:text-2xl text-white my-0.5">
+        <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400 truncate">Cote Moy.</div>
+          <div class="font-condensed font-black text-2xl sm:text-3xl text-white my-0.5 leading-none">
             ${stats.avg_odds > 0 ? stats.avg_odds.toFixed(2) : '-'}
           </div>
-          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
+          <div class="text-[9px] sm:text-[10px] text-zinc-400 font-bold truncate">
             sur victoires
           </div>
         </div>
 
         <!-- Plus grosse cote -->
-        <div class="surface-card p-2 sm:p-3 text-center flex flex-col justify-between">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Max Cote</div>
-          <div class="font-condensed font-black text-xl sm:text-2xl text-white my-0.5">
+        <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 sm:p-3 text-center flex flex-col justify-between">
+          <div class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400 truncate">Max Cote</div>
+          <div class="font-condensed font-black text-2xl sm:text-3xl text-[#FFB703] my-0.5 leading-none">
             ${stats.max_odds > 0 ? stats.max_odds.toFixed(2) : '-'}
           </div>
-          <div class="text-[9px] sm:text-[10px] text-slate-500 font-semibold truncate">
+          <div class="text-[9px] sm:text-[10px] text-zinc-400 font-bold truncate">
             record validé
           </div>
         </div>
@@ -2658,132 +2663,21 @@ async function renderProfile() {
 
       <!-- Équipe Fétiche & Chat Noir -->
       <div class="grid grid-cols-2 gap-2">
-        <div class="surface-card p-2.5 rounded-xl border border-white/5 space-y-0.5">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+        <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 space-y-0.5">
+          <div class="text-[9px] font-condensed font-black uppercase tracking-wider text-emerald-400 flex items-center gap-1">
             <span>🍀</span> Équipe Fétiche
           </div>
-          <div class="font-condensed font-black text-sm text-white truncate">
+          <div class="font-condensed font-black text-base text-white truncate">
             ${stats.favorite_team || 'En cours...'}
           </div>
         </div>
-        <div class="surface-card p-2.5 rounded-xl border border-white/5 space-y-0.5">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1">
+        <div class="surface-card bg-[#18181e] border-[3px] border-black rounded-[8px] shadow-[4px_4px_0px_#000000] p-2.5 space-y-0.5">
+          <div class="text-[9px] font-condensed font-black uppercase tracking-wider text-rose-400 flex items-center gap-1">
             <span>🐈‍⬛</span> Chat Noir
           </div>
-          <div class="font-condensed font-black text-sm text-white truncate">
+          <div class="font-condensed font-black text-base text-white truncate">
             ${stats.nemesis_team || 'Aucun 🛡️'}
           </div>
-        </div>
-      </div>
-
-      <!-- Actions Rapides Profil (Bilan Story & Défier) -->
-      <div class="grid grid-cols-2 gap-2 pt-1">
-        <button onclick="openShareRecapModal()" class="btn-tactile p-2.5 rounded-xl bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-zinc-200 cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <span>Bilan Story</span>
-        </button>
-        <button onclick="shareApp()" class="btn-tactile p-2.5 rounded-xl bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.08)] flex items-center justify-center gap-1.5 text-xs font-condensed font-black uppercase tracking-wider text-white cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-          <span>Défier des amis</span>
-        </button>
-      </div>
-
-      <!-- Section Pronostics d'Avant-Saison (Chantier 3) -->
-      <div class="space-y-2.5 pt-2">
-        <div class="flex items-center justify-between">
-          <h3 class="font-condensed font-black text-lg uppercase tracking-tight text-white flex items-center gap-1.5">
-            <span>Pronostics de Saison</span>
-            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${seasonPred && seasonPred.is_locked ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'}">
-              ${seasonPred && seasonPred.is_locked ? '🔒 Verrouillé' : '⏳ Modifiable'}
-            </span>
-          </h3>
-          ${!seasonPred?.is_locked ? `
-            <button onclick="openSeasonModal()" class="text-xs text-[#ff5500] hover:underline font-bold cursor-pointer">
-              ${seasonPred && seasonPred.nba_champion ? 'Modifier' : 'Faire mes 5 choix'}
-            </button>
-          ` : ''}
-        </div>
-
-        <div class="bg-[#12141a] p-3.5 rounded-2xl border border-[#1f222d] space-y-2 text-xs shadow-lg">
-          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
-            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-              <span>🏆</span> Champion NBA
-            </span>
-            <span class="font-bold ${seasonPred?.nba_champion ? 'text-white' : 'text-slate-500 italic'}">
-              ${seasonPred?.nba_champion || 'Non pronostiqué'}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
-            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-              <span>🥇</span> In-Season Tournament
-            </span>
-            <span class="font-bold ${seasonPred?.cup_winner ? 'text-white' : 'text-slate-500 italic'}">
-              ${seasonPred?.cup_winner || 'Non pronostiqué'}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
-            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-              <span>⭐</span> MVP
-            </span>
-            <span class="font-bold ${seasonPred?.mvp ? 'text-amber-400' : 'text-slate-500 italic'}">
-              ${seasonPred?.mvp || 'Non pronostiqué'}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1.5">
-            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-              <span>🛡️</span> DPOY
-            </span>
-            <span class="font-bold ${seasonPred?.dpoy ? 'text-white' : 'text-slate-500 italic'}">
-              ${seasonPred?.dpoy || 'Non pronostiqué'}
-            </span>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400 font-medium flex items-center gap-1.5">
-              <span>👶</span> ROY
-            </span>
-            <span class="font-bold ${seasonPred?.roy ? 'text-white' : 'text-slate-500 italic'}">
-              ${seasonPred?.roy || 'Non pronostiqué'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Joueurs de la Semaine (Chantier 4) -->
-      <div class="space-y-2.5 pt-2">
-        <div class="flex items-center justify-between">
-          <h3 class="font-condensed font-black text-lg uppercase tracking-tight text-white flex items-center gap-1.5">
-            <span>Joueurs de la Semaine</span>
-            <span class="text-xs text-slate-400 font-sans font-medium">(Par Semaine)</span>
-          </h3>
-        </div>
-
-        <div class="space-y-2">
-          ${(state.availableWeeks || []).map(w => {
-            const wp = state.weeklyPlayersMap[w.week];
-            const hasWp = wp && wp.east_player && wp.west_player;
-            return `
-              <div class="bg-[#12141a] p-3 rounded-xl border border-[#1f222d] text-xs space-y-1.5 shadow-md">
-                <div class="flex items-center justify-between border-b border-[#1b1e28] pb-1">
-                  <span class="font-condensed font-black text-white uppercase text-sm">Week ${w.week}</span>
-                  <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${hasWp ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'}">
-                    ${hasWp ? '✅ 2/2 Validés' : '⚡ À compléter'}
-                  </span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-400 font-medium">🔵 Est</span>
-                  <span class="font-bold ${wp?.east_player ? 'text-white' : 'text-slate-500 italic'}">${wp?.east_player || 'Non choisi'}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-slate-400 font-medium">🔴 Ouest</span>
-                  <span class="font-bold ${wp?.west_player ? 'text-white' : 'text-slate-500 italic'}">${wp?.west_player || 'Non choisi'}</span>
-                </div>
-              </div>
-            `;
-          }).join('')}
         </div>
       </div>
 
@@ -2859,7 +2753,7 @@ async function renderProfile() {
                     ></div>
                   </div>
                   <div class="collector-holo-stamp pt-0.5 ${badge.unlocked ? 'text-black/80 font-black' : 'text-zinc-500'}">
-                    ★ HOOPS PRONO • OFFICIAL COLLECTOR CARD ★
+                    ★ PICK 'N' SWIPE • OFFICIAL COLLECTOR CARD ★
                   </div>
                 </div>
 
@@ -2871,7 +2765,7 @@ async function renderProfile() {
 
       <!-- Déconnexion -->
       <div class="pt-2">
-        <button onclick="handleLogout()" class="btn-tactile w-full py-2.5 rounded-xl bg-[#141722] hover:bg-rose-500/10 border border-[rgba(255,255,255,0.08)] hover:border-rose-500/30 text-slate-400 hover:text-rose-400 text-xs font-condensed font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5">
+        <button onclick="handleLogout()" class="btn-tactile w-full py-2.5 rounded-[8px] bg-[#1a1a22] hover:bg-[#281a1d] border-[2.5px] border-black text-zinc-300 hover:text-rose-400 text-xs font-condensed font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[3px_3px_0px_#000000]">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
           <span>Se déconnecter</span>
         </button>
@@ -2947,21 +2841,23 @@ async function shareApp() {
 function getUserAvatarHtml(username, size = 'sm', avatarUrl = null) {
   const safeName = username || '?';
   const url = avatarUrl || (state.currentUser && state.currentUser.username === username ? state.currentUser.avatar_url : null);
-  const sizeClasses = size === 'lg' 
-    ? 'w-12 h-12 text-sm font-black' 
-    : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : (size === 'xs' ? 'w-6 h-6 text-[9px] font-black' : 'w-7 h-7 text-[10px] font-black'));
+  const sizeClasses = size === 'xl'
+    ? 'w-28 h-28 sm:w-32 sm:h-32 text-4xl font-black'
+    : (size === 'lg' 
+      ? 'w-12 h-12 text-sm font-black' 
+      : (size === 'md' ? 'w-8 h-8 text-xs font-bold' : (size === 'xs' ? 'w-6 h-6 text-[9px] font-black' : 'w-7 h-7 text-[10px] font-black')));
 
   if (url) {
-    return `<img src="${url}" alt="${safeName}" class="${sizeClasses} rounded-xl object-cover border border-white/20 shadow-md shrink-0 bg-[#18181b]" onerror="this.style.display='none'" />`;
+    return `<img src="${url}" alt="${safeName}" class="${sizeClasses} rounded-full object-cover border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0 bg-[#18181b]" onerror="this.style.display='none'" />`;
   }
 
   const initials = safeName.substring(0, 2).toUpperCase();
   const tones = [
-    'bg-[#27272a] text-zinc-200 border border-white/15',
-    'bg-[#18181b] text-white border border-white/25',
-    'bg-[#3f3f46] text-white border border-white/20',
-    'bg-[#202024] text-zinc-300 border border-white/15',
-    'bg-[#2e2e36] text-zinc-100 border border-white/20'
+    'bg-[#27272a] text-zinc-200 border-2 border-black',
+    'bg-[#18181b] text-white border-2 border-black',
+    'bg-[#3f3f46] text-white border-2 border-black',
+    'bg-[#202024] text-zinc-300 border-2 border-black',
+    'bg-[#2e2e36] text-zinc-100 border-2 border-black'
   ];
   let hash = 0;
   for (let i = 0; i < safeName.length; i++) {
@@ -2969,7 +2865,7 @@ function getUserAvatarHtml(username, size = 'sm', avatarUrl = null) {
   }
   const toneClass = tones[Math.abs(hash) % tones.length];
 
-  return `<div class="${sizeClasses} rounded-xl ${toneClass} flex items-center justify-center shadow-sm uppercase tracking-wider shrink-0 font-condensed font-black">${initials}</div>`;
+  return `<div class="${sizeClasses} rounded-full ${toneClass} flex items-center justify-center shadow-[2px_2px_0px_#000000] uppercase tracking-wider shrink-0 font-condensed font-black">${initials}</div>`;
 }
 
 async function loadAndRenderLeagues() {
@@ -3995,42 +3891,70 @@ async function openAvatarSelectorModal() {
 
   modal.classList.remove('hidden');
 
+  grid.innerHTML = `
+    <div class="py-12 text-center text-zinc-400 font-condensed text-sm flex flex-col items-center justify-center gap-2">
+      <div class="animate-spin w-6 h-6 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+      <span class="uppercase tracking-wider">Chargement des superstars NBA...</span>
+    </div>
+  `;
+
   try {
-    grid.innerHTML = `
-      <div class="py-8 text-center text-zinc-500 text-xs flex items-center justify-center gap-2">
-        <div class="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full"></div>
-        Chargement des superstars NBA...
-      </div>
-    `;
     const avatars = await fetchAvatarsList();
+    if (!avatars || avatars.length === 0) {
+      grid.innerHTML = `<div class="p-6 text-center text-zinc-400 text-xs font-condensed uppercase">Aucun avatar disponible pour le moment.</div>`;
+      return;
+    }
 
     const currentUrl = state.currentUser ? state.currentUser.avatar_url : null;
 
     grid.innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px;">
         ${avatars.map(av => {
           const isSelected = currentUrl === av.url;
           return `
-            <div onclick="handleSelectAvatar('${av.url}')" class="flex items-center gap-2.5 p-2 rounded-xl border transition cursor-pointer select-none ${
-              isSelected 
-                ? 'bg-white/10 border-white shadow-lg ring-1 ring-white/50' 
-                : 'bg-[#141418] hover:bg-[#1f1f24] border-white/10 hover:border-white/30'
-            }">
-              <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-11 h-11 rounded-xl object-cover border ${isSelected ? 'border-white' : 'border-white/20'} bg-[#18181b] shrink-0 shadow" />
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-1">
-                  <span class="font-condensed font-bold text-xs text-white truncate">${escapeHtml(av.title)}</span>
-                  ${isSelected ? '<span class="text-[9px] font-condensed font-black px-1.5 py-0.2 rounded bg-white text-black uppercase shrink-0">Actif</span>' : ''}
-                </div>
-                <p class="text-[10px] text-zinc-400 truncate leading-tight">${escapeHtml(av.meme)}</p>
+            <div 
+              onclick="handleSelectAvatar('${av.url}')" 
+              class="flex flex-col items-center justify-between p-2 rounded-[8px] border-[2px] cursor-pointer transition select-none text-center ${
+                isSelected 
+                  ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#D95D39]' 
+                  : 'border-black bg-[#141418] hover:bg-[#202028] shadow-[3px_3px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none'
+              }"
+              title="${escapeHtml(av.title)} - ${escapeHtml(av.meme || '')}"
+            >
+              <div class="relative w-14 h-14 mx-auto mb-1">
+                <img 
+                  src="${av.url}" 
+                  alt="${escapeHtml(av.title)}" 
+                  loading="lazy"
+                  class="w-14 h-14 rounded-full object-cover border-[2px] border-black shadow-[2px_2px_0px_#000000] bg-[#18181b]" 
+                />
+                ${isSelected ? `
+                  <div class="absolute -top-1 -right-1 w-4 h-4 bg-[#D95D39] text-white rounded-full border border-black flex items-center justify-center text-[9px] font-black">
+                    ✓
+                  </div>
+                ` : ''}
               </div>
+              <span class="text-[10px] font-condensed font-black uppercase text-[#F4F4F0] leading-tight truncate w-full text-center">
+                ${escapeHtml(av.title.split(' ').pop())}
+              </span>
+              <span class="text-[8px] text-zinc-400 truncate w-full text-center leading-none mt-0.5">
+                ${isSelected ? '<strong class="text-[#D95D39]">ACTIF</strong>' : escapeHtml(av.meme || '')}
+              </span>
             </div>
           `;
         }).join('')}
       </div>
     `;
   } catch (err) {
-    grid.innerHTML = `<div class="p-4 text-center text-rose-400 text-xs">Erreur de chargement des avatars.</div>`;
+    console.error("Erreur openAvatarSelectorModal:", err);
+    grid.innerHTML = `
+      <div class="p-6 text-center text-rose-400 text-xs bg-[#18181e] border-2 border-black rounded-[8px] space-y-2">
+        <p>Erreur lors du chargement des avatars.</p>
+        <button onclick="openAvatarSelectorModal()" class="px-3 py-1 bg-[#D95D39] text-white text-xs font-condensed font-bold uppercase rounded-[6px] border border-black">
+          Réessayer
+        </button>
+      </div>
+    `;
   }
 }
 

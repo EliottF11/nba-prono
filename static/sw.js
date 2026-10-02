@@ -1,10 +1,10 @@
-// Service Worker pour HOOPS Prono (PWA)
-const CACHE_NAME = 'hoops-prono-v26';
+// Service Worker pour Pick 'n' Swipe (PWA)
+const CACHE_NAME = 'pick-n-swipe-v27';
 const STATIC_ASSETS = [
   '/',
-  '/static/css/style.css?v=26',
-  '/static/js/api.js?v=26',
-  '/static/js/app.js?v=26',
+  '/static/css/style.css?v=27',
+  '/static/js/api.js?v=27',
+  '/static/js/app.js?v=27',
   '/static/manifest.json',
   '/static/icons/icon.svg'
 ];

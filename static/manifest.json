@@ -1,7 +1,7 @@
 {
-  "name": "NBA PRO - Ligue de Pronostics (HOOPS PRONO)",
-  "short_name": "NBA PRO",
-  "description": "Pronostics Basketball NBA 1-clic entre amis style Clean Arcade Neo-Brutalisme",
+  "name": "Pick 'n' Swipe - Pronostics NBA",
+  "short_name": "Pick 'n' Swipe",
+  "description": "Pronostics Basketball NBA 100% Swipe style Clean Arcade Neo-Brutalisme",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#121212",
