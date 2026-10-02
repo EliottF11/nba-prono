@@ -737,6 +737,11 @@ function getFilteredMatches() {
     filtered = filtered.filter(m => m.status === 'upcoming');
   } else if (state.matchesFilter === 'finished') {
     filtered = filtered.filter(m => m.status === 'finished');
+  } else {
+    // En mode Tinder ou par défaut, on place toujours les matchs ouverts (upcoming) en premier dans la pile
+    const upcoming = filtered.filter(m => m.status === 'upcoming');
+    const finished = filtered.filter(m => m.status === 'finished');
+    filtered = upcoming.concat(finished);
   }
   return filtered;
 }
@@ -1275,7 +1280,7 @@ function renderTinderDeck(container, filtered) {
 
 // --- Gestion des Gestes de Glissement (Swipe & Haptics) ---
 function attachSwipeListeners(cardEl, match, isFinished) {
-  if (!cardEl || isFinished) return;
+  if (!cardEl) return;
 
   let startX = 0;
   let startY = 0;
@@ -1470,7 +1475,8 @@ async function triggerSwipeAction(match, direction) {
   const isFinished = match.status === 'finished';
 
   if (isFinished) {
-    notify("Pronostics clôturés pour ce match", "info");
+    notify("Match terminé : passage au match suivant", "info");
+    state.tinderDeckIndex++;
     setTimeout(() => renderMatchesList(), 240);
     return;
   }
