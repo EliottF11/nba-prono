@@ -23,7 +23,12 @@ const state = {
   activeLeagueVotesLeagueId: null,
   leagueMessages: {},
   chatPollingInterval: null,
-  authMode: 'login'
+  authMode: 'login',
+  // État de la pile de cartes Tinder
+  tinderDeckIndex: 0,
+  swipeHistory: [], // { match, matchId, previousVote, chosenTeamId, direction }
+  matchesViewMode: 'tinder', // 'tinder' (par défaut) ou 'list'
+  currentStreak: 0
 };
 
 // Fonction utilitaire d'échappement HTML anti-XSS
@@ -119,18 +124,41 @@ function initUIEvents() {
     });
   });
 
-  // Filtres de statut de match
+  // Filtres de statut de match (Neo-Brutalistes)
   document.querySelectorAll('.filter-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       document.querySelectorAll('.filter-chip').forEach(c => {
-        c.classList.remove('active', 'bg-white', 'text-black');
-        c.classList.add('bg-[#141418]', 'text-zinc-400');
+        c.classList.remove('active', 'bg-[#D95D39]', 'text-white', 'bg-white', 'text-black');
+        c.classList.add('bg-[#18181e]', 'text-zinc-300');
       });
-      chip.classList.add('active', 'bg-white', 'text-black');
-      chip.classList.remove('bg-[#141418]', 'text-zinc-400');
+      chip.classList.add('active', 'bg-[#D95D39]', 'text-white');
+      chip.classList.remove('bg-[#18181e]', 'text-zinc-300', 'bg-[#141418]', 'text-zinc-400');
       state.matchesFilter = chip.getAttribute('data-filter');
+      state.tinderDeckIndex = 0;
+      state.swipeHistory = [];
       renderMatchesList();
     });
+  });
+
+  // Raccourcis clavier pour le Swipe Tinder (Flèches gauche/droite et z/backspace pour Undo)
+  window.addEventListener('keydown', (e) => {
+    if (state.activeTab !== 'matches') return;
+    if (state.matchesViewMode !== 'tinder') return;
+    if (document.querySelector('.modal:not(.hidden), .auth-modal:not(.hidden)')) return;
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      programmaticSwipe('left');
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      programmaticSwipe('right');
+    } else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      if (state.swipeHistory && state.swipeHistory.length > 0) {
+        e.preventDefault();
+        undoLastSwipe();
+      }
+    }
   });
 
   // Gestion modale pronostics d'avant-saison (Chantier 3)
@@ -191,8 +219,15 @@ async function checkSession() {
   try {
     const user = await API.getMe();
     state.currentUser = user;
+    try {
+      const stats = await API.getMyStats();
+      if (stats && stats.current_streak !== undefined) {
+        state.currentStreak = stats.current_streak;
+      }
+    } catch (e) {}
   } catch {
     state.currentUser = null;
+    state.currentStreak = 0;
   }
   updateHeaderUser();
 }
@@ -212,6 +247,7 @@ function updateHeaderUser() {
         <span class="max-w-[60px] sm:max-w-[90px] truncate text-[11px] sm:text-xs">${state.currentUser.username}</span>
       </button>
     `;
+    updateStreakUI(state.currentStreak || 0);
   } else {
     scoreBadge.classList.add('hidden');
     container.innerHTML = `
@@ -219,17 +255,48 @@ function updateHeaderUser() {
         Connexion
       </button>
     `;
+    updateStreakUI(0);
   }
 }
+
+// Mise à jour visuelle du badge Streak (Série de victoires consécutives)
+function updateStreakUI(streakCount = 0) {
+  const streakBadge = document.getElementById('user-streak-badge');
+  const streakVal = document.getElementById('user-streak-val');
+  const flameEl = streakBadge ? streakBadge.querySelector('.streak-flame') : null;
+
+  if (streakVal) {
+    streakVal.textContent = (streakCount || 0).toString();
+  }
+
+  if (streakBadge) {
+    if (streakCount > 0) {
+      streakBadge.classList.add('streak-active');
+      if (flameEl) flameEl.classList.add('streak-burning');
+    } else {
+      streakBadge.classList.remove('streak-active', 'streak-on-fire');
+      if (flameEl) flameEl.classList.remove('streak-burning');
+    }
+
+    if (streakCount >= 3) {
+      streakBadge.classList.add('streak-on-fire');
+    } else {
+      streakBadge.classList.remove('streak-on-fire');
+    }
+  }
+}
+window.updateStreakUI = updateStreakUI;
 
 function handleLogout() {
   if (confirm(`Se déconnecter du compte ${state.currentUser.username} ?`)) {
     API.logout();
     state.currentUser = null;
+    state.currentStreak = 0;
     state.myPredictions = {};
     state.boostedPredictions = {};
     state.seasonPrediction = null;
     updateHeaderUser();
+    updateStreakUI(0);
     renderSeasonBanner();
     renderMatchesList();
     renderLeaderboard();
@@ -249,11 +316,13 @@ function selectTab(tab) {
   });
 
   const matchesView = document.getElementById('matches-view');
+  const resultsView = document.getElementById('results-view');
   const leaguesView = document.getElementById('leagues-view');
   const leaderboardView = document.getElementById('leaderboard-view');
   const profileView = document.getElementById('profile-view');
 
   if (matchesView) matchesView.classList.toggle('hidden', tab !== 'matches');
+  if (resultsView) resultsView.classList.toggle('hidden', tab !== 'results');
   if (leaguesView) leaguesView.classList.toggle('hidden', tab !== 'leagues');
   if (leaderboardView) leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
   if (profileView) profileView.classList.toggle('hidden', tab !== 'profile');
@@ -263,7 +332,9 @@ function selectTab(tab) {
     state.chatPollingInterval = null;
   }
 
-  if (tab === 'leaderboard') {
+  if (tab === 'results') {
+    renderResultsView();
+  } else if (tab === 'leaderboard') {
     renderLeaderboard();
   } else if (tab === 'profile') {
     renderProfile();
@@ -536,6 +607,23 @@ async function refreshData() {
       }
     }
 
+    // Calcul et mise à jour de la streak (Série de victoires)
+    let streak = 0;
+    if (state.currentUser) {
+      try {
+        const stats = await API.getMyStats();
+        if (stats && stats.current_streak !== undefined) {
+          streak = stats.current_streak;
+        } else {
+          streak = computeCurrentStreak(state.matches, state.myPredictions);
+        }
+      } catch (err) {
+        streak = computeCurrentStreak(state.matches, state.myPredictions);
+      }
+    }
+    state.currentStreak = streak;
+    updateStreakUI(streak);
+
     renderSeasonBanner();
     renderWeeksSelector();
     renderWeeklyPlayersCard();
@@ -545,6 +633,24 @@ async function refreshData() {
     console.error('Erreur chargement:', err);
     notify("Erreur lors de la synchronisation des données", "error");
   }
+}
+
+// Fonction de calcul de la série de victoires en cours
+function computeCurrentStreak(matches, myPredictions) {
+  if (!matches || !myPredictions) return 0;
+  const finished = matches
+    .filter(m => m.status === 'finished' && m.winner_team_id && myPredictions[m.id])
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+  let currentStreak = 0;
+  for (const m of finished) {
+    if (myPredictions[m.id] === m.winner_team_id) {
+      currentStreak++;
+    } else {
+      currentStreak = 0;
+    }
+  }
+  return currentStreak;
 }
 
 // --- Rendu du Sélecteur de Semaines (Chantier 2) ---
@@ -587,6 +693,8 @@ function renderWeeksSelector() {
 
 async function filterByWeek(week) {
   state.selectedWeek = week;
+  state.tinderDeckIndex = 0;
+  state.swipeHistory = [];
   renderWeeksSelector();
   renderWeeklyPlayersCard();
   try {
@@ -598,28 +706,964 @@ async function filterByWeek(week) {
   }
 }
 
-// --- Rendu des Matchs ---
-function renderMatchesList() {
-  const container = document.getElementById('matches-list');
-  if (!container) return;
+// Fonction utilitaire : conversion hex en rgba pour les overlays dynamiques
+function hexToRgba(hex, alpha = 0.4) {
+  if (!hex || typeof hex !== 'string') return `rgba(217, 93, 57, ${alpha})`;
+  let c = hex.replace('#', '');
+  if (c.length === 3) {
+    c = c.split('').map(x => x + x).join('');
+  }
+  const num = parseInt(c, 16);
+  if (isNaN(num)) return `rgba(217, 93, 57, ${alpha})`;
+  const r = (num >> 16) & 255;
+  const g = (num >> 8) & 255;
+  const b = num & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
+// Fonction utilitaire : pastilles de forme récente
+function getTeamFormDotsHtml(formArray) {
+  if (!formArray || !Array.isArray(formArray) || formArray.length === 0) return '';
+  return formArray.map(r => r === 'W' 
+    ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-[0_0_4px_rgba(16,185,129,0.8)]"></span>' 
+    : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-[0_0_4px_rgba(244,63,94,0.8)]"></span>'
+  ).join('');
+}
+
+// Récupération des matchs filtrés
+function getFilteredMatches() {
   let filtered = state.matches;
   if (state.matchesFilter === 'upcoming') {
     filtered = filtered.filter(m => m.status === 'upcoming');
   } else if (state.matchesFilter === 'finished') {
     filtered = filtered.filter(m => m.status === 'finished');
   }
+  return filtered;
+}
 
+// Changement du mode de vue des matchs ('tinder' ou 'list')
+function setMatchesViewMode(mode) {
+  state.matchesViewMode = mode;
+  renderMatchesList();
+}
+window.setMatchesViewMode = setMatchesViewMode;
+
+// Réinitialisation de la pile Tinder
+function resetTinderDeck() {
+  state.tinderDeckIndex = 0;
+  if (navigator.vibrate) {
+    try { navigator.vibrate(30); } catch (e) {}
+  }
+  renderMatchesList();
+}
+window.resetTinderDeck = resetTinderDeck;
+
+// --- Rendu Principal des Matchs ---
+function renderMatchesList() {
+  const container = document.getElementById('matches-list');
+  if (!container) return;
+
+  const filtered = getFilteredMatches();
+
+  if (state.matchesViewMode === 'list') {
+    renderMatchesListView(container, filtered);
+  } else {
+    renderTinderDeck(container, filtered);
+  }
+}
+
+// --- Compte à Rebours Digital Rétro (Gamification Arcade) ---
+let retroCountdownInterval = null;
+
+function startRetroCountdown(targetTimestamp) {
+  if (retroCountdownInterval) {
+    clearInterval(retroCountdownInterval);
+    retroCountdownInterval = null;
+  }
+
+  function update() {
+    const now = Date.now();
+    let diff = Math.max(0, targetTimestamp - now);
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+    const minutes = Math.floor(diff / (1000 * 60));
+    diff -= minutes * (1000 * 60);
+    const seconds = Math.floor(diff / 1000);
+
+    const hEl = document.getElementById('cd-hours');
+    const mEl = document.getElementById('cd-minutes');
+    const sEl = document.getElementById('cd-seconds');
+
+    if (hEl && mEl && sEl) {
+      hEl.textContent = hours.toString().padStart(2, '0');
+      mEl.textContent = minutes.toString().padStart(2, '0');
+      sEl.textContent = seconds.toString().padStart(2, '0');
+    }
+  }
+
+  update();
+  retroCountdownInterval = setInterval(update, 1000);
+}
+
+function getNextNbaNightTimestamp() {
+  const d = new Date();
+  d.setHours(d.getHours() + 6);
+  return d.getTime();
+}
+
+// --- Rendu de la Pile Tinder (Style Clean Arcade Neo-Brutalisme) ---
+function renderTinderDeck(container, filtered) {
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-[#121216] rounded-xl border border-[rgba(255,255,255,0.08)] text-zinc-500 text-xs font-semibold">
+      <div class="p-8 text-center bg-[#18181e] rounded-[10px] border-[3px] border-black shadow-[6px_6px_0px_#000000] text-zinc-400 text-xs font-semibold">
         Aucun match dans cette catégorie.
       </div>
     `;
     return;
   }
 
-  container.innerHTML = filtered.map(match => {
+  const total = filtered.length;
+  const currentIndex = state.tinderDeckIndex;
+  const hasHistory = state.swipeHistory && state.swipeHistory.length > 0;
+
+  // Barre d'outils supérieure : Bascule de mode & Compteur
+  const toolbarHtml = `
+    <div class="flex items-center justify-between gap-2 mb-2 px-1">
+      <div class="flex items-center gap-1.5">
+        <button 
+          onclick="setMatchesViewMode('tinder')" 
+          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer ${
+            state.matchesViewMode === 'tinder' 
+              ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
+              : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
+          }"
+        >
+          🃏 Mode Tinder
+        </button>
+        <button 
+          onclick="setMatchesViewMode('list')" 
+          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer ${
+            state.matchesViewMode === 'list' 
+              ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
+              : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
+          }"
+        >
+          📋 Liste
+        </button>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 bg-[#18181e] border-2 border-black px-2.5 py-0.5 rounded-[8px] shadow-[2px_2px_0px_#000000]">
+        <span class="w-2 h-2 rounded-full bg-[#D95D39] animate-pulse"></span>
+        <span class="font-condensed font-black text-xs uppercase text-[#F4F4F0] tracking-wider">
+          ${currentIndex >= total ? 'Terminé' : `Match ${currentIndex + 1} / ${total}`}
+        </span>
+      </div>
+    </div>
+  `;
+
+  // Cas où tous les matchs ont été swipés : Écran Empty State Arcade avec Compte à Rebours Rétro & Bouton Récap
+  if (currentIndex >= total) {
+    const upcomingMatches = state.matches
+      .filter(m => m.status === 'upcoming')
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    const nextDeadline = upcomingMatches.length > 0 
+      ? new Date(upcomingMatches[0].deadline).getTime() 
+      : getNextNbaNightTimestamp();
+
+    container.innerHTML = `
+      ${toolbarHtml}
+      <div class="tinder-completion-card tinder-completion-arcade p-5 sm:p-6 text-center space-y-4">
+        
+        <!-- En-tête de fin de pile Arcade -->
+        <div class="space-y-1.5 pt-1">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#14131A] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
+            <span>🏀</span> Tous les matchs sont pronostiqués !
+          </div>
+          <h3 class="font-condensed font-black text-2xl sm:text-3xl uppercase tracking-wider text-[#F4F4F0] leading-none pt-1">
+            Pile de la nuit terminée
+          </h3>
+          <p class="text-xs text-zinc-400 font-medium max-w-xs mx-auto">
+            Tu as passé en revue l'ensemble des ${total} matchs. Tes choix sont verrouillés pour le coup d'envoi !
+          </p>
+        </div>
+
+        <!-- GRAND COMPTE À REBOURS DIGITAL RÉTRO (Scoreboard LED Arcade) -->
+        <div class="retro-scoreboard-container border-[3px] border-black rounded-[12px] p-3.5 sm:p-4 shadow-[6px_6px_0px_#000000] relative overflow-hidden">
+          <div class="retro-scanlines"></div>
+          
+          <div class="text-[10px] sm:text-[11px] font-condensed font-black uppercase tracking-widest text-[#FF9800] flex items-center justify-center gap-1.5 mb-2.5 relative z-10">
+            <span class="w-2 h-2 rounded-full bg-[#FF9800] animate-ping"></span>
+            <span>Coup d'envoi des prochains matchs dans</span>
+          </div>
+
+          <div id="retro-digital-countdown" class="flex items-center justify-center gap-1.5 sm:gap-2 select-none relative z-10" data-target="${nextDeadline}">
+            <div class="countdown-digit-box">
+              <span class="countdown-num text-3xl sm:text-4xl" id="cd-hours">00</span>
+              <span class="countdown-label">Heures</span>
+            </div>
+            <span class="countdown-colon text-2xl sm:text-3xl self-start mt-1">:</span>
+            <div class="countdown-digit-box">
+              <span class="countdown-num text-3xl sm:text-4xl" id="cd-minutes">00</span>
+              <span class="countdown-label">Min</span>
+            </div>
+            <span class="countdown-colon text-2xl sm:text-3xl self-start mt-1">:</span>
+            <div class="countdown-digit-box">
+              <span class="countdown-num text-3xl sm:text-4xl" id="cd-seconds">00</span>
+              <span class="countdown-label">Sec</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOUTON STYLISÉ INVITANT À VOIR LE RÉCAPITULATIF DES PRONOSTICS -->
+        <div class="pt-1 space-y-2">
+          <button 
+            onclick="openNightRecapModal()" 
+            class="btn-arcade-recap btn-tactile w-full py-3.5 px-4 rounded-[10px] bg-gradient-to-r from-[#D95D39] via-[#FF5722] to-[#FF9800] text-white font-condensed font-black text-base sm:text-lg uppercase tracking-wider border-[3px] border-black shadow-[5px_5px_0px_#000000] cursor-pointer flex items-center justify-center gap-2.5"
+          >
+            <span class="text-xl">📊</span>
+            <span>Voir le récapitulatif de mes pronostics</span>
+          </button>
+
+          <!-- Boutons de secours : Revoir la pile et Annuler le dernier swipe -->
+          <div class="flex items-center justify-center gap-2 pt-1">
+            <button 
+              onclick="resetTinderDeck()" 
+              class="btn-tactile flex-1 py-2 px-3 rounded-[8px] bg-[#1a1924] hover:bg-[#252433] text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>↺</span>
+              <span>Revoir la pile</span>
+            </button>
+
+            ${hasHistory ? `
+              <button 
+                onclick="undoLastSwipe()" 
+                class="btn-tactile flex-1 py-2 px-3 rounded-[8px] bg-[#FACC15] hover:bg-[#fde047] text-black font-condensed font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a5 5 0 015 5v2m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
+                </svg>
+                <span>Annuler le dernier</span>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    startRetroCountdown(nextDeadline);
+    return;
+  }
+
+  // Cartes empilées dans la pile
+  const topMatch = filtered[currentIndex];
+  const nextMatch = currentIndex + 1 < total ? filtered[currentIndex + 1] : null;
+  const thirdMatch = currentIndex + 2 < total ? filtered[currentIndex + 2] : null;
+
+  function renderCardContent(match, idx, isTop = false) {
+    const isFinished = match.status === 'finished';
+    const deadline = new Date(match.deadline);
+    const dateFormatted = formatMatchTime(deadline);
+    const selectedTeamId = state.myPredictions[match.id];
+    const isBoosted = !!state.boostedPredictions[match.id];
+
+    const homeSelected = selectedTeamId === match.home_team.id;
+    const awaySelected = selectedTeamId === match.away_team.id;
+
+    const awayColor = match.away_team.color || '#D95D39';
+    const homeColor = match.home_team.color || '#0077FE';
+
+    let boostButton = '';
+    if (!isFinished) {
+      boostButton = `
+        <button 
+          onclick="handleToggleBoost(${match.id}, event)" 
+          class="btn-tactile boost-btn px-2 py-0.5 rounded-[6px] text-[10px] font-condensed font-black uppercase tracking-wider flex items-center gap-1 transition ${
+            isBoosted ? 'boost-btn-active' : 'boost-btn-inactive'
+          }"
+          title="Bonus x2 : double les points en cas de victoire (1 seul par semaine)"
+        >
+          <span>⚡</span>
+          <span>${isBoosted ? 'x2 Actif' : 'Bonus x2'}</span>
+        </button>
+      `;
+    } else if (isBoosted) {
+      boostButton = `
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-white/10 text-white border border-white/25 flex items-center gap-1">
+          <span>⚡</span> x2 Joué
+        </span>
+      `;
+    }
+
+    return `
+      <!-- Traînée de feu CSS dynamique lors du swipe avec bonus actif -->
+      <div class="card-fire-trail-container">
+        <div class="fire-trail-flame trail-left"></div>
+        <div class="fire-trail-flame trail-right"></div>
+        <div class="fire-ember" style="top: 25%; left: 8%;"></div>
+        <div class="fire-ember" style="top: 65%; left: 12%;"></div>
+        <div class="fire-ember" style="top: 30%; right: 8%;"></div>
+        <div class="fire-ember" style="top: 70%; right: 12%;"></div>
+      </div>
+
+      <!-- Overlays dynamiques d'illumination au swipe -->
+      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
+
+      <!-- Badges de validation avec icône lors du swipe -->
+      <div class="swipe-badge-left" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
+        <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <span>${escapeHtml(match.away_team.code)}</span>
+      </div>
+      <div class="swipe-badge-right" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
+        <span>${escapeHtml(match.home_team.code)}</span>
+        <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+
+      <!-- En-tête de la carte : Semaine, Date, Bonus x2 & Ligues -->
+      <div class="flex items-center justify-between pb-2 border-b-2 border-black/80 relative z-20">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-[6px] bg-[#101014] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[11px] shadow-[1px_1px_0px_#000000]">
+            W${match.week_number || 1}
+          </span>
+          <span class="text-[11px] font-bold text-zinc-300 font-condensed uppercase tracking-wider">
+            ${isFinished ? 'Terminé' : dateFormatted}
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          ${isBoosted ? `
+            <span class="px-2 py-0.5 rounded-[6px] bg-[#FF5722] text-white border-2 border-black font-condensed font-black text-[10px] shadow-[1px_1px_0px_#000000] flex items-center gap-1">
+              <span>🔥</span> x2 ACTIF
+            </span>
+          ` : ''}
+          <button 
+            onclick="openLeagueMatchVotesModal(${match.id})" 
+            class="btn-tactile p-1 rounded-[6px] bg-[#1a1924] hover:bg-[#252433] border-2 border-black text-zinc-300 shadow-[1px_1px_0px_#000000] cursor-pointer" 
+            title="Pronos de ligue"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- AFFICHE DU MATCH : ÉQUIPE EXTÉRIEUR (GAUCHE) vs ÉQUIPE DOMICILE (DROITE) -->
+      <div class="grid grid-cols-2 gap-2.5 items-stretch my-auto py-1 relative z-20">
+        
+        <!-- ÉQUIPE EXTÉRIEUR (GAUCHE) -->
+        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
+          awaySelected 
+            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
+            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
+        }">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
+                Extérieur
+              </span>
+              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
+                ${getTeamFormDotsHtml(match.away_team.recent_form)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+              <div 
+                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
+              >
+                ${escapeHtml(match.away_team.code)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
+                  ${escapeHtml(match.away_team.city)}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
+                  ${escapeHtml(match.away_team.name)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
+            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
+              ${match.away_odds.toFixed(2)}
+            </span>
+          </div>
+
+          ${awaySelected ? `
+            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
+              ✓ Ton choix
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- ÉQUIPE DOMICILE (DROITE) -->
+        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
+          homeSelected 
+            ? 'border-[#0077FE] bg-[#0077FE]/20 shadow-[3px_3px_0px_#000000]' 
+            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
+        }">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
+                Domicile
+              </span>
+              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
+                ${getTeamFormDotsHtml(match.home_team.recent_form)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+              <div 
+                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};"
+              >
+                ${escapeHtml(match.home_team.code)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
+                  ${escapeHtml(match.home_team.city)}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
+                  ${escapeHtml(match.home_team.name)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
+            <span class="font-condensed text-lg font-black ${homeSelected ? 'text-[#0077FE]' : 'text-white'}">
+              ${match.home_odds.toFixed(2)}
+            </span>
+          </div>
+
+          ${homeSelected ? `
+            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-white bg-[#0077FE] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
+              ✓ Ton choix
+            </div>
+          ` : ''}
+        </div>
+
+      </div>
+
+      <!-- GROS BOUTON BONUS x2 ARCADE (Aspect physique néo-brutaliste enfonçable) -->
+      <div class="arcade-bonus-wrapper relative z-20">
+        <button 
+          type="button"
+          onclick="handleArcadeBonusClick(${match.id}, event)" 
+          id="arcade-btn-${match.id}"
+          class="arcade-push-btn ${isBoosted ? 'is-locked' : ''} ${isFinished ? 'is-disabled' : ''}"
+          title="${isBoosted ? 'Bonus x2 ACTIF : Points doublés ! Clique pour retirer' : 'Bonus x2 Arcade : Appuie pour enfoncer et doubler tes points (1 par semaine) !'}"
+          ${isFinished ? 'disabled' : ''}
+        >
+          <div class="arcade-btn-collar">
+            <div class="arcade-btn-plunger">
+              <span class="arcade-btn-icon">⚡</span>
+              <span class="arcade-btn-label">x2</span>
+              <span class="arcade-btn-status">${isBoosted ? 'x2 LOCKÉ' : 'BONUS'}</span>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Indicateur VS central & Guidage swipe -->
+      <div class="flex items-center justify-between px-3 py-1.5 rounded-[8px] bg-black/60 border-2 border-black/80 text-[10px] text-zinc-400 font-bold uppercase tracking-wider relative z-20">
+        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${awayColor};">
+          <span>👈</span> ${escapeHtml(match.away_team.code)}
+        </span>
+        <span class="px-2 py-0.5 rounded-[4px] bg-[#121216] border border-white/20 text-[#F4F4F0] font-condensed font-black text-xs shadow-[1px_1px_0px_#000000]">
+          VS
+        </span>
+        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${homeColor};">
+          ${escapeHtml(match.home_team.code)} <span>👉</span>
+        </span>
+      </div>
+
+      <!-- Pied de carte : Statut du pronostic & Position -->
+      <div class="pt-2 border-t-2 border-black/80 flex items-center justify-between text-xs relative z-20">
+        <div class="text-[11px] font-bold text-zinc-300 truncate">
+          ${selectedTeamId ? `
+            <span class="text-zinc-400">Prono :</span> 
+            <span class="font-black ${homeSelected ? 'text-[#0077FE]' : 'text-[#D95D39]'}">
+              ${homeSelected ? escapeHtml(match.home_team.name) : escapeHtml(match.away_team.name)} (${(homeSelected ? match.home_odds : match.away_odds).toFixed(2)})
+            </span>
+          ` : `
+            <span class="text-zinc-400 font-medium">Glisse la carte pour voter</span>
+          `}
+        </div>
+        <div class="text-[10px] font-condensed font-black uppercase px-2 py-0.5 rounded-[6px] bg-white/10 text-zinc-300 border border-black">
+          ${idx + 1} / ${total}
+        </div>
+      </div>
+    `;
+  }
+
+  // Assemblage du conteneur de pile Tinder
+  container.innerHTML = `
+    ${toolbarHtml}
+    <div class="tinder-deck-wrapper">
+      <div class="tinder-deck-container">
+        ${thirdMatch ? `
+          <div class="tinder-card tinder-card-third ${state.boostedPredictions[thirdMatch.id] ? 'card-boosted' : ''}">
+            ${renderCardContent(thirdMatch, currentIndex + 2, false)}
+          </div>
+        ` : ''}
+
+        ${nextMatch ? `
+          <div class="tinder-card tinder-card-next ${state.boostedPredictions[nextMatch.id] ? 'card-boosted' : ''}">
+            ${renderCardContent(nextMatch, currentIndex + 1, false)}
+          </div>
+        ` : ''}
+
+        <div class="tinder-card tinder-card-top ${state.boostedPredictions[topMatch.id] ? 'card-boosted' : ''}" id="tinder-top-card">
+          ${renderCardContent(topMatch, currentIndex, true)}
+        </div>
+      </div>
+
+      <!-- Contrôles sous la pile : Swipe Gauche (Ext.), Bouton Undo Circulaire, Swipe Droite (Dom.) -->
+      <div class="flex items-center justify-center gap-3 sm:gap-4 pt-3.5">
+        
+        <!-- Bouton Vote Gauche (Extérieur) -->
+        <button 
+          onclick="programmaticSwipe('left')" 
+          id="btn-swipe-left"
+          class="btn-action-swipe btn-tactile bg-[#1a1924] hover:bg-[#D95D39] hover:text-white border-[3px] border-black text-[#D95D39] shadow-[4px_4px_0px_#000000] cursor-pointer"
+          title="Swiper à gauche : Choisir ${escapeHtml(topMatch.away_team.city)}"
+        >
+          <span class="font-condensed font-black text-sm">← ${escapeHtml(topMatch.away_team.code)}</span>
+        </button>
+
+        <!-- Bouton Undo Circulaire (Annulation du dernier swipe) -->
+        <button 
+          onclick="undoLastSwipe()" 
+          id="btn-swipe-undo"
+          class="btn-swipe-undo btn-tactile ${
+            hasHistory 
+              ? 'bg-[#FACC15] text-black hover:bg-[#fde047] cursor-pointer shadow-[4px_4px_0px_#000000]' 
+              : 'bg-[#18181e] text-zinc-600 opacity-45 cursor-not-allowed shadow-[2px_2px_0px_#000000]'
+          }"
+          title="${hasHistory ? 'Annuler le dernier swipe (Undo)' : 'Aucun swipe à annuler'}"
+          ${hasHistory ? '' : 'disabled'}
+        >
+          <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a5 5 0 015 5v2m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
+          </svg>
+        </button>
+
+        <!-- Bouton Vote Droite (Domicile) -->
+        <button 
+          onclick="programmaticSwipe('right')" 
+          id="btn-swipe-right"
+          class="btn-action-swipe btn-tactile bg-[#1a1924] hover:bg-[#0077FE] hover:text-white border-[3px] border-black text-[#0077FE] shadow-[4px_4px_0px_#000000] cursor-pointer"
+          title="Swiper à droite : Choisir ${escapeHtml(topMatch.home_team.city)}"
+        >
+          <span class="font-condensed font-black text-sm">${escapeHtml(topMatch.home_team.code)} →</span>
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  // Attachement des écouteurs gestuels tactiles et pointeur sur la carte supérieure
+  const topCardEl = document.getElementById('tinder-top-card');
+  if (topCardEl) {
+    attachSwipeListeners(topCardEl, topMatch, topMatch.status === 'finished');
+  }
+}
+
+// --- Gestion des Gestes de Glissement (Swipe & Haptics) ---
+function attachSwipeListeners(cardEl, match, isFinished) {
+  if (!cardEl || isFinished) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentDx = 0;
+  let currentDy = 0;
+  let isDragging = false;
+  let hasVibrated = false;
+  const threshold = 85;
+
+  const overlayLeft = cardEl.querySelector('.swipe-overlay-left');
+  const overlayRight = cardEl.querySelector('.swipe-overlay-right');
+  const badgeLeft = cardEl.querySelector('.swipe-badge-left');
+  const badgeRight = cardEl.querySelector('.swipe-badge-right');
+  const trailLeft = cardEl.querySelector('.trail-left');
+  const trailRight = cardEl.querySelector('.trail-right');
+
+  const awayColor = match.away_team.color || '#D95D39';
+  const homeColor = match.home_team.color || '#0077FE';
+
+  const onPointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    if (e.target.closest('button') || e.target.closest('a')) return;
+
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    currentDx = 0;
+    currentDy = 0;
+    hasVibrated = false;
+
+    try {
+      cardEl.setPointerCapture(e.pointerId);
+    } catch (err) {}
+
+    cardEl.classList.add('is-dragging');
+  };
+
+  const onPointerMove = (e) => {
+    if (!isDragging) return;
+
+    currentDx = e.clientX - startX;
+    currentDy = e.clientY - startY;
+
+    const rotation = currentDx * 0.08;
+    cardEl.style.transform = `translate3d(${currentDx}px, ${currentDy * 0.35}px, 0) rotate(${rotation}deg)`;
+
+    const absDx = Math.abs(currentDx);
+    const progress = Math.min(absDx / threshold, 1);
+    const pastThreshold = absDx >= threshold;
+
+    // Déclenchement de la micro-vibration haptique (50ms) au passage du seuil
+    if (pastThreshold && !hasVibrated) {
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate(50);
+        } catch (err) {}
+      }
+      hasVibrated = true;
+    } else if (!pastThreshold && hasVibrated) {
+      hasVibrated = false;
+    }
+
+    // Gestion de la traînée de feu CSS si le Bonus x2 est actif sur ce match
+    const isBoosted = !!state.boostedPredictions[match.id];
+    if (isBoosted) {
+      if (currentDx < 0) {
+        // Glissement à GAUCHE -> Traînée de feu projetée à DROITE
+        if (trailRight) {
+          trailRight.style.opacity = Math.min(absDx / 55, 1).toString();
+          trailRight.style.transform = `scaleX(${1 + (absDx / 75) * 0.8}) scaleY(${1 + (absDx / 160)})`;
+        }
+        if (trailLeft) trailLeft.style.opacity = '0';
+      } else {
+        // Glissement à DROITE -> Traînée de feu projetée à GAUCHE
+        if (trailLeft) {
+          trailLeft.style.opacity = Math.min(absDx / 55, 1).toString();
+          trailLeft.style.transform = `scaleX(${1 + (absDx / 75) * 0.8}) scaleY(${1 + (absDx / 160)})`;
+        }
+        if (trailRight) trailRight.style.opacity = '0';
+      }
+    }
+
+    // Retour visuel dynamique : illumination de bordure et overlay aux couleurs de l'équipe
+    if (currentDx < 0) {
+      // Glissement vers la GAUCHE -> Équipe Extérieur
+      if (overlayLeft) overlayLeft.style.opacity = (absDx / 130).toString();
+      if (overlayRight) overlayRight.style.opacity = '0';
+
+      if (badgeLeft) {
+        badgeLeft.style.opacity = progress.toString();
+        badgeLeft.style.transform = `rotate(-10deg) scale(${0.85 + progress * 0.25})`;
+      }
+      if (badgeRight) badgeRight.style.opacity = '0';
+
+      if (pastThreshold) {
+        cardEl.style.borderColor = awayColor;
+        cardEl.style.boxShadow = isBoosted 
+          ? `0 0 35px #FF5722, 0 0 20px ${awayColor}, 6px 6px 0px #000000` 
+          : `0 0 20px ${awayColor}, 6px 6px 0px #000000`;
+      } else {
+        cardEl.style.borderColor = isBoosted ? '#FF5722' : '#000000';
+        cardEl.style.boxShadow = isBoosted 
+          ? '0 0 25px rgba(255, 87, 34, 0.6), 6px 6px 0px #000000' 
+          : '6px 6px 0px #000000';
+      }
+    } else {
+      // Glissement vers la DROITE -> Équipe Domicile
+      if (overlayRight) overlayRight.style.opacity = (absDx / 130).toString();
+      if (overlayLeft) overlayLeft.style.opacity = '0';
+
+      if (badgeRight) {
+        badgeRight.style.opacity = progress.toString();
+        badgeRight.style.transform = `rotate(10deg) scale(${0.85 + progress * 0.25})`;
+      }
+      if (badgeLeft) badgeLeft.style.opacity = '0';
+
+      if (pastThreshold) {
+        cardEl.style.borderColor = homeColor;
+        cardEl.style.boxShadow = isBoosted 
+          ? `0 0 35px #FF5722, 0 0 20px ${homeColor}, 6px 6px 0px #000000` 
+          : `0 0 20px ${homeColor}, 6px 6px 0px #000000`;
+      } else {
+        cardEl.style.borderColor = isBoosted ? '#FF5722' : '#000000';
+        cardEl.style.boxShadow = isBoosted 
+          ? '0 0 25px rgba(255, 87, 34, 0.6), 6px 6px 0px #000000' 
+          : '6px 6px 0px #000000';
+      }
+    }
+  };
+
+  const onPointerUp = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    try {
+      cardEl.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+
+    cardEl.classList.remove('is-dragging');
+
+    const absDx = Math.abs(currentDx);
+    if (absDx >= threshold) {
+      // Swipe validé !
+      const isBoosted = !!state.boostedPredictions[match.id];
+      if (isBoosted) {
+        cardEl.classList.add('fire-trail-launching');
+        if (navigator.vibrate) {
+          try {
+            navigator.vibrate([40, 30, 70, 40, 90]);
+          } catch (err) {}
+        }
+      }
+
+      const direction = currentDx > 0 ? 'right' : 'left';
+      const flyX = direction === 'right' ? window.innerWidth * 1.3 : -window.innerWidth * 1.3;
+      const rotation = currentDx * 0.12;
+
+      cardEl.style.transition = 'transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.24s ease-out';
+      cardEl.style.transform = `translate3d(${flyX}px, ${currentDy}px, 0) rotate(${rotation}deg)`;
+      cardEl.style.opacity = '0';
+
+      triggerSwipeAction(match, direction);
+    } else {
+      // Retour élastique au centre
+      if (trailLeft) trailLeft.style.opacity = '0';
+      if (trailRight) trailRight.style.opacity = '0';
+      cardEl.classList.remove('fire-trail-launching');
+
+      const isBoosted = !!state.boostedPredictions[match.id];
+      cardEl.style.transition = 'transform 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.25), border-color 0.2s ease, box-shadow 0.2s ease';
+      cardEl.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
+      cardEl.style.borderColor = isBoosted ? '#FF5722' : '#000000';
+      cardEl.style.boxShadow = isBoosted 
+        ? '0 0 25px rgba(255, 87, 34, 0.6), 6px 6px 0px #000000' 
+        : '6px 6px 0px #000000';
+      if (overlayLeft) overlayLeft.style.opacity = '0';
+      if (overlayRight) overlayRight.style.opacity = '0';
+      if (badgeLeft) badgeLeft.style.opacity = '0';
+      if (badgeRight) badgeRight.style.opacity = '0';
+    }
+  };
+
+  cardEl.addEventListener('pointerdown', onPointerDown);
+  cardEl.addEventListener('pointermove', onPointerMove);
+  cardEl.addEventListener('pointerup', onPointerUp);
+  cardEl.addEventListener('pointercancel', onPointerUp);
+}
+
+// --- Action de Validation suite au Swipe ---
+async function triggerSwipeAction(match, direction) {
+  const chosenTeam = direction === 'right' ? match.home_team : match.away_team;
+  const isFinished = match.status === 'finished';
+
+  if (isFinished) {
+    notify("Pronostics clôturés pour ce match", "info");
+    setTimeout(() => renderMatchesList(), 240);
+    return;
+  }
+
+  if (!state.currentUser) {
+    openAuthModal('login');
+    notify("Connecte-toi pour pronostiquer", "info");
+    setTimeout(() => renderMatchesList(), 240);
+    return;
+  }
+
+  // Chantier 4 : Obligation de choisir ses Joueurs de la Semaine
+  const weekNum = match.week_number || 1;
+  const wp = state.weeklyPlayersMap[weekNum];
+  if (!wp || !wp.east_player || !wp.west_player) {
+    notify(`⚠️ Choisis d'abord tes 2 Joueurs de la Semaine pour la Week ${weekNum} !`, "error");
+    const container = document.getElementById('weekly-players-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      container.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
+      setTimeout(() => {
+        container.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
+      }, 2000);
+    }
+    setTimeout(() => renderMatchesList(), 240);
+    return;
+  }
+
+  // Mémorisation de l'état Bonus x2 (s'il a été armé avant le swipe)
+  const wasBoostArmed = !!state.boostedPredictions[match.id];
+
+  // Sauvegarde dans l'historique d'annulation (Undo)
+  const previousVote = state.myPredictions[match.id] || null;
+  state.swipeHistory.push({
+    match,
+    matchId: match.id,
+    previousVote,
+    chosenTeamId: chosenTeam.id,
+    direction,
+    wasBoostArmed,
+    deckIndex: state.tinderDeckIndex
+  });
+
+  // Avancement de l'index de la pile
+  state.tinderDeckIndex++;
+
+  // Mise à jour optimiste du vote
+  state.myPredictions[match.id] = chosenTeam.id;
+
+  try {
+    await API.makePrediction(match.id, chosenTeam.id);
+    if (wasBoostArmed) {
+      try {
+        await API.toggleBoost(match.id);
+        launchConfetti();
+        notify(`Prono validé avec Bonus x2 : ${chosenTeam.city} ! ⚡🔥 (Points doublés)`, "success");
+      } catch (err) {
+        notify(`Prono validé : ${chosenTeam.city} ! 🏀`, "success");
+      }
+    } else {
+      notify(`Prono validé : ${chosenTeam.city} ! 🏀`, "success");
+    }
+  } catch (err) {
+    notify(err.message, "error");
+  }
+
+  setTimeout(() => {
+    renderMatchesList();
+  }, 220);
+}
+
+// --- Déclenchement Programmatique de Swipe (Boutons fléchés sous la pile) ---
+function programmaticSwipe(direction) {
+  const filtered = getFilteredMatches();
+  if (state.tinderDeckIndex >= filtered.length) return;
+
+  const currentMatch = filtered[state.tinderDeckIndex];
+  const topCard = document.getElementById('tinder-top-card');
+  const isBoosted = !!state.boostedPredictions[currentMatch.id];
+
+  // Micro-vibration haptique (arcade standard 50ms ou arcade enflammée si bonus actif)
+  if (navigator.vibrate) {
+    try {
+      if (isBoosted) {
+        navigator.vibrate([40, 30, 70, 40, 90]);
+      } else {
+        navigator.vibrate(50);
+      }
+    } catch (e) {}
+  }
+
+  if (topCard) {
+    const flyX = direction === 'right' ? window.innerWidth * 1.3 : -window.innerWidth * 1.3;
+    const rotation = direction === 'right' ? 18 : -18;
+    const teamColor = direction === 'right' 
+      ? (currentMatch.home_team.color || '#0077FE') 
+      : (currentMatch.away_team.color || '#D95D39');
+
+    topCard.style.transition = 'transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.24s ease-out, border-color 0.15s ease';
+    topCard.style.borderColor = isBoosted ? '#FF9800' : teamColor;
+    if (isBoosted) {
+      topCard.classList.add('fire-trail-launching');
+      const trailLeft = topCard.querySelector('.trail-left');
+      const trailRight = topCard.querySelector('.trail-right');
+      if (direction === 'right' && trailLeft) {
+        trailLeft.style.opacity = '1';
+        trailLeft.style.transform = 'scale(1.4)';
+      } else if (direction === 'left' && trailRight) {
+        trailRight.style.opacity = '1';
+        trailRight.style.transform = 'scale(1.4)';
+      }
+    }
+    topCard.style.transform = `translate3d(${flyX}px, 0, 0) rotate(${rotation}deg)`;
+    topCard.style.opacity = '0';
+  }
+
+  triggerSwipeAction(currentMatch, direction);
+}
+window.programmaticSwipe = programmaticSwipe;
+
+// --- Bouton Annulation Undo (Restauration du dernier swipe) ---
+async function undoLastSwipe() {
+  if (!state.swipeHistory || state.swipeHistory.length === 0) {
+    notify("Aucun pronostic à annuler", "info");
+    return;
+  }
+
+  const lastSwipe = state.swipeHistory.pop();
+  if (!lastSwipe) return;
+
+  // Recul de l'index de la pile
+  state.tinderDeckIndex = Math.max(0, state.tinderDeckIndex - 1);
+
+  // Restauration du pronostic précédent
+  if (lastSwipe.previousVote) {
+    state.myPredictions[lastSwipe.matchId] = lastSwipe.previousVote;
+    try {
+      await API.makePrediction(lastSwipe.matchId, lastSwipe.previousVote);
+    } catch (e) {}
+  } else {
+    delete state.myPredictions[lastSwipe.matchId];
+  }
+
+  // Micro-vibration haptique de retour (35ms)
+  if (navigator.vibrate) {
+    try {
+      navigator.vibrate(35);
+    } catch (e) {}
+  }
+
+  notify("Dernier pronostic annulé ↺", "info");
+  renderMatchesList();
+}
+window.undoLastSwipe = undoLastSwipe;
+
+// --- Rendu Liste Classique des Matchs (Clean Neo-Brutaliste) ---
+function renderMatchesListView(container, filtered) {
+  const toolbarHtml = `
+    <div class="flex items-center justify-between gap-2 mb-2 px-1">
+      <div class="flex items-center gap-1.5">
+        <button 
+          onclick="setMatchesViewMode('tinder')" 
+          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer bg-[#18181e] text-zinc-400 hover:text-white shadow-none"
+        >
+          🃏 Mode Tinder
+        </button>
+        <button 
+          onclick="setMatchesViewMode('list')" 
+          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]"
+        >
+          📋 Liste
+        </button>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 bg-[#18181e] border-2 border-black px-2.5 py-0.5 rounded-[8px] shadow-[2px_2px_0px_#000000]">
+        <span class="font-condensed font-black text-xs uppercase text-[#F4F4F0] tracking-wider">
+          ${filtered.length} matchs
+        </span>
+      </div>
+    </div>
+  `;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      ${toolbarHtml}
+      <div class="p-8 text-center bg-[#18181e] rounded-[10px] border-[3px] border-black shadow-[6px_6px_0px_#000000] text-zinc-400 text-xs font-semibold">
+        Aucun match dans cette catégorie.
+      </div>
+    `;
+    return;
+  }
+
+  const listItemsHtml = filtered.map(match => {
     const isFinished = match.status === 'finished';
     const deadline = new Date(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
@@ -634,9 +1678,9 @@ function renderMatchesList() {
 
     let statusPill = '';
     if (isFinished) {
-      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">Terminé</span>`;
+      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-zinc-800 text-zinc-300 border-2 border-black">Terminé</span>`;
     } else if (selectedTeamId) {
-      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white text-black border border-white">Prono validé</span>`;
+      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-white text-black border-2 border-black">Prono validé</span>`;
     } else {
       statusPill = `<span class="text-[10px] font-bold text-zinc-400">${dateFormatted}</span>`;
     }
@@ -645,33 +1689,37 @@ function renderMatchesList() {
     if (!isFinished) {
       boostButton = `
         <button 
-          onclick="handleToggleBoost(${match.id}, event)" 
-          class="boost-btn px-2 py-0.5 rounded-lg text-[10px] font-condensed font-black uppercase tracking-wider flex items-center gap-1 transition ${
-            isBoosted ? 'boost-btn-active' : 'boost-btn-inactive'
-          }"
-          title="Bonus x2 : double les points en cas de victoire (1 seul par semaine)"
+          type="button"
+          onclick="handleArcadeBonusClick(${match.id}, event)" 
+          class="arcade-push-btn ${isBoosted ? 'is-locked' : ''}"
+          title="Bonus x2 Arcade : double les points en cas de victoire (1 seul par semaine)"
         >
-          <span>⚡</span>
-          <span>${isBoosted ? 'x2 Actif' : 'Bonus x2'}</span>
+          <div class="arcade-btn-collar scale-90">
+            <div class="arcade-btn-plunger py-1 px-2.5">
+              <span class="arcade-btn-icon text-xs">⚡</span>
+              <span class="arcade-btn-label text-sm">x2</span>
+              <span class="arcade-btn-status text-[9px]">${isBoosted ? 'LOCKÉ' : 'BONUS'}</span>
+            </div>
+          </div>
         </button>
       `;
     } else if (isBoosted) {
       boostButton = `
-        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white/10 text-white border border-white/25 flex items-center gap-1">
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#FF5722] text-white border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000]">
           <span>⚡</span> x2 Joué
         </span>
       `;
     }
 
     return `
-      <div class="match-card rounded-2xl p-3 sm:p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted' : ''}">
+      <div class="match-card rounded-[12px] p-3 sm:p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted card-boosted' : ''}">
         
         <!-- En-tête : Semaine, Date, Bonus x2 & État -->
-        <div class="flex items-center justify-between text-xs pb-2 border-b border-[rgba(255,255,255,0.08)] gap-1.5">
+        <div class="flex items-center justify-between text-xs pb-2 border-b-2 border-black/80 gap-1.5">
           <div class="flex items-center space-x-1.5 text-zinc-400 font-medium text-[11px] min-w-0 truncate">
-            <span class="px-1.5 py-0.5 rounded bg-[#18181c] text-zinc-300 font-bold border border-[rgba(255,255,255,0.08)] text-[10px] shrink-0">W${match.week_number || 1}</span>
+            <span class="px-2 py-0.5 rounded-[6px] bg-[#121216] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[10px] shadow-[1px_1px_0px_#000000] shrink-0">W${match.week_number || 1}</span>
             <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : 'bg-white'} shrink-0"></span>
-            <span class="truncate">${isFinished ? 'Terminé' : dateFormatted}</span>
+            <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : dateFormatted}</span>
           </div>
           <div class="flex items-center space-x-1.5 shrink-0">
             ${boostButton}
@@ -679,63 +1727,19 @@ function renderMatchesList() {
           </div>
         </div>
 
-        <!-- Deux blocs équipes et cotes -->
+        <!-- Deux blocs équipes et cotes (Extérieur à gauche, Domicile à droite) -->
         <div class="grid grid-cols-2 gap-2 sm:gap-2.5 items-stretch">
           
-          <!-- ÉQUIPE DOMICILE -->
-          <button
-            onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isFinished})"
-            class="odds-btn h-full rounded-xl p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
-              homeSelected ? 'odds-btn-selected' : ''
-            } ${isFinished ? 'cursor-default' : ''}"
-          >
-            <div class="flex items-center space-x-2 w-full mb-1.5">
-              <div 
-                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow shrink-0"
-                style="background-color: ${match.home_team.color}; color: ${match.home_team.text_color};"
-              >
-                ${match.home_team.code}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
-                  ${match.home_team.city}
-                </div>
-                <div class="flex items-center justify-between gap-1 mt-0.5">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 truncate">Dom.</span>
-                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
-                    ${(match.home_team.recent_form || []).map(r => r === 'W' 
-                      ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
-                      : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
-                    ).join('')}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
-              <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
-              <span class="font-condensed text-base font-black ${homeSelected ? 'text-white' : 'text-zinc-200'}">
-                ${match.home_odds.toFixed(2)}
-              </span>
-            </div>
-
-            ${homeWon ? `
-              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
-                Gagné (${match.home_score} pts)
-              </div>
-            ` : ''}
-          </button>
-
           <!-- ÉQUIPE EXTÉRIEUR -->
           <button
             onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isFinished})"
-            class="odds-btn h-full rounded-xl p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
+            class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
               awaySelected ? 'odds-btn-selected' : ''
-            } ${isFinished ? 'cursor-default' : ''}"
+            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
           >
             <div class="flex items-center space-x-2 w-full mb-1.5">
               <div 
-                class="w-7 h-7 rounded-md flex items-center justify-center font-condensed font-black text-xs shadow shrink-0"
+                class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
                 style="background-color: ${match.away_team.color}; color: ${match.away_team.text_color};"
               >
                 ${match.away_team.code}
@@ -745,18 +1749,15 @@ function renderMatchesList() {
                   ${match.away_team.city}
                 </div>
                 <div class="flex items-center justify-between gap-1 mt-0.5">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500 truncate">Ext.</span>
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Ext.</span>
                   <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
-                    ${(match.away_team.recent_form || []).map(r => r === 'W' 
-                      ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shadow-sm shadow-emerald-500/50"></span>' 
-                      : '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block shadow-sm shadow-rose-500/50"></span>'
-                    ).join('')}
+                    ${getTeamFormDotsHtml(match.away_team.recent_form)}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="w-full flex items-center justify-between pt-1.5 border-t border-[rgba(255,255,255,0.06)]">
+            <div class="w-full flex items-center justify-between pt-1.5 border-t border-black/40">
               <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
               <span class="font-condensed text-base font-black ${awaySelected ? 'text-white' : 'text-zinc-200'}">
                 ${match.away_odds.toFixed(2)}
@@ -770,10 +1771,51 @@ function renderMatchesList() {
             ` : ''}
           </button>
 
+          <!-- ÉQUIPE DOMICILE -->
+          <button
+            onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isFinished})"
+            class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
+              homeSelected ? 'odds-btn-selected' : ''
+            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
+          >
+            <div class="flex items-center space-x-2 w-full mb-1.5">
+              <div 
+                class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${match.home_team.color}; color: ${match.home_team.text_color};"
+              >
+                ${match.home_team.code}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
+                  ${match.home_team.city}
+                </div>
+                <div class="flex items-center justify-between gap-1 mt-0.5">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Dom.</span>
+                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
+                    ${getTeamFormDotsHtml(match.home_team.recent_form)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full flex items-center justify-between pt-1.5 border-t border-black/40">
+              <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
+              <span class="font-condensed text-base font-black ${homeSelected ? 'text-white' : 'text-zinc-200'}">
+                ${match.home_odds.toFixed(2)}
+              </span>
+            </div>
+
+            ${homeWon ? `
+              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
+                Gagné (${match.home_score} pts)
+              </div>
+            ` : ''}
+          </button>
+
         </div>
 
         <!-- Footer carte : Pronostics de ligue -->
-        <div class="pt-2 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
+        <div class="pt-2 border-t-2 border-black/80 flex items-center justify-between">
           <span class="text-[10px] text-zinc-400 font-semibold flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -782,7 +1824,7 @@ function renderMatchesList() {
           </span>
           <button 
             onclick="openLeagueMatchVotesModal(${match.id})" 
-            class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-[#18181c] hover:bg-[#24242c] px-2.5 py-1 rounded-lg border border-[rgba(255,255,255,0.10)] transition cursor-pointer flex items-center gap-1"
+            class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-[#18181e] hover:bg-[#24242c] px-2.5 py-1 rounded-[6px] border-2 border-black shadow-[2px_2px_0px_#000000] transition cursor-pointer flex items-center gap-1"
           >
             <span>Qui a voté quoi ?</span>
             <span>›</span>
@@ -792,11 +1834,28 @@ function renderMatchesList() {
       </div>
     `;
   }).join('');
+
+  container.innerHTML = `
+    ${toolbarHtml}
+    <div class="space-y-3">
+      ${listItemsHtml}
+    </div>
+  `;
 }
 
-// --- Action Bonus x2 (Chantier 2) ---
-async function handleToggleBoost(matchId, event) {
-  if (event) event.stopPropagation();
+// --- Action Bonus x2 Arcade (Neo-Brutaliste Physique avec Lock & Vibration) ---
+async function handleArcadeBonusClick(matchId, event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+
+  // 1. Vibration haptique mécanique arcade physique
+  if (navigator.vibrate) {
+    try {
+      navigator.vibrate([60, 30, 80]);
+    } catch (e) {}
+  }
 
   if (!state.currentUser) {
     openAuthModal('login');
@@ -804,20 +1863,41 @@ async function handleToggleBoost(matchId, event) {
     return;
   }
 
-  if (!state.myPredictions[matchId]) {
-    notify("Choisis d'abord ton équipe gagnante avant d'activer le Bonus x2 !", "error");
+  const targetMatch = state.matches.find(m => m.id === matchId);
+  if (!targetMatch || targetMatch.status === 'finished') {
+    notify("Ce match est déjà terminé.", "info");
     return;
   }
 
+  const week = targetMatch.week_number || 1;
+  const isCurrentlyBoosted = !!state.boostedPredictions[matchId];
+
+  // Si l'utilisateur n'a pas encore fait de pronostic sur ce match (ex: mode Tinder avant le swipe)
+  if (!state.myPredictions[matchId]) {
+    if (isCurrentlyBoosted) {
+      delete state.boostedPredictions[matchId];
+      notify("Bonus x2 retiré de ce match.", "info");
+    } else {
+      // 1 seul bonus par semaine : désactiver le bonus sur les autres matchs de cette même semaine
+      state.matches.forEach(m => {
+        if ((m.week_number || 1) === week && m.id !== matchId) {
+          delete state.boostedPredictions[m.id];
+        }
+      });
+      state.boostedPredictions[matchId] = true;
+      notify(`Bonus x2 armé pour la Semaine ${week} ! ⚡ Glisse la carte pour valider ton équipe boostée !`, "success");
+    }
+    renderMatchesList();
+    return;
+  }
+
+  // Si le pronostic est déjà enregistré -> Appel toggleBoost API
   try {
     const res = await API.toggleBoost(matchId);
-    const targetMatch = state.matches.find(m => m.id === matchId);
-    const week = targetMatch ? targetMatch.week_number : (res.week_number || 1);
-
     if (res.is_boosted) {
       // Désactiver le bonus sur les autres matchs de cette semaine
       state.matches.forEach(m => {
-        if (m.week_number === week && m.id !== matchId) {
+        if ((m.week_number || 1) === week && m.id !== matchId) {
           delete state.boostedPredictions[m.id];
         }
       });
@@ -834,6 +1914,8 @@ async function handleToggleBoost(matchId, event) {
     notify(err.message, "error");
   }
 }
+window.handleArcadeBonusClick = handleArcadeBonusClick;
+window.handleToggleBoost = handleArcadeBonusClick;
 
 // --- Action Pronostic 1-Clic ---
 async function voteForTeam(matchId, teamId, isFinished) {
@@ -2987,3 +4069,484 @@ async function handleSelectAvatar(avatarUrl) {
 window.openAvatarSelectorModal = openAvatarSelectorModal;
 window.closeAvatarSelectorModal = closeAvatarSelectorModal;
 window.handleSelectAvatar = handleSelectAvatar;
+
+// --- Modale Récapitulatif Arcade de la Nuit (Bilan complet des choix) ---
+function openNightRecapModal() {
+  const modal = document.getElementById('night-recap-modal');
+  const statsBar = document.getElementById('night-recap-stats-bar');
+  const matchesList = document.getElementById('night-recap-matches-list');
+  if (!modal) return;
+
+  const matches = state.matches || [];
+  const totalMatches = matches.length;
+  const myPredictions = state.myPredictions || {};
+  const boostedPredictions = state.boostedPredictions || {};
+
+  let predictedCount = 0;
+  let potentialPoints = 0;
+  let boostedMatch = null;
+
+  matches.forEach(m => {
+    const chosenId = myPredictions[m.id];
+    const isBoosted = !!boostedPredictions[m.id];
+    if (isBoosted) {
+      boostedMatch = m;
+    }
+    if (chosenId) {
+      predictedCount++;
+      const isHome = chosenId === m.home_team.id;
+      const odds = isHome ? (m.home_odds || 1.0) : (m.away_odds || 1.0);
+      potentialPoints += odds * (isBoosted ? 2 : 1);
+    }
+  });
+
+  if (statsBar) {
+    statsBar.innerHTML = `
+      <div class="p-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <div class="text-[9px] font-condensed font-black text-zinc-400 uppercase tracking-wider">Pronos</div>
+        <div class="text-lg font-black text-[#FFD600] font-mono leading-tight">${predictedCount} / ${totalMatches}</div>
+      </div>
+      <div class="p-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <div class="text-[9px] font-condensed font-black text-zinc-400 uppercase tracking-wider">Bonus x2</div>
+        <div class="text-[11px] font-black uppercase leading-tight pt-1 ${boostedMatch ? 'text-[#FF5722]' : 'text-zinc-500'}">
+          ${boostedMatch ? '🔥 LOCKÉ' : 'NON UTILISÉ'}
+        </div>
+      </div>
+      <div class="p-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <div class="text-[9px] font-condensed font-black text-zinc-400 uppercase tracking-wider">Gain Max</div>
+        <div class="text-lg font-black text-[#00E676] font-mono leading-tight">${potentialPoints.toFixed(1)} <span class="text-[10px] text-zinc-400">pts</span></div>
+      </div>
+    `;
+  }
+
+  if (matchesList) {
+    if (matches.length === 0) {
+      matchesList.innerHTML = `<div class="p-4 text-center text-xs text-zinc-400">Aucun match disponible pour le moment.</div>`;
+    } else {
+      matchesList.innerHTML = matches.map(match => {
+        const chosenId = myPredictions[match.id];
+        const isBoosted = !!boostedPredictions[match.id];
+        const chosenTeam = chosenId ? (chosenId === match.home_team.id ? match.home_team : match.away_team) : null;
+        const chosenOdds = chosenId ? (chosenId === match.home_team.id ? match.home_odds : match.away_odds) : null;
+        const multiplier = isBoosted ? 2 : 1;
+        const finalOdds = chosenOdds ? (chosenOdds * multiplier).toFixed(2) : null;
+
+        return `
+          <div class="pt-2 pb-1 text-left">
+            <div class="flex items-center justify-between text-[11px] mb-1">
+              <span class="font-condensed font-black uppercase text-zinc-300">
+                ${escapeHtml(match.away_team.code)} <span class="text-zinc-500 font-normal">@</span> ${escapeHtml(match.home_team.code)}
+              </span>
+              <div class="flex items-center gap-1.5">
+                ${isBoosted ? `
+                  <span class="text-[9px] font-condensed font-black px-1.5 py-0.5 rounded-[4px] bg-[#FF5722] text-white border border-black shadow-[1px_1px_0px_#000000] flex items-center gap-0.5">
+                    <span>⚡</span> x2
+                  </span>
+                ` : ''}
+                <span class="text-[10px] text-zinc-400 font-mono">${formatMatchTime(new Date(match.deadline))}</span>
+              </div>
+            </div>
+
+            ${chosenTeam ? `
+              <div class="flex items-center justify-between p-2 rounded-[8px] border-2 border-black ${isBoosted ? 'bg-[#FF5722]/15 shadow-[2px_2px_0px_#FF5722]' : 'bg-[#121118] shadow-[2px_2px_0px_#000000]'}">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-[5px] flex items-center justify-center font-condensed font-black text-xs border border-black shrink-0"
+                       style="background-color: ${chosenTeam.color || '#D95D39'}; color: ${chosenTeam.text_color || '#FFFFFF'};">
+                    ${escapeHtml(chosenTeam.code)}
+                  </div>
+                  <div>
+                    <div class="font-condensed font-black text-xs text-white leading-tight">
+                      ${escapeHtml(chosenTeam.city)} ${escapeHtml(chosenTeam.name)}
+                    </div>
+                    <div class="text-[9px] text-[#00E676] font-bold">✓ Pronostic validé</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[9px] text-zinc-400 font-condensed font-bold uppercase">Cote ${isBoosted ? 'x2' : ''}</div>
+                  <div class="font-condensed font-black text-sm ${isBoosted ? 'text-[#FF9800]' : 'text-[#F4F4F0]'}">
+                    ${finalOdds}
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <div class="flex items-center justify-between p-2 rounded-[8px] bg-black/40 border border-dashed border-zinc-700">
+                <span class="text-[11px] text-zinc-400 italic">Pas de pronostic</span>
+                <span class="text-[10px] font-condensed font-bold text-amber-400 uppercase">En attente</span>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  modal.classList.remove('hidden');
+  if (typeof launchConfetti === 'function') {
+    launchConfetti();
+  }
+}
+
+function closeNightRecapModal() {
+  const modal = document.getElementById('night-recap-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.openNightRecapModal = openNightRecapModal;
+window.closeNightRecapModal = closeNightRecapModal;
+
+// ==========================================================================
+// SCORES & RÉSULTATS DES MATCHS PASSÉS (BANDEAUX TV US x NEO-BRUTALISME)
+// ==========================================================================
+
+state.resultsWeekFilter = 'all';
+state.finishedMatchesCache = null;
+
+function getTeamSaturatedGradient(hexColor, isHome = false) {
+  if (!hexColor || hexColor.toLowerCase() === '#111111') {
+    return isHome 
+      ? 'linear-gradient(225deg, #2E2D38 0%, #15141C 100%)' 
+      : 'linear-gradient(135deg, #2E2D38 0%, #15141C 100%)';
+  }
+  let hex = hexColor.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  let r = parseInt(hex.substring(0, 2), 16) || 0;
+  let g = parseInt(hex.substring(2, 4), 16) || 0;
+  let b = parseInt(hex.substring(4, 6), 16) || 0;
+
+  // Boost saturation and vibrancy
+  const max = Math.max(r, g, b, 1);
+  const factor = Math.min(1.4, 235 / max);
+  const rVibrant = Math.min(255, Math.round(r * factor + 15));
+  const gVibrant = Math.min(255, Math.round(g * factor + 15));
+  const bVibrant = Math.min(255, Math.round(b * factor + 15));
+
+  const rDeep = Math.max(0, Math.round(r * 0.65));
+  const gDeep = Math.max(0, Math.round(g * 0.65));
+  const bDeep = Math.max(0, Math.round(b * 0.65));
+
+  const angle = isHome ? 225 : 135;
+  return `linear-gradient(${angle}deg, rgb(${rVibrant}, ${gVibrant}, ${bVibrant}) 0%, rgb(${rDeep}, ${gDeep}, ${bDeep}) 100%)`;
+}
+
+async function renderResultsView() {
+  const container = document.getElementById('results-scoreboard-list');
+  const countBadge = document.getElementById('results-count-badge');
+  const weeksContainer = document.getElementById('results-weeks-selector');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="py-10 text-center text-zinc-400 font-condensed text-sm flex items-center justify-center gap-2">
+      <div class="animate-spin w-4 h-4 border-2 border-[#D95D39] border-t-transparent rounded-full"></div>
+      <span>Chargement des scores TV US...</span>
+    </div>
+  `;
+
+  try {
+    const finishedMatches = await API.getMatches('finished');
+    state.finishedMatchesCache = finishedMatches;
+
+    // Récupération des semaines disponibles
+    const weeksSet = new Set(finishedMatches.map(m => m.week_number || 1));
+    const availableWeeks = Array.from(weeksSet).sort((a, b) => a - b);
+
+    // Rendu du sélecteur de semaines
+    if (weeksContainer) {
+      const isAll = state.resultsWeekFilter === 'all';
+      let weeksHtml = `
+        <button 
+          onclick="setResultsWeekFilter('all')" 
+          class="px-2.5 py-1 rounded-[6px] font-condensed font-black text-xs uppercase tracking-wider border-2 border-black transition cursor-pointer shrink-0 ${
+            isAll 
+              ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
+              : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
+          }"
+        >
+          Toutes
+        </button>
+      `;
+      availableWeeks.forEach(wk => {
+        const isSelected = String(state.resultsWeekFilter) === String(wk);
+        weeksHtml += `
+          <button 
+            onclick="setResultsWeekFilter(${wk})" 
+            class="px-2.5 py-1 rounded-[6px] font-condensed font-black text-xs uppercase tracking-wider border-2 border-black transition cursor-pointer shrink-0 ${
+              isSelected 
+                ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
+                : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
+            }"
+          >
+            Semaine ${wk}
+          </button>
+        `;
+      });
+      weeksContainer.innerHTML = weeksHtml;
+    }
+
+    // Filtrer selon la semaine
+    const displayed = (state.resultsWeekFilter === 'all')
+      ? finishedMatches
+      : finishedMatches.filter(m => String(m.week_number) === String(state.resultsWeekFilter));
+
+    if (countBadge) {
+      countBadge.innerHTML = `
+        <span class="text-[10px] font-condensed font-black uppercase px-2.5 py-1 rounded-[6px] bg-[#181722] text-[#00E676] border-2 border-black shadow-[2px_2px_0px_#000000]">
+          ${displayed.length} Matchs
+        </span>
+      `;
+    }
+
+    if (displayed.length === 0) {
+      container.innerHTML = `
+        <div class="p-8 text-center bg-[#18181e] border-[3px] border-black rounded-[10px] shadow-[4px_4px_0px_#000000] space-y-2">
+          <div class="text-3xl">🏀</div>
+          <div class="font-condensed font-black text-lg text-white uppercase tracking-wider">Aucun match terminé</div>
+          <p class="text-xs text-zinc-400">Les résultats s'afficheront ici en direct dès la clôture des rencontres.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // Rendu des barres horizontales de résultats
+    container.innerHTML = displayed.map(match => {
+      const awayWon = (match.away_score || 0) > (match.home_score || 0);
+      const homeWon = (match.home_score || 0) > (match.away_score || 0);
+      const awayGrad = getTeamSaturatedGradient(match.away_team.color, false);
+      const homeGrad = getTeamSaturatedGradient(match.home_team.color, true);
+
+      // Pronostic du joueur sur ce match
+      const userPickId = state.myPredictions ? state.myPredictions[match.id] : null;
+      const isBoosted = state.boostedPredictions ? !!state.boostedPredictions[match.id] : false;
+      let pronoBadgeHtml = '';
+
+      if (userPickId) {
+        const isPickWon = userPickId === match.winner_team_id;
+        const multiplier = isBoosted ? ' ⚡x2' : '';
+        if (isPickWon) {
+          pronoBadgeHtml = `
+            <div class="tv-prono-indicator tv-prono-won" title="Pronostic réussi !">
+              ✓ PRONO GAGNÉ${multiplier}
+            </div>
+          `;
+        } else {
+          pronoBadgeHtml = `
+            <div class="tv-prono-indicator tv-prono-lost" title="Pronostic manqué">
+              ✗ MANQUÉ
+            </div>
+          `;
+        }
+      }
+
+      return `
+        <div 
+          class="tv-scoreboard-bar" 
+          onclick="handleScoreboardClick(${match.id}, this)"
+          data-match-id="${match.id}"
+          title="Clique pour voir le résumé complet du match"
+        >
+          ${pronoBadgeHtml}
+
+          <!-- Bloc de gauche : Équipe extérieure (Couleur + Acronyme + Score) -->
+          <div class="tv-team-block away-block ${awayWon ? 'is-winner' : (homeWon ? 'is-loser' : '')}" style="background: ${awayGrad};">
+            <span class="tv-team-code">${escapeHtml(match.away_team.code)}</span>
+            <span class="tv-team-score">${match.away_score !== null && match.away_score !== undefined ? match.away_score : '--'}</span>
+          </div>
+
+          <!-- Bloc central : Logo de l'application "NBA Pro" sur fond sombre à la place de l'horloge -->
+          <div class="tv-center-bug">
+            <div class="tv-logo-badge">
+              <span class="tv-logo-nba">NBA</span>
+              <span class="tv-logo-pro">PRO</span>
+            </div>
+            <div class="tv-status-final">
+              <span class="status-dot"></span>
+              <span>FINAL</span>
+            </div>
+          </div>
+
+          <!-- Bloc de droite : Équipe à domicile (Score + Acronyme + Couleur) -->
+          <div class="tv-team-block home-block ${homeWon ? 'is-winner' : (awayWon ? 'is-loser' : '')}" style="background: ${homeGrad};">
+            <span class="tv-team-score">${match.home_score !== null && match.home_score !== undefined ? match.home_score : '--'}</span>
+            <span class="tv-team-code">${escapeHtml(match.home_team.code)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error("Erreur chargement résultats:", err);
+    container.innerHTML = `
+      <div class="p-6 text-center text-rose-400 text-xs bg-[#18181e] border-2 border-red-500 rounded-[10px]">
+        Erreur lors du chargement des résultats des matchs.
+      </div>
+    `;
+  }
+}
+
+function setResultsWeekFilter(week) {
+  state.resultsWeekFilter = week;
+  renderResultsView();
+}
+
+function handleScoreboardClick(matchId, element) {
+  if (element) {
+    element.classList.add('is-pressed');
+    setTimeout(() => element.classList.remove('is-pressed'), 120);
+  }
+  if (navigator.vibrate) {
+    try { navigator.vibrate(25); } catch {}
+  }
+  openMatchResultDetails(matchId);
+}
+
+function openMatchResultDetails(matchId) {
+  const modal = document.getElementById('match-result-modal');
+  const content = document.getElementById('match-result-modal-content');
+  if (!modal || !content) return;
+
+  const matchesPool = (state.finishedMatchesCache || []).concat(state.matches || []);
+  const match = matchesPool.find(m => m.id === matchId);
+  if (!match) return;
+
+  const awayWon = (match.away_score || 0) > (match.home_score || 0);
+  const homeWon = (match.home_score || 0) > (match.away_score || 0);
+  const diff = Math.abs((match.home_score || 0) - (match.away_score || 0));
+
+  const awayColor = match.away_team.color || '#CE1141';
+  const homeColor = match.home_team.color || '#007AC1';
+  const awayGrad = getTeamSaturatedGradient(awayColor, false);
+  const homeGrad = getTeamSaturatedGradient(homeColor, true);
+
+  const userPickId = state.myPredictions ? state.myPredictions[match.id] : null;
+  const isBoosted = state.boostedPredictions ? !!state.boostedPredictions[match.id] : false;
+  let userPronoCard = '';
+
+  if (userPickId) {
+    const isPickHome = userPickId === match.home_team.id;
+    const pickedTeam = isPickHome ? match.home_team : match.away_team;
+    const pickedOdds = isPickHome ? match.home_odds : match.away_odds;
+    const isWon = userPickId === match.winner_team_id;
+    const multiplier = isBoosted ? 2 : 1;
+    const pointsWon = isWon ? (pickedOdds * multiplier) : 0.0;
+
+    userPronoCard = `
+      <div class="p-3 rounded-[10px] border-2 border-black ${isWon ? 'bg-[#00E676]/10 border-[#00E676]' : 'bg-red-500/10 border-red-500'} shadow-[3px_3px_0px_#000000] space-y-1.5">
+        <div class="flex items-center justify-between text-[11px] font-condensed font-black uppercase">
+          <span class="text-zinc-300">Ton Pronostic</span>
+          <span class="${isWon ? 'text-[#00E676]' : 'text-red-400'}">
+            ${isWon ? '✓ GAGNÉ' : '✗ MANQUÉ'} ${isBoosted ? '⚡ x2 ACTIF' : ''}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border border-black shadow-[1px_1px_0px_#000000]"
+                 style="background-color: ${pickedTeam.color}; color: ${pickedTeam.text_color || '#FFF'};">
+              ${escapeHtml(pickedTeam.code)}
+            </div>
+            <div>
+              <div class="font-condensed font-black text-sm text-white leading-tight">
+                ${escapeHtml(pickedTeam.city)} ${escapeHtml(pickedTeam.name || '')}
+              </div>
+              <div class="text-[10px] text-zinc-400 font-mono">Cote : ${pickedOdds.toFixed(2)} ${isBoosted ? 'x 2' : ''}</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-[9px] font-condensed font-bold uppercase text-zinc-400">Points</div>
+            <div class="font-condensed font-black text-lg ${isWon ? 'text-[#00E676]' : 'text-zinc-500'} font-mono">
+              +${pointsWon.toFixed(2)} pts
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    userPronoCard = `
+      <div class="p-3 rounded-[10px] bg-black/40 border-2 border-dashed border-zinc-700 text-center space-y-1">
+        <div class="text-[11px] font-condensed font-bold text-zinc-400 uppercase">Non pronostiqué</div>
+        <p class="text-[10px] text-zinc-500">Tu n'avais pas validé de pronostic avant le coup d'envoi de cette rencontre.</p>
+      </div>
+    `;
+  }
+
+  content.innerHTML = `
+    <!-- Scoreboard Grand Format TV US -->
+    <div class="border-[3px] border-black rounded-[12px] overflow-hidden shadow-[5px_5px_0px_#000000]">
+      <div class="flex items-stretch h-24">
+        <!-- Équipe Extérieure -->
+        <div class="flex-1 p-3 flex flex-col justify-between relative ${awayWon ? 'is-winner' : 'is-loser'}" style="background: ${awayGrad};">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">EXT</span>
+            ${awayWon ? '<span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#FFEB3B] text-black border border-black shadow-[1px_1px_0px_#000]">WINNER</span>' : ''}
+          </div>
+          <div class="font-condensed font-black text-3xl text-white leading-none tracking-wide text-shadow">
+            ${escapeHtml(match.away_team.code)}
+          </div>
+          <div class="font-mono font-black text-4xl text-white leading-none ${awayWon ? 'text-[#FFEB3B]' : ''}">
+            ${match.away_score ?? '--'}
+          </div>
+        </div>
+
+        <!-- Centre TV Bug -->
+        <div class="w-16 bg-[#0B0A10] border-l-[3px] border-r-[3px] border-black flex flex-col items-center justify-center p-1 text-center shrink-0">
+          <div class="tv-logo-badge mb-1">
+            <span class="tv-logo-nba">NBA</span>
+            <span class="tv-logo-pro">PRO</span>
+          </div>
+          <span class="text-[9px] font-condensed font-black text-zinc-400 uppercase">FINAL</span>
+          <span class="text-[8px] text-zinc-500 font-mono mt-0.5">W${match.week_number || 1}</span>
+        </div>
+
+        <!-- Équipe Domicile -->
+        <div class="flex-1 p-3 flex flex-col justify-between text-right relative ${homeWon ? 'is-winner' : 'is-loser'}" style="background: ${homeGrad};">
+          <div class="flex items-center justify-between">
+            ${homeWon ? '<span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#FFEB3B] text-black border border-black shadow-[1px_1px_0px_#000]">WINNER</span>' : '<span></span>'}
+            <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">DOM</span>
+          </div>
+          <div class="font-condensed font-black text-3xl text-white leading-none tracking-wide text-shadow">
+            ${escapeHtml(match.home_team.code)}
+          </div>
+          <div class="font-mono font-black text-4xl text-white leading-none ${homeWon ? 'text-[#FFEB3B]' : ''}">
+            ${match.home_score ?? '--'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Franchises & Écart -->
+    <div class="flex items-center justify-between px-3 py-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000] text-xs font-condensed font-black uppercase">
+      <span class="text-zinc-300 truncate max-w-[40%]">${escapeHtml(match.away_team.city)}</span>
+      <span class="text-[#FF9800] bg-black/60 px-2 py-0.5 rounded border border-black">Écart : +${diff} pts</span>
+      <span class="text-zinc-300 truncate max-w-[40%] text-right">${escapeHtml(match.home_team.city)}</span>
+    </div>
+
+    <!-- Cotes Officielles d'Avant-Match -->
+    <div class="grid grid-cols-2 gap-2 text-center">
+      <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.away_team.code)}</div>
+        <div class="font-condensed font-black text-lg text-white font-mono">${(match.away_odds || 1.90).toFixed(2)}</div>
+      </div>
+      <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.home_team.code)}</div>
+        <div class="font-condensed font-black text-lg text-white font-mono">${(match.home_odds || 1.90).toFixed(2)}</div>
+      </div>
+    </div>
+
+    <!-- Carte Pronostic Utilisateur -->
+    ${userPronoCard}
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+function closeMatchResultDetails() {
+  const modal = document.getElementById('match-result-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+window.renderResultsView = renderResultsView;
+window.setResultsWeekFilter = setResultsWeekFilter;
+window.handleScoreboardClick = handleScoreboardClick;
+window.openMatchResultDetails = openMatchResultDetails;
+window.closeMatchResultDetails = closeMatchResultDetails;
+window.getTeamSaturatedGradient = getTeamSaturatedGradient;
+
+

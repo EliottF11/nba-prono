@@ -1,56 +1,78 @@
 /* ==========================================================================
-   HOOPS PRONO - Design System Minimaliste Haute Définition (Noir / Gris / Blanc)
-   Direction Artistique Épurée & Finition OLED Monochrome
-   - Palette : Noir profond (#000000, #09090b), Gris zinc (#18181b, #27272a, #71717a), Blanc pur (#ffffff)
-   - Typographie : Barlow Condensed (Titres/Display) & Inter (Contenu)
-   - Bordures chirurgicales 1px, contrastes élevés certifiés WCAG (>= 7:1)
-   - Conforme aux règles d'usage loyal (Nominative Fair Use)
+   NBA PRO - DESIGN SYSTEM NEO-BRUTALISME DARK MODE (CLEAN ARCADE)
+   Règles strictes :
+   - Fond : Gris asphalte très foncé (#121212)
+   - Accent principal : Orange ballon de basket (#D95D39)
+   - Texte principal : Blanc cassé / crème (#F4F4F0)
+   - Neo-brutalisme : Bordures noires épaisses (3px solid #000000),
+     Ombres portées pleines sans flou (6px 6px 0px #000000),
+     Angles légèrement arrondis (8px à 12px max).
+   - Typographie : Bebas Neue & Jersey 10 (Titres, scores, acronymes) + Inter (Secondaire)
+   - Gradients : Dégradés très saturés à l'intérieur des cartes (Clean Arcade)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Jersey+10&display=swap');
 
 :root {
-  /* Surfaces OLED & Monochrome */
-  --bg-oled: #000000;
-  --bg-app: #09090b;
-  --bg-surface: #121215;
-  --bg-surface-card: #141418;
-  --bg-surface-elevated: #1f1f24;
-  --bg-surface-glass: rgba(18, 18, 22, 0.88);
+  /* Surfaces & Fonds Dark Mode Clean Arcade */
+  --bg-app: #121212;
+  --bg-oled: #0a0a0c;
+  --bg-surface: #18181e;
+  --bg-surface-card: #1f1e26;
+  --bg-surface-elevated: #262530;
+  --bg-surface-glass: rgba(24, 24, 30, 0.95);
 
-  /* Bordures fines haute définition */
-  --border-hairline: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.16);
-  --border-strong: rgba(255, 255, 255, 0.35);
-  --border-focus: #ffffff;
+  /* Couleurs NBA Pro */
+  --brand-orange: #D95D39; /* Orange ballon de basket officiel */
+  --brand-orange-light: #FF5722;
+  --brand-orange-dark: #A7381A;
+  --brand-orange-glow: rgba(217, 93, 57, 0.45);
 
-  /* Accent Monochrome & Préservation rétrocompatibilité tests (--brand-orange) */
-  --brand-orange: #ffffff; /* Re-mappé sur blanc pur pour la DA noir gris blanc */
-  --brand-orange-light: #f4f4f5;
-  --brand-orange-glow: rgba(255, 255, 255, 0.25);
+  /* Textes & Typographie */
+  --text-primary: #F4F4F0; /* Blanc cassé / crème */
+  --text-secondary: #BDBDB6;
+  --text-muted: #8A8A84;
+  --text-dim: #60605B;
+  --font-blocky: 'Bebas Neue', 'Jersey 10', cursive, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Accents platine & argent */
-  --accent-gold: #ffffff;
-  --accent-gold-glow: rgba(255, 255, 255, 0.25);
+  /* Spécifications Neo-Brutalisme Strictes */
+  --border-neo: 3px solid #000000;
+  --border-neo-thick: 4px solid #000000;
+  --border-neo-thin: 2px solid #000000;
+  
+  --shadow-neo: 6px 6px 0px #000000;
+  --shadow-neo-sm: 4px 4px 0px #000000;
+  --shadow-neo-lg: 8px 8px 0px #000000;
+  --shadow-neo-pressed: 2px 2px 0px #000000;
 
-  /* Accents fonctionnels sports (discrets) */
-  --accent-emerald: #10b981;
-  --accent-rose: #ef4444;
+  --radius-neo: 10px;      /* Arrondi maîtrisé : 8px à 12px max */
+  --radius-neo-sm: 8px;
+  --radius-neo-lg: 12px;
 
-  /* Textes & Contrastes */
-  --text-primary: #ffffff;
-  --text-secondary: #d4d4d8;
-  --text-muted: #71717a;
-  --text-dim: #52525b;
+  /* Gradients très saturés pour l'intérieur des cartes (Clean Arcade) */
+  --grad-basketball: linear-gradient(135deg, #D95D39 0%, #FF3D00 50%, #9E1A00 100%);
+  --grad-arcade-card: linear-gradient(155deg, #25232E 0%, #1A1922 55%, #131218 100%);
+  --grad-card-boosted: linear-gradient(150deg, #381508 0%, #241007 50%, #160B05 100%);
+  --grad-odds-selected: linear-gradient(135deg, #D95D39 0%, #FF4D1A 50%, #B82C05 100%);
+  --grad-odds-default: linear-gradient(160deg, #282733 0%, #1E1C26 60%, #14131A 100%);
+  
+  --grad-gold: linear-gradient(135deg, #FFB703 0%, #FB8500 50%, #D95D39 100%);
+  --grad-cyber-blue: linear-gradient(135deg, #0077FE 0%, #0052CC 60%, #002B80 100%);
+  --grad-arcade-purple: linear-gradient(135deg, #8A2BE2 0%, #6A0DAD 60%, #3B0066 100%);
+  --grad-arcade-emerald: linear-gradient(135deg, #00C853 0%, #009624 60%, #004D15 100%);
+  --grad-arcade-crimson: linear-gradient(135deg, #FF0055 0%, #D60036 60%, #800020 100%);
 }
 
-/* Base Document */
+/* ==========================================================================
+   RESET & STRUCTURE DE BASE
+   ========================================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
-  background-color: var(--bg-oled);
+  background-color: var(--bg-app);
   color-scheme: dark;
   width: 100%;
   height: 100%;
@@ -60,9 +82,9 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--bg-oled);
-  color: var(--text-secondary);
+  font-family: var(--font-body);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-font-smoothing: antialiased;
@@ -76,270 +98,60 @@ body {
   position: relative;
 }
 
-.font-condensed {
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: 0.5px;
+/* ==========================================================================
+   TYPOGRAPHIE ARCADE NEO-BRUTALISTE
+   ========================================================================== */
+h1, h2, h3, h4, h5, h6,
+.font-condensed,
+.font-blocky {
+  font-family: var(--font-blocky) !important;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
 }
 
-/* Texture de fond épurée : noir absolu avec micro-lueur diffuse neutre */
+/* Scores & Chiffres Clés Arcade */
+.arcade-score,
+.match-score,
+.rank-number,
+#user-points-val,
+#recap-points,
+#recap-winrate,
+#recap-accuracy {
+  font-family: var(--font-blocky) !important;
+  letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   TEXTURE COURT-BG (GRIS ASPHALTE #121212 & LIGNES ARCADE)
+   ========================================================================== */
 .court-bg {
-  background-color: #000000;
+  background-color: #121212;
   background-image: 
-    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
-    radial-gradient(circle at 50% 100%, rgba(39, 39, 42, 0.25) 0%, transparent 70%),
-    linear-gradient(to bottom, #000000 0%, #09090b 100%);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(217, 93, 57, 0.14) 0%, transparent 65%),
+    radial-gradient(circle at 50% 100%, rgba(0, 0, 0, 0.7) 0%, transparent 80%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
   background-attachment: fixed;
 }
 
-/* Safe-area insets mobile */
+/* ==========================================================================
+   EN-TÊTE & NAVIGATION NATIVE
+   ========================================================================== */
 header.sticky {
+  background-color: #16161b !important;
+  border-bottom: var(--border-neo) !important;
+  box-shadow: 0 4px 0px #000000;
   padding-top: max(12px, env(safe-area-inset-top));
 }
 
 .native-tabbar {
-  background: rgba(9, 9, 11, 0.94);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-top: 1px solid var(--border-hairline);
+  background-color: #16161b !important;
+  border-top: var(--border-neo) !important;
+  box-shadow: 0 -4px 0px #000000;
   padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
-  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.7);
 }
 
-/* Cartes de match (Épurées, fond graphite & bordure subtile) */
-.match-card {
-  background: linear-gradient(180deg, #121216 0%, #0d0d10 100%);
-  border: 1px solid var(--border-hairline);
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.match-card:hover {
-  border-color: var(--border-medium);
-  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-/* Boutons de cote (Noir mat & interaction tactile) */
-.odds-btn {
-  background: linear-gradient(180deg, #16161b 0%, #121216 100%);
-  border: 1px solid var(--border-hairline);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 80px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.odds-btn:hover:not(:disabled) {
-  background: linear-gradient(180deg, #1c1c22 0%, #16161b 100%);
-  border-color: var(--border-medium);
-}
-
-.odds-btn:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-/* État cote sélectionnée (Contraste blanc pur) */
-.odds-btn-selected {
-  background: linear-gradient(180deg, #22222a 0%, #18181f 100%) !important;
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 1px #ffffff, 0 4px 20px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-}
-
-/* Pastilles de statut & Chips de filtre */
-.filter-chip {
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.filter-chip:active {
-  transform: scale(0.95);
-}
-
-.filter-chip.active {
-  background: #ffffff !important;
-  color: #000000 !important;
-  box-shadow: 0 2px 12px rgba(255, 255, 255, 0.25);
-}
-
-/* Podium du classement (Finitions Platine, Argent, Graphite) */
-.podium-step-1 {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(18, 18, 22, 0.95) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 0 24px -4px rgba(255, 255, 255, 0.18);
-}
-
-.podium-step-2 {
-  background: linear-gradient(180deg, rgba(161, 161, 170, 0.10) 0%, rgba(18, 18, 22, 0.95) 100%);
-  border: 1px solid rgba(161, 161, 170, 0.30);
-}
-
-.podium-step-3 {
-  background: linear-gradient(180deg, rgba(82, 82, 91, 0.10) 0%, rgba(18, 18, 22, 0.95) 100%);
-  border: 1px solid rgba(82, 82, 91, 0.30);
-}
-
-/* Illumination Bonus x2 (Style Platine Monochrome) */
-.match-card-boosted {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(14, 14, 18, 0.98) 100%) !important;
-  box-shadow: 0 0 24px -2px rgba(255, 255, 255, 0.18), inset 0 0 15px rgba(255, 255, 255, 0.05) !important;
-  animation: pulse-mono 2.8s infinite ease-in-out;
-}
-
-@keyframes pulse-mono {
-  0%, 100% {
-    box-shadow: 0 0 16px -2px rgba(255, 255, 255, 0.12), inset 0 0 10px rgba(255, 255, 255, 0.03);
-  }
-  50% {
-    box-shadow: 0 0 28px 2px rgba(255, 255, 255, 0.28), inset 0 0 18px rgba(255, 255, 255, 0.08);
-  }
-}
-
-.boost-btn {
-  cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.boost-btn:active {
-  transform: scale(0.94);
-}
-
-.boost-btn-active {
-  background: #ffffff !important;
-  color: #000000 !important;
-  font-weight: 900;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
-  border: 1px solid #ffffff;
-}
-
-.boost-btn-inactive {
-  background: #18181c;
-  color: #a1a1aa;
-  border: 1px solid var(--border-hairline);
-}
-
-.boost-btn-inactive:hover {
-  background: #24242c;
-  color: #ffffff;
-  border-color: var(--border-medium);
-}
-
-/* Badges & Trophées */
-.badge-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-hairline);
-  border-radius: 1rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.badge-card.unlocked {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(18, 18, 22, 0.98) 100%);
-  box-shadow: 0 6px 24px -4px rgba(255, 255, 255, 0.12);
-}
-
-.badge-card.locked {
-  opacity: 0.55;
-}
-
-.badge-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  font-size: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.badge-card.unlocked .badge-icon-wrap {
-  background: linear-gradient(135deg, #ffffff 0%, #d4d4d8 100%);
-  color: #000000;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
-}
-
-.badge-card.locked .badge-icon-wrap {
-  background: #18181c;
-  border: 1px solid var(--border-hairline);
-  filter: grayscale(1);
-}
-
-/* Mur de chambrage (Mini-chat) */
-.chat-bubble-me {
-  background: #27272a;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-bottom-right-radius: 4px;
-}
-
-.chat-bubble-other {
-  background: #18181c;
-  border: 1px solid var(--border-hairline);
-  border-bottom-left-radius: 4px;
-}
-
-.emoji-pill {
-  transition: transform 0.12s ease, background-color 0.12s ease;
-}
-.emoji-pill:hover {
-  transform: scale(1.22);
-}
-.emoji-pill:active {
-  transform: scale(0.92);
-}
-
-/* Jauge de répartition des votes */
-.vote-gauge-bar {
-  height: 8px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: #18181c;
-  border: 1px solid var(--border-hairline);
-  display: flex;
-}
-.vote-gauge-home {
-  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.vote-gauge-away {
-  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Autocomplete suggestion item */
-.player-suggest-item {
-  transition: background-color 0.15s ease;
-}
-.player-suggest-item:hover {
-  background-color: #24242c;
-}
-
-/* Form inputs styling */
-input:focus, select:focus, textarea:focus {
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25) !important;
-}
-
-/* Modal Box styling (OLED Glassmorphism) */
-.modal-box {
-  background: linear-gradient(180deg, #141418 0%, #0a0a0d 100%);
-  border: 1px solid var(--border-medium);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 0, 0, 0.7);
-  max-height: 88dvh;
-  max-height: 88vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Surface Card */
-.surface-card {
-  background: linear-gradient(180deg, #131317 0%, #0c0c0f 100%);
-  border: 1px solid var(--border-hairline);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  border-radius: 16px;
-}
-
-/* Tab bar touch targets & active glow */
 .tab-btn {
   min-height: 48px;
   min-width: 54px;
@@ -347,149 +159,446 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: transform 0.1s ease;
+}
+
+.tab-btn span {
+  font-family: var(--font-blocky) !important;
+  letter-spacing: 0.8px;
 }
 
 .tab-btn.active {
-  color: #ffffff !important;
+  color: var(--brand-orange) !important;
 }
 
 .tab-btn.active svg {
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+  color: var(--brand-orange) !important;
+  filter: drop-shadow(2px 2px 0px #000000);
 }
 
-/* Boutons tactiles interactifs */
-.btn-tactile {
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.btn-tactile:active {
-  transform: scale(0.96);
+.tab-btn:active {
+  transform: scale(0.94);
 }
 
-/* Empêcher le zoom automatique intempestif d'iOS Safari lors du focus */
-@media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="password"],
-  input[type="email"],
-  input[type="number"],
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
+/* Badge de Score Utilisateur */
+#user-score-badge {
+  background: #1e1e24;
+  border: var(--border-neo);
+  box-shadow: var(--shadow-neo-sm);
+  border-radius: var(--radius-neo-sm) !important;
 }
 
-/* Défilement horizontal fluide sans barre apparente sur mobile */
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
-/* Défilement vertical épuré */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #000000;
-}
-::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #ffffff;
+#user-score-badge span:first-child {
+  color: var(--brand-orange) !important;
 }
 
 /* ==========================================================================
-   ANIMATION DE LANCEMENT (SPLASH SCREEN PRO)
+   RÈGLES STRICTES NEO-BRUTALISME : CONTENEURS, CARTES & BOUTONS
    ========================================================================== */
 
-#app-splash-screen {
-  background: radial-gradient(circle at 50% 45%, #18110b 0%, #09090c 60%, #000000 100%);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
-  will-change: transform, opacity;
-}
-
-#app-splash-screen.splash-exit {
-  opacity: 0;
-  transform: translateY(-40px) scale(1.02);
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.splash-ball-wrapper {
-  animation: splash-float 2.2s infinite ease-in-out;
+/* Tous les conteneurs et cartes majeurs */
+.match-card,
+.surface-card,
+.modal-box,
+.badge-card,
+#share-recap-card,
+#season-banner-container > div,
+#weekly-players-container > div,
+#my-leagues-list > div,
+.welcome-card-inner,
+.rule-banner-box {
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+  border-radius: var(--radius-neo) !important;
+  background: var(--grad-arcade-card);
   position: relative;
+  overflow: hidden;
 }
 
-@keyframes splash-float {
+/* Boutons tactiles interactifs (Clean Arcade) */
+.btn-tactile,
+button.btn-tactile,
+.boost-btn,
+.filter-chip,
+.odds-btn,
+#btn-open-create-league,
+#btn-open-join-league,
+#auth-view-welcome button,
+#auth-register-form button[type="submit"],
+#auth-login-form button[type="submit"],
+#season-form button[type="submit"],
+#create-league-form button[type="submit"],
+#join-league-form button[type="submit"],
+#btn-native-share,
+#btn-copy-recap-text {
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo-sm) !important;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+
+/* Comportement tactile Neo-Brutaliste au clic / enfoncement */
+.btn-tactile:active,
+button.btn-tactile:active,
+.boost-btn:active,
+.filter-chip:active,
+.odds-btn:active:not(:disabled),
+#btn-open-create-league:active,
+#btn-open-join-league:active,
+#btn-native-share:active,
+#btn-copy-recap-text:active,
+button[type="submit"]:active {
+  transform: translate(3px, 3px) !important;
+  box-shadow: var(--shadow-neo-pressed) !important;
+}
+
+/* Hover subtil pour desktop */
+@media (hover: hover) and (pointer: fine) {
+  .btn-tactile:hover,
+  .odds-btn:hover:not(:disabled),
+  .boost-btn:hover,
+  .filter-chip:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #000000 !important;
+  }
+}
+
+/* ==========================================================================
+   CARTES DE MATCH & DÉGRADÉS TRÈS SATURÉS
+   ========================================================================== */
+.match-card {
+  background: linear-gradient(155deg, #25232E 0%, #1A1922 55%, #131218 100%) !important;
+  padding: 12px sm:14px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* Illumination Bonus x2 : Orange Arcade Surchargé */
+.match-card-boosted {
+  background: var(--grad-card-boosted) !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 6px 6px 0px var(--brand-orange), 9px 9px 0px #000000 !important;
+  animation: pulse-arcade-orange 2.4s infinite ease-in-out;
+}
+
+@keyframes pulse-arcade-orange {
   0%, 100% {
-    transform: translateY(0px) scale(1);
+    box-shadow: 6px 6px 0px var(--brand-orange), 9px 9px 0px #000000;
   }
   50% {
-    transform: translateY(-8px) scale(1.03);
+    box-shadow: 6px 6px 0px #FF3D00, 10px 10px 0px #000000;
   }
 }
 
-.splash-ball-glow {
-  position: absolute;
-  inset: -16px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, rgba(234, 88, 12, 0.15) 50%, transparent 70%);
-  animation: pulse-glow 2s infinite ease-in-out;
-  pointer-events: none;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { transform: scale(0.95); opacity: 0.6; }
-  50% { transform: scale(1.15); opacity: 1; }
-}
-
-.splash-progress-track {
-  width: 140px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  overflow: hidden;
-  position: relative;
-}
-
-.splash-progress-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Boutons de Cotes NBA */
+.odds-btn {
+  background: var(--grad-odds-default) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo-sm) !important;
+  min-height: 82px;
   height: 100%;
-  width: 30%;
-  background: linear-gradient(90deg, #f59e0b, #ea580c, #ffffff);
-  border-radius: 999px;
-  animation: splash-bar-sweep 1.4s infinite cubic-bezier(0.65, 0, 0.35, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--text-primary);
 }
 
-@keyframes splash-bar-sweep {
-  0% { left: -40%; width: 30%; }
-  50% { width: 60%; }
-  100% { left: 110%; width: 30%; }
+/* ÉTAT SÉLECTIONNÉ : Dégradé orange ballon de basket très saturé */
+.odds-btn-selected {
+  background: var(--grad-odds-selected) !important;
+  color: #FFFFFF !important;
+  border: 3px solid #000000 !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+}
+
+.odds-btn-selected * {
+  color: #FFFFFF !important;
+}
+
+.odds-btn-selected .font-condensed {
+  text-shadow: 2px 2px 0px #000000;
+}
+
+/* Badges d'équipes NBA (Acronymes LAL, BOS, GSW...) */
+.team-badge-box,
+.match-card [style*="background-color"] {
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  border-radius: 6px !important;
+  font-family: var(--font-blocky) !important;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+/* Bouton Bonus x2 */
+.boost-btn {
+  cursor: pointer;
+  border: var(--border-neo) !important;
+  border-radius: var(--radius-neo-sm) !important;
+}
+
+.boost-btn-inactive {
+  background: #1e1e26 !important;
+  color: var(--text-secondary) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+}
+
+.boost-btn-inactive:hover {
+  background: #2a2935 !important;
+  color: var(--text-primary) !important;
+}
+
+.boost-btn-active {
+  background: linear-gradient(135deg, #FF6600 0%, #D95D39 50%, #FF1E00 100%) !important;
+  color: #FFFFFF !important;
+  font-weight: 900;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border: 3px solid #000000 !important;
+  text-shadow: 1px 1px 0px #000000;
 }
 
 /* ==========================================================================
-   PORTAIL D'ACCUEIL & AUTH PRO
+   PASTILLES & CHIPS DE FILTRE
    ========================================================================== */
-
-.welcome-gradient-border {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(245, 158, 11, 0.15) 100%);
-  padding: 1px;
-  border-radius: 24px;
+.filter-chip {
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo-sm) !important;
+  font-family: var(--font-blocky) !important;
+  letter-spacing: 0.8px;
 }
 
-.welcome-card-inner {
-  background: linear-gradient(180deg, #15151a 0%, #0d0d10 100%);
-  border-radius: 23px;
+.filter-chip:not(.active) {
+  background: #1e1e26 !important;
+  color: var(--text-secondary) !important;
 }
 
-/* Bandeau défilant des avatars stars */
+.filter-chip.active {
+  background: var(--brand-orange) !important;
+  color: #FFFFFF !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+/* ==========================================================================
+   PODIUM DU CLASSEMENT (DÉGRADÉS SATURÉS ARCADE)
+   ========================================================================== */
+.podium-step-1,
+.podium-step-2,
+.podium-step-3 {
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+  border-radius: var(--radius-neo) !important;
+  color: #FFFFFF;
+}
+
+/* 1er : Dégradé Or Solaire Arcade très saturé */
+.podium-step-1 {
+  background: var(--grad-gold) !important;
+  color: #000000 !important;
+}
+
+.podium-step-1 * {
+  color: #000000 !important;
+}
+
+.podium-step-1 .w-6 {
+  background: #000000 !important;
+  color: #FFB703 !important;
+  border: 2px solid #000000;
+}
+
+/* 2ème : Dégradé Bleu Cyber Électrique très saturé */
+.podium-step-2 {
+  background: var(--grad-cyber-blue) !important;
+}
+
+.podium-step-2 .w-5 {
+  background: #000000 !important;
+  color: #0077FE !important;
+  border: 2px solid #000000;
+}
+
+/* 3ème : Dégradé Violet Arcade Électrique très saturé */
+.podium-step-3 {
+  background: var(--grad-arcade-purple) !important;
+}
+
+.podium-step-3 .w-5 {
+  background: #000000 !important;
+  color: #8A2BE2 !important;
+  border: 2px solid #000000;
+}
+
+/* ==========================================================================
+   SURFACES, BADGES & TACTILES
+   ========================================================================== */
+.surface-card {
+  background: linear-gradient(155deg, #222129 0%, #18171E 60%, #131217 100%) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+  border-radius: var(--radius-neo) !important;
+}
+
+/* Badges de trophées */
+.badge-card {
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo) !important;
+}
+
+.badge-card.unlocked {
+  background: linear-gradient(135deg, #4A1205 0%, #2E0B03 50%, #1A1922 100%) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+}
+
+.badge-card.locked {
+  background: #18181e !important;
+  opacity: 0.65;
+}
+
+.badge-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-neo-sm);
+  border: var(--border-neo-thin);
+  box-shadow: 2px 2px 0px #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.badge-card.unlocked .badge-icon-wrap {
+  background: var(--grad-basketball) !important;
+  color: #FFFFFF;
+}
+
+.badge-card.locked .badge-icon-wrap {
+  background: #25252e;
+  filter: grayscale(1);
+}
+
+/* Chat Chambrage */
+.chat-bubble-me {
+  background: linear-gradient(135deg, #8A2C11 0%, #D95D39 100%) !important;
+  color: #FFFFFF !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo) !important;
+}
+
+.chat-bubble-other {
+  background: linear-gradient(135deg, #252430 0%, #1A1922 100%) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo) !important;
+}
+
+/* Jauge de votes */
+.vote-gauge-bar {
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #18181e;
+  border: var(--border-neo-thin);
+  display: flex;
+}
+
+.vote-gauge-home {
+  background: var(--brand-orange) !important;
+  transition: width 0.4s ease;
+}
+
+.vote-gauge-away {
+  background: #0077FE !important;
+  transition: width 0.4s ease;
+}
+
+/* ==========================================================================
+   FORMULAIRES & INPUTS NEO-BRUTALISTES
+   ========================================================================== */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  background-color: #1a1a22 !important;
+  color: var(--text-primary) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-sm) !important;
+  border-radius: var(--radius-neo-sm) !important;
+  outline: none !important;
+  font-family: var(--font-body);
+  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #000000 !important;
+  box-shadow: 4px 4px 0px var(--brand-orange), 6px 6px 0px #000000 !important;
+}
+
+/* ==========================================================================
+   MODALES NEO-BRUTALISTES (CLEAN ARCADE)
+   ========================================================================== */
+.modal-box {
+  background: linear-gradient(160deg, #22212B 0%, #181720 50%, #111016 100%) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo-lg) !important;
+  border-radius: var(--radius-neo-lg) !important;
+  max-height: 88dvh;
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Boutons fermer modale */
+.modal-box button[class*="close-"],
+.modal-box button[onclick*="close"] {
+  border: var(--border-neo-thin);
+  box-shadow: 2px 2px 0px #000000;
+  border-radius: var(--radius-neo-sm);
+  background: #18181e;
+}
+
+.modal-box button[class*="close-"]:active,
+.modal-box button[onclick*="close"]:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+/* ==========================================================================
+   CARTE HOOPS WRAPPED / BILAN STORY PARTAGEABLE
+   ========================================================================== */
+#share-recap-card {
+  background: linear-gradient(145deg, #3A0D15 0%, #1F0D2B 50%, #0C1024 100%) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+  border-radius: var(--radius-neo-lg) !important;
+}
+
+/* ==========================================================================
+   AVATARS DES SUPERSTARS NBA (CONTOURS NOIRS & RELIEF)
+   ========================================================================== */
+.avatar-signup-item img,
+img.rounded-xl,
+#welcome-avatars-track img {
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  border-radius: var(--radius-neo-sm) !important;
+}
+
+.avatar-signup-item.selected {
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0px var(--brand-orange), 6px 6px 0px #000000 !important;
+  transform: scale(1.04);
+}
+
 .avatar-strip-container {
   overflow: hidden;
   position: relative;
@@ -513,35 +622,867 @@ input:focus, select:focus, textarea:focus {
   100% { transform: translateX(-50%); }
 }
 
-/* Sélecteur d'avatar compact pour l'inscription */
-.avatar-signup-item {
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
+/* ==========================================================================
+   SPLASH SCREEN D'OUVERTURE
+   ========================================================================== */
+#app-splash-screen {
+  background: radial-gradient(circle at 50% 45%, #241208 0%, #150F0B 55%, #121212 100%) !important;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+  will-change: transform, opacity;
+}
+
+#app-splash-screen.splash-exit {
+  opacity: 0;
+  transform: translateY(-30px) scale(1.02);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-ball-wrapper {
+  animation: splash-float 2.2s infinite ease-in-out;
+  position: relative;
+}
+
+@keyframes splash-float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-8px) scale(1.03); }
+}
+
+.splash-ball-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 93, 57, 0.45) 0%, rgba(255, 61, 0, 0.2) 50%, transparent 70%);
+  animation: pulse-glow 2s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(0.95); opacity: 0.6; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
+.splash-progress-track {
+  width: 140px;
+  height: 6px;
+  background: #000000;
+  border: 2px solid #000000;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.splash-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 30%;
+  background: var(--grad-basketball);
+  border-radius: 2px;
+  animation: splash-bar-sweep 1.4s infinite cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes splash-bar-sweep {
+  0% { left: -40%; width: 30%; }
+  50% { width: 60%; }
+  100% { left: 110%; width: 30%; }
+}
+
+/* ==========================================================================
+   SCROLLBARS & UTILITAIRES
+   ========================================================================== */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #121212;
+}
+::-webkit-scrollbar-thumb {
+  background: #000000;
+  border: 1px solid #2a2a30;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-orange);
+}
+
+/* Notification Toast */
+#toast {
+  background: #000000 !important;
+  color: var(--text-primary) !important;
+  border: var(--border-neo) !important;
+  box-shadow: var(--shadow-neo) !important;
+  border-radius: var(--radius-neo-sm) !important;
+}
+
+/* ==========================================================================
+   PILE DE CARTES À SWIPER STYLE TINDER (CLEAN ARCADE NEO-BRUTALISME)
+   ========================================================================== */
+.tinder-deck-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
   user-select: none;
 }
 
-.avatar-signup-item:active {
-  transform: scale(0.94);
+.tinder-deck-container {
+  position: relative;
+  width: 100%;
+  min-height: 440px;
+  height: 440px;
+  margin: 0 auto;
+  perspective: 1000px;
 }
 
-.avatar-signup-item.selected {
-  border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px #ffffff, 0 4px 14px rgba(255, 255, 255, 0.3) !important;
-  transform: scale(1.05);
+.tinder-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #000000 !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(155deg, #25232E 0%, #1A1922 55%, #131218 100%) !important;
+  touch-action: none;
+  user-select: none;
+  will-change: transform, border-color, box-shadow;
+  cursor: grab;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  overflow: hidden;
 }
 
-/* Transition de formulaire fluide */
-.auth-step-pane {
-  animation: auth-fade-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.tinder-completion-card {
+  border: 3px solid #000000 !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(155deg, #25232E 0%, #1A1922 55%, #131218 100%) !important;
 }
 
-@keyframes auth-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+.tinder-card:active {
+  cursor: grabbing;
+}
+
+.tinder-card.is-dragging {
+  cursor: grabbing;
+  transition: none !important;
+}
+
+/* Étage des cartes dans la pile */
+.tinder-card-top {
+  z-index: 30;
+  opacity: 1;
+}
+
+.tinder-card-next {
+  z-index: 20;
+  transform: translate3d(0, 12px, -20px) scale(0.96) !important;
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+.tinder-card-third {
+  z-index: 10;
+  transform: translate3d(0, 24px, -40px) scale(0.92) !important;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+/* Overlays visuels d'illumination de swipe */
+.swipe-overlay-left,
+.swipe-overlay-right {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.05s linear;
+  z-index: 10;
+  border-radius: 9px;
+}
+
+.swipe-overlay-left {
+  background: linear-gradient(90deg, rgba(217, 93, 57, 0.45) 0%, transparent 80%);
+}
+
+.swipe-overlay-right {
+  background: linear-gradient(270deg, rgba(0, 119, 254, 0.45) 0%, transparent 80%);
+}
+
+/* Badges de validation avec icône lors du swipe */
+.swipe-badge-left,
+.swipe-badge-right {
+  position: absolute;
+  top: 14px;
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: var(--font-blocky);
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #FFFFFF;
+  opacity: 0;
+  z-index: 25;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.08s ease, transform 0.08s ease;
+  text-shadow: 1px 1px 0px #000000;
+}
+
+.swipe-badge-left {
+  left: 14px;
+  transform: rotate(-10deg) scale(0.85);
+  background: linear-gradient(135deg, #D95D39 0%, #FF3D00 100%);
+}
+
+.swipe-badge-right {
+  right: 14px;
+  transform: rotate(10deg) scale(0.85);
+  background: linear-gradient(135deg, #0077FE 0%, #0052CC 100%);
+}
+
+/* Bouton Undo circulaire sous la pile */
+.btn-swipe-undo {
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-swipe-undo:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000 !important;
+}
+
+.btn-swipe-undo:not(:disabled):active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+/* Boutons de vote programmatique sous la pile */
+.btn-action-swipe {
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-blocky);
+  font-size: 1.1rem;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+}
+
+.btn-action-swipe:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000 !important;
+}
+
+.btn-action-swipe:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+}
+
+/* ==========================================================================
+   GAMIFICATION ARCADE : BOUTON BONUS x2 PHYSIQUE & TRAÎNÉE DE FEU
+   ========================================================================== */
+
+/* Conteneur du gros bouton d'arcade x2 */
+.arcade-bonus-wrapper {
+  position: relative;
+  z-index: 25;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0;
+}
+
+/* Bouton physique d'arcade Neo-Brutaliste */
+.arcade-push-btn {
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Collerette / Châssis extérieur fixe du switch d'arcade */
+.arcade-btn-collar {
+  position: relative;
+  background: #14131A;
+  border: 3px solid #000000;
+  border-radius: 9999px;
+  padding: 3px;
+  box-shadow: 0 6px 0 #000000, 3px 6px 0 #000000;
+  transition: box-shadow 0.15s ease;
+}
+
+/* Poussoir intérieur 3D (Plunger) */
+.arcade-btn-plunger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 9999px;
+  border: 2.5px solid #000000;
+  background: linear-gradient(180deg, #FFB300 0%, #FF6F00 50%, #D84315 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 0 #000000, inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.1s cubic-bezier(0.2, 0.9, 0.3, 1), background 0.15s ease;
+}
+
+.arcade-push-btn:hover:not(.is-disabled) .arcade-btn-plunger {
+  filter: brightness(1.1);
+}
+
+.arcade-push-btn:active:not(.is-disabled) .arcade-btn-plunger {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #000000, inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* État ACTIVÉ / LOCKÉ : Le bouton reste enfoncé physiquement et brille */
+.arcade-push-btn.is-locked .arcade-btn-collar {
+  box-shadow: 0 2px 0 #000000, 0 0 14px rgba(255, 111, 0, 0.85);
+  border-color: #FF6F00;
+}
+
+.arcade-push-btn.is-locked .arcade-btn-plunger {
+  transform: translateY(3px) !important;
+  box-shadow: 0 1px 0 #000000, inset 0 2px 5px rgba(0, 0, 0, 0.65), 0 0 16px rgba(255, 111, 0, 0.9) !important;
+  background: linear-gradient(180deg, #FF5722 0%, #E64A19 55%, #BF360C 100%) !important;
+  animation: arcadeButtonFirePulse 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes arcadeButtonFirePulse {
+  0% {
+    box-shadow: 0 1px 0 #000000, inset 0 2px 5px rgba(0, 0, 0, 0.65), 0 0 14px rgba(255, 111, 0, 0.7);
   }
-  to {
+  100% {
+    box-shadow: 0 1px 0 #000000, inset 0 2px 5px rgba(0, 0, 0, 0.65), 0 0 24px rgba(255, 61, 0, 1);
+  }
+}
+
+/* Typographie et icônes du bouton arcade */
+.arcade-btn-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: drop-shadow(1px 1px 0px #000000);
+}
+
+.arcade-push-btn.is-locked .arcade-btn-icon {
+  animation: flameTongueFlicker 0.4s infinite alternate;
+}
+
+.arcade-btn-label {
+  font-family: var(--font-blocky);
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-shadow: 2px 2px 0px #000000;
+}
+
+.arcade-btn-status {
+  font-family: var(--font-blocky);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+}
+
+.arcade-push-btn.is-locked .arcade-btn-status {
+  background: rgba(0, 0, 0, 0.75);
+  color: #FFD54F;
+  border-color: rgba(255, 213, 79, 0.6);
+}
+
+.arcade-push-btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Carte avec Bonus x2 Actif : Aura de feu */
+.tinder-card.card-boosted {
+  border-color: #FF5722 !important;
+  box-shadow: 0 0 25px rgba(255, 87, 34, 0.6), 6px 6px 0px #000000 !important;
+}
+
+/* ==========================================================================
+   TRAÎNÉE DE FEU CSS LORS DU SWIPE AVEC BONUS ACTIF
+   ========================================================================== */
+
+.card-fire-trail-container {
+  position: absolute;
+  inset: -15px;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  border-radius: 16px;
+  overflow: visible;
+  transition: opacity 0.08s ease;
+}
+
+.card-boosted .card-fire-trail-container {
+  opacity: 1;
+}
+
+/* Flammes dynamiques qui s'étirent du côté opposé au mouvement */
+.fire-trail-flame {
+  position: absolute;
+  top: 5%;
+  height: 90%;
+  width: 90px;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 12px;
+  transition: opacity 0.08s ease, transform 0.08s ease;
+  filter: blur(2px);
+}
+
+/* Quand on glisse vers la DROITE -> La traînée de feu sort de la GAUCHE */
+.fire-trail-flame.trail-left {
+  left: -50px;
+  background: radial-gradient(ellipse at 100% 50%, rgba(255, 235, 59, 0.95) 0%, rgba(255, 111, 0, 0.85) 40%, rgba(216, 67, 21, 0.7) 70%, transparent 100%);
+  animation: flameTongueFlicker 0.22s infinite alternate;
+}
+
+/* Quand on glisse vers la GAUCHE -> La traînée de feu sort de la DROITE */
+.fire-trail-flame.trail-right {
+  right: -50px;
+  background: radial-gradient(ellipse at 0% 50%, rgba(255, 235, 59, 0.95) 0%, rgba(255, 111, 0, 0.85) 40%, rgba(216, 67, 21, 0.7) 70%, transparent 100%);
+  animation: flameTongueFlicker 0.22s infinite alternate;
+}
+
+@keyframes flameTongueFlicker {
+  0% {
+    transform: scaleY(0.96) scaleX(1);
+    filter: drop-shadow(0 0 10px #FF5722);
+  }
+  100% {
+    transform: scaleY(1.05) scaleX(1.12);
+    filter: drop-shadow(0 0 20px #FF9800);
+  }
+}
+
+/* Explosion en comète de feu lors de l'éjection de la carte swipée */
+.tinder-card.card-boosted.fire-trail-launching {
+  border-color: #FF9800 !important;
+  box-shadow: 0 0 45px #FF3D00, 0 0 90px #FF9100, 0 0 130px #FFEA00, 6px 6px 0px #000000 !important;
+  filter: drop-shadow(0 0 25px rgba(255, 69, 0, 0.9)) !important;
+}
+
+/* Éléments d'étincelles / braises en vol */
+.fire-ember {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FFE082;
+  box-shadow: 0 0 8px #FF6F00, 0 0 14px #FF3D00;
+  pointer-events: none;
+  animation: emberFly 0.6s linear infinite;
+}
+
+@keyframes emberFly {
+  0% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-35px, -20px) scale(0.3);
   }
 }
+
+/* ==========================================================================
+   LA STREAK (SÉRIE DE VICTOIRES) DANS LA TOP BAR
+   ========================================================================== */
+
+#user-streak-badge {
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#user-streak-badge.streak-active {
+  border-color: #FF5722 !important;
+  box-shadow: 0 0 10px rgba(255, 87, 34, 0.5), 2px 2px 0px #000000 !important;
+}
+
+#user-streak-badge.streak-on-fire {
+  border-color: #FFA000 !important;
+  box-shadow: 0 0 16px rgba(255, 160, 0, 0.75), 2px 2px 0px #000000 !important;
+  animation: streakOnFireBorder 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes streakOnFireBorder {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 87, 34, 0.6), 2px 2px 0px #000000;
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(255, 179, 0, 0.9), 2px 2px 0px #000000;
+  }
+}
+
+.streak-flame {
+  display: inline-block;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 0 4px rgba(255, 152, 0, 0.6));
+}
+
+.streak-flame.streak-burning {
+  animation: streakFlamePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes streakFlamePulse {
+  0%, 100% {
+    transform: scale(1) rotate(-3deg);
+    filter: drop-shadow(0 0 4px #FF5722);
+  }
+  50% {
+    transform: scale(1.22) rotate(4deg);
+    filter: drop-shadow(0 0 12px #FFB300);
+  }
+}
+
+/* ==========================================================================
+   L'EMPTY STATE ARCADE : COMPTE À REBOURS DIGITAL RÉTRO & RÉCAPITULATIF
+   ========================================================================== */
+
+.tinder-completion-arcade {
+  border: 3px solid #000000 !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(155deg, #22202B 0%, #16151E 55%, #100F15 100%) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanlines rétro façon moniteur CRT arcade */
+.retro-scanlines {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Tableau d'affichage / Scoreboard LED digital rétro */
+.retro-scoreboard-container {
+  background: #09090C !important;
+  border: 3px solid #000000 !important;
+  box-shadow: 5px 5px 0px #000000 !important;
+}
+
+.countdown-digit-box {
+  background: #14131A;
+  border: 2px solid #000000;
+  box-shadow: 2px 2px 0px #000000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 58px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdown-num {
+  font-family: var(--font-blocky);
+  font-weight: 900;
+  color: #FFB300;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(255, 179, 0, 0.8), 0 0 20px rgba(255, 111, 0, 0.45);
+}
+
+.countdown-label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #9E9E96;
+  letter-spacing: 1px;
+  margin-top: 3px;
+}
+
+.countdown-colon {
+  font-family: var(--font-blocky);
+  font-weight: 900;
+  color: #FF9800;
+  text-shadow: 0 0 8px rgba(255, 152, 0, 0.8);
+  animation: colonBlink 1s step-start infinite;
+}
+
+@keyframes colonBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Bouton stylisé récapitulatif des pronostics */
+.btn-arcade-recap {
+  font-family: var(--font-blocky) !important;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0px #000000;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+
+.btn-arcade-recap:hover {
+  filter: brightness(1.08);
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.btn-arcade-recap:active {
+  transform: translate(2px, 2px) !important;
+}
+
+/* ==========================================================================
+   BANDEAUX DE SCORES TV US x NEO-BRUTALISME (Horizontal Scoreboard)
+   ========================================================================== */
+
+.tv-scoreboard-bar {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 62px;
+  background-color: #0E0D14;
+  border: 3px solid #000000;
+  border-radius: 10px;
+  box-shadow: 4px 4px 0px #000000;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+
+.tv-scoreboard-bar:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+  filter: brightness(1.05);
+}
+
+/* Effet physique "enfoncé" néo-brutaliste au clic */
+.tv-scoreboard-bar:active,
+.tv-scoreboard-bar.is-pressed {
+  transform: translate(3px, 3px) !important;
+  box-shadow: 1px 1px 0px #000000 !important;
+  filter: brightness(0.96);
+}
+
+/* Blocs d'équipes (Gauche = Extérieur, Droite = Domicile) */
+.tv-team-block {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  position: relative;
+  overflow: hidden;
+  transition: filter 0.15s ease;
+}
+
+.tv-team-block.away-block {
+  justify-content: space-between;
+}
+
+.tv-team-block.home-block {
+  justify-content: space-between;
+}
+
+/* Acronyme de l'équipe (HOU, OKC, etc.) - Pas de logo pour pureté broadcast */
+.tv-team-code {
+  font-family: var(--font-blocky);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
+  text-shadow: 2px 2px 0px #000000, 0 1px 3px rgba(0, 0, 0, 0.7);
+  line-height: 1;
+  z-index: 2;
+}
+
+/* Score digital TV */
+.tv-team-score {
+  font-family: var(--font-blocky);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  text-shadow: 2px 2px 0px #000000, 0 1px 4px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+  z-index: 2;
+}
+
+/* Vainqueur : Score doré étincelant */
+.tv-team-block.is-winner .tv-team-score {
+  color: #FFE57F;
+  text-shadow: 0 0 12px rgba(255, 229, 127, 0.6), 2px 2px 0px #000000;
+}
+
+/* Perdant : Légère atténuation de contraste style TV */
+.tv-team-block.is-loser {
+  filter: saturate(0.85) brightness(0.78);
+}
+.tv-team-block.is-loser .tv-team-score {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Bloc central : Logo "NBA Pro" à la place de l'horloge */
+.tv-center-bug {
+  width: 74px;
+  flex-shrink: 0;
+  background: #0B0A10;
+  border-left: 3px solid #000000;
+  border-right: 3px solid #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 4px;
+  position: relative;
+  z-index: 3;
+}
+
+/* Badge Logo de l'application "NBA Pro" */
+.tv-logo-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+  background: #181722;
+  border: 1.5px solid #000000;
+  border-radius: 4px;
+  padding: 1.5px 5px;
+  box-shadow: 1px 1px 0px #000000;
+}
+
+.tv-logo-nba {
+  font-family: var(--font-blocky);
+  font-size: 11px;
+  font-weight: 900;
+  color: #F4F4F0;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.tv-logo-pro {
+  font-family: var(--font-blocky);
+  font-size: 11px;
+  font-weight: 900;
+  background: #D95D39;
+  color: #FFFFFF;
+  border-radius: 2px;
+  padding: 0 2.5px;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+/* Horloge TV remplacée par le statut FINAL */
+.tv-status-final {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3.5px;
+  font-family: var(--font-body);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9E9E9E;
+  line-height: 1;
+}
+
+.tv-status-final .status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00E676;
+  box-shadow: 0 0 5px #00E676;
+}
+
+/* Indicateur subtil de pronostic de l'utilisateur */
+.tv-prono-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-blocky);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 0.5px 6px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border: 1.5px solid #000000;
+  border-top: none;
+  z-index: 5;
+  white-space: nowrap;
+  box-shadow: 0 1px 0px #000000;
+}
+
+.tv-prono-won {
+  background: #00E676;
+  color: #000000;
+}
+
+.tv-prono-lost {
+  background: #2D1A1A;
+  color: #FF5252;
+}
+
+/* Rayonnement broadcast au survol */
+.tv-scoreboard-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+
+

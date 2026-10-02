@@ -615,6 +615,7 @@ def get_my_stats(
         "max_odds": max_odds,
         "favorite_team": favorite_team,
         "nemesis_team": nemesis_team,
+        "current_streak": current_win_streak,
         "avatar_url": current_user.avatar_url,
         "badges": badges
     }

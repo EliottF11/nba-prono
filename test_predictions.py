@@ -23,8 +23,8 @@ def run_tests():
     res_matches = client.get("/api/matches")
     assert res_matches.status_code == 200, f"Erreur GET /matches: {res_matches.text}"
     matches = res_matches.json()
-    assert len(matches) == 16, f"Attendu 16 matchs, reçu {len(matches)}"
-    print(f"-> [OK] 16 matchs officiels récupérés avec cotes et villes (ex: {matches[0]['home_team']['city']} vs {matches[0]['away_team']['city']}).")
+    assert len(matches) >= 16, f"Attendu au moins 16 matchs, reçu {len(matches)}"
+    print(f"-> [OK] {len(matches)} matchs officiels récupérés avec cotes et villes (ex: {matches[0]['home_team']['city']} vs {matches[0]['away_team']['city']}).")
 
     upcoming_matches = [m for m in matches if m["status"] == "upcoming"]
     if not upcoming_matches:

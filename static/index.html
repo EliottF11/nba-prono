@@ -3,24 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>HOOPS PRONO - Ligue de Pronostics</title>
+  <title>NBA PRO - Pronostics NBA (HOOPS PRONO)</title>
   
   <!-- Configuration PWA (Progressive Web App) -->
   <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#121212">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="HOOPS Prono">
+  <meta name="apple-mobile-web-app-title" content="NBA PRO">
   <link rel="apple-touch-icon" href="/static/icons/icon.svg">
   <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
   
-  <!-- Tailwind CSS via CDN -->
+  <!-- Typographie Google Fonts Neo-Brutalisme (Bebas Neue, Jersey 10, Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Jersey+10&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN avec configuration Dark Arcade Neo-Brutalisme -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            asphalt: '#121212',
+            'asphalt-card': '#18181e',
+            'asphalt-surface': '#202028',
+            bball: '#D95D39',
+            'bball-hover': '#FF5722',
+            cream: '#F4F4F0',
+            'cream-muted': '#BDBDB6',
+          },
+          fontFamily: {
+            blocky: ['"Bebas Neue"', '"Jersey 10"', 'sans-serif'],
+            condensed: ['"Bebas Neue"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   
-  <!-- Feuille de style dédiée Noir / Gris / Blanc -->
-  <link rel="stylesheet" href="/static/css/style.css?v=15">
+  <!-- Feuille de style Neo-Brutalisme Dark Mode (Clean Arcade) -->
+  <link rel="stylesheet" href="/static/css/style.css?v=20">
 </head>
-<body class="court-bg min-h-screen pb-20 text-zinc-100 w-full overflow-x-hidden select-none">
+<body class="court-bg min-h-screen pb-20 text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
 
   <!-- ==========================================================================
        ÉCRAN D'ANIMATION DE LANCEMENT (SPLASH SCREEN OFFICIEL)
@@ -56,16 +83,17 @@
       </div>
 
       <div class="space-y-1.5">
-        <div class="font-condensed font-black text-4xl sm:text-5xl tracking-tight leading-none text-white flex items-center justify-center gap-2">
-          <span>HOOPS</span>
-          <span class="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-200 bg-clip-text text-transparent">PRONO</span>
+        <div class="font-condensed font-black text-4xl sm:text-5xl tracking-tight leading-none text-[#F4F4F0] flex items-center justify-center gap-2">
+          <span>NBA</span>
+          <span class="text-[#D95D39]">PRO</span>
+          <span class="text-xs text-zinc-400 font-bold self-end mb-1 uppercase tracking-widest">(PRONO)</span>
         </div>
-        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/10 border border-white/15 text-[10px] font-condensed font-bold tracking-widest uppercase text-zinc-300">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#1a1a20] border-2 border-black text-[11px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000]">
           <span>🏀</span> Saison Régulière 2026 / 2027
         </div>
       </div>
       <p class="text-xs text-zinc-400 max-w-xs font-medium leading-relaxed">
-        L'arène officielle des pronostics NBA entre amis
+        L'arène Clean Arcade des pronostics NBA entre amis
       </p>
     </div>
 
@@ -80,27 +108,33 @@
     </div>
   </div>
 
-  <!-- Wrapper Mobile-First Anti-Débordement -->
-  <div class="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col border-x border-[rgba(255,255,255,0.08)] bg-[#09090b] shadow-2xl relative overflow-x-hidden">
+  <!-- Wrapper Mobile-First Anti-Débordement Neo-Brutaliste -->
+  <div class="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col sm:border-x-[3px] sm:border-black bg-[#121212] sm:shadow-[8px_8px_0px_#000000] relative overflow-x-hidden">
     
-    <!-- Top Bar Sportive Ultra-Épurée -->
-    <header class="sticky top-0 z-30 bg-[#09090b]/95 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)] px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+    <!-- Top Bar Sportive Clean Arcade -->
+    <header class="sticky top-0 z-30 bg-[#16161b] border-b-[3px] border-black px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 shadow-[0_4px_0px_#000000]">
       <div class="flex items-center space-x-2.5 shrink-0">
-        <!-- Logo minimaliste basket monochrome -->
-        <img src="/static/icons/icon.svg" alt="HOOPS Prono" class="w-8 h-8 rounded-xl border border-white/10 shrink-0">
+        <!-- Logo minimaliste basket avec relief noir -->
+        <img src="/static/icons/icon.svg" alt="NBA PRO" class="w-8 h-8 rounded-[8px] border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0">
         <div>
-          <div class="font-condensed font-black text-xl tracking-tight leading-none text-white flex items-center gap-1.5">
-            <span>HOOPS</span>
-            <span class="text-zinc-400">PRONO</span>
+          <div class="font-condensed font-black text-xl tracking-tight leading-none text-[#F4F4F0] flex items-center gap-1.5">
+            <span>NBA</span>
+            <span class="text-[#D95D39]">PRO</span>
           </div>
-          <div class="text-[10px] text-zinc-500 font-semibold tracking-wider uppercase">Saison Régulière 2026/2027</div>
+          <div class="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase">Saison Régulière 2026/2027</div>
         </div>
       </div>
 
       <!-- Section Utilisateur Simple & Épurée (Zéro Débordement) -->
       <div class="flex items-center space-x-2 shrink-0">
-        <div id="user-score-badge" class="hidden flex items-center space-x-1.5 bg-[#141418] border border-[rgba(255,255,255,0.12)] px-2.5 py-1 rounded-lg shrink-0">
-          <span id="user-points-val" class="font-condensed text-base font-black text-white">0.0</span>
+        <!-- Badge Streak (Série de victoires consécutives) -->
+        <div id="user-streak-badge" class="flex items-center space-x-1.5 bg-[#18181e] border-2 border-black px-2 sm:px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] shrink-0" title="Série de victoires consécutives (Streak)">
+          <span class="streak-flame text-sm leading-none select-none">🔥</span>
+          <span id="user-streak-val" class="font-condensed text-base font-black text-amber-400 leading-none">0</span>
+        </div>
+
+        <div id="user-score-badge" class="hidden flex items-center space-x-1.5 bg-[#18181e] border-2 border-black px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] shrink-0">
+          <span id="user-points-val" class="font-condensed text-base font-black text-[#D95D39]">0.0</span>
           <span class="text-[10px] text-zinc-400 font-bold uppercase">pts</span>
         </div>
         
@@ -114,10 +148,10 @@
     <main class="flex-1 p-3 sm:p-3.5 space-y-3.5 pb-28">
 
       <!-- BANNER : Règles & Actions (Bilan & Défier) -->
-      <div class="bg-[#121216] border border-[rgba(255,255,255,0.08)] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-md">
+      <div class="rule-banner-box bg-[#18181e] border-[3px] border-black rounded-[10px] p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-[6px_6px_0px_#000000]">
         <div class="space-y-0.5 min-w-0">
-          <div class="text-xs font-bold text-white flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)] shrink-0"></span>
+          <div class="text-xs font-bold text-[#F4F4F0] flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#D95D39] border border-black shadow-[1px_1px_0px_#000000] shrink-0"></span>
             <span class="font-condensed font-black uppercase tracking-wider text-xs sm:text-sm">Règle des cotes</span>
           </div>
           <p class="text-[10px] sm:text-[11px] text-zinc-400 truncate sm:whitespace-normal">
@@ -126,17 +160,17 @@
         </div>
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <!-- Bouton Bilan Semaine (Story) -->
-          <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center gap-1 bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.10)] px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center gap-1 bg-[#1e1e24] hover:bg-[#282832] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-zinc-200">Bilan</span>
+            <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-[#F4F4F0]">Bilan</span>
           </button>
 
           <!-- Bouton Partager / Défier -->
-          <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center gap-1 bg-[#18181c] hover:bg-[#222228] border border-[rgba(255,255,255,0.10)] px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center gap-1 bg-[#D95D39] hover:bg-[#FF5722] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
             </svg>
             <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-white">Défier</span>
@@ -153,12 +187,12 @@
         </div>
 
         <!-- Sélecteur de Semaines (Week 1, Week 2...) -->
-        <div class="flex items-center justify-between gap-2 bg-[#101014] p-2 rounded-xl border border-[rgba(255,255,255,0.08)]">
+        <div class="flex items-center justify-between gap-2 bg-[#18181e] p-2 rounded-[10px] border-[3px] border-black shadow-[4px_4px_0px_#000000]">
           <div class="flex items-center space-x-1.5 pl-2 text-zinc-400">
-            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <span class="text-[11px] font-condensed font-black uppercase tracking-wider text-zinc-300">Semaine</span>
+            <span class="text-[11px] font-condensed font-black uppercase tracking-wider text-[#F4F4F0]">Semaine</span>
           </div>
           <div id="weeks-selector" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             <!-- Injecté dynamiquement par JS -->
@@ -170,15 +204,15 @@
           <!-- Injecté dynamiquement par JS -->
         </div>
 
-        <!-- Filtres par statut -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-          <button class="filter-chip active px-3.5 py-1.5 rounded-full font-condensed font-bold uppercase tracking-wider bg-white text-black transition cursor-pointer" data-filter="all">
+        <!-- Filtres par statut Neo-Brutalistes -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
+          <button class="filter-chip active px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#D95D39] text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="all">
             Tous les matchs
           </button>
-          <button class="filter-chip px-3.5 py-1.5 rounded-full font-condensed font-bold uppercase tracking-wider bg-[#141418] text-zinc-400 hover:text-white border border-[rgba(255,255,255,0.08)] transition cursor-pointer" data-filter="upcoming">
+          <button class="filter-chip px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#18181e] text-zinc-300 hover:text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="upcoming">
             Ouverts
           </button>
-          <button class="filter-chip px-3.5 py-1.5 rounded-full font-condensed font-bold uppercase tracking-wider bg-[#141418] text-zinc-400 hover:text-white border border-[rgba(255,255,255,0.08)] transition cursor-pointer" data-filter="finished">
+          <button class="filter-chip px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#18181e] text-zinc-300 hover:text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="finished">
             Terminés
           </button>
         </div>
@@ -190,15 +224,68 @@
 
       </section>
 
+      <!-- VUE RÉSULTATS : SCORES DES MATCHS PASSÉS (Bandeaux TV US x Néo-Brutalisme) -->
+      <section id="results-view" class="hidden space-y-3.5">
+        
+        <!-- En-tête TV Broadcast -->
+        <div class="flex items-center justify-between pb-1 border-b-2 border-black/80">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#0E0D14] border-2 border-black text-[10px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[1px_1px_0px_#000000]">
+              <span class="w-2 h-2 rounded-full bg-[#00E676] animate-pulse"></span>
+              <span>NBA on TV • Bandeaux Officiels</span>
+            </div>
+            <h2 class="font-condensed text-2xl font-black uppercase text-[#F4F4F0] tracking-wide mt-1">
+              Scores & Résultats
+            </h2>
+            <p class="text-[11px] text-zinc-400 font-medium">Bandeaux des matchs passés style chaînes de télévision US</p>
+          </div>
+          <div id="results-count-badge" class="shrink-0 text-right">
+            <span class="text-[10px] font-condensed font-black uppercase px-2.5 py-1 rounded-[6px] bg-[#181722] text-[#00E676] border-2 border-black shadow-[2px_2px_0px_#000000]">
+              Terminés
+            </span>
+          </div>
+        </div>
+
+        <!-- Sélecteur / Filtre de Semaines pour les résultats -->
+        <div class="flex items-center justify-between gap-2 bg-[#18181e] p-2 rounded-[10px] border-[3px] border-black shadow-[4px_4px_0px_#000000]">
+          <div class="flex items-center space-x-1.5 pl-2 text-zinc-400">
+            <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="text-[11px] font-condensed font-black uppercase tracking-wider text-[#F4F4F0]">Filtrer</span>
+          </div>
+          <div id="results-weeks-selector" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            <!-- Injecté dynamiquement par JS -->
+          </div>
+        </div>
+
+        <!-- Guide interactif rapide -->
+        <div class="px-2.5 py-1.5 rounded-[8px] bg-[#121118] border-2 border-black/80 flex items-center justify-between text-[10px] text-zinc-400 font-bold uppercase tracking-wider shadow-[2px_2px_0px_#000000]">
+          <span class="flex items-center gap-1">
+            <span>👈</span> Extérieur
+          </span>
+          <span class="text-zinc-500 font-black">● Clique sur une barre pour les détails ●</span>
+          <span class="flex items-center gap-1">
+            Domicile <span>👉</span>
+          </span>
+        </div>
+
+        <!-- Liste des bandeaux de scoreboard TV US -->
+        <div id="results-scoreboard-list" class="space-y-2.5">
+          <!-- Injecté dynamiquement par renderResultsView() -->
+        </div>
+
+      </section>
+
       <!-- VUE 2 : CLASSEMENT GÉNÉRAL -->
       <section id="leaderboard-view" class="hidden space-y-4">
         
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="font-condensed text-xl font-black uppercase text-white tracking-wide">Classement Général</h2>
-            <p class="text-[11px] text-zinc-400">Actualisé en temps réel après chaque rencontre</p>
+            <h2 class="font-condensed text-2xl font-black uppercase text-[#F4F4F0] tracking-wide">Classement Général</h2>
+            <p class="text-[11px] text-zinc-400">Actualisé en direct après chaque rencontre NBA</p>
           </div>
-          <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-white/10 text-white border border-white/20">
+          <span class="text-[10px] font-condensed font-black uppercase px-2.5 py-1 rounded-[6px] bg-[#D95D39] text-white border-2 border-black shadow-[2px_2px_0px_#000000]">
             En direct
           </span>
         </div>
@@ -208,15 +295,15 @@
           <!-- Injecté dynamiquement -->
         </div>
 
-        <!-- Tableau complet -->
-        <div class="surface-card rounded-2xl overflow-hidden shadow-xl">
-          <div class="grid grid-cols-12 px-3.5 py-2.5 bg-[#141418] border-b border-[rgba(255,255,255,0.08)] text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400">
+        <!-- Tableau complet Neo-Brutaliste -->
+        <div class="surface-card rounded-[10px] border-[3px] border-black overflow-hidden shadow-[6px_6px_0px_#000000]">
+          <div class="grid grid-cols-12 px-3.5 py-2.5 bg-[#18181e] border-b-2 border-black text-[11px] font-condensed font-black uppercase tracking-wider text-[#D95D39]">
             <div class="col-span-2 text-center">Rang</div>
             <div class="col-span-6">Joueur</div>
             <div class="col-span-2 text-center">Pronos</div>
             <div class="col-span-2 text-right">Pts</div>
           </div>
-          <div id="leaderboard-table-rows" class="divide-y divide-[rgba(255,255,255,0.06)]">
+          <div id="leaderboard-table-rows" class="divide-y-2 divide-black/30 bg-[#14141a]">
             <!-- Injecté dynamiquement -->
           </div>
         </div>
@@ -294,7 +381,16 @@
           <circle cx="12" cy="12" r="9"/>
           <path d="M12 3v18M3 12h18M5.5 5.5l13 13M5.5 18.5l13-13"/>
         </svg>
-        <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Matchs</span>
+        <span class="font-condensed text-[10px] font-black uppercase tracking-wider">Matchs</span>
+      </button>
+
+      <!-- Onglet Résultats (Scores TV US) -->
+      <button data-tab="results" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-zinc-500 hover:text-zinc-300">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="6" width="20" height="12" rx="2" ry="2"/>
+          <path d="M6 12h2m4 0h.01m4 0h2"/>
+        </svg>
+        <span class="font-condensed text-[10px] font-black uppercase tracking-wider">Résultats</span>
       </button>
 
       <!-- Onglet Mes Ligues -->
@@ -323,17 +419,17 @@
 
     </nav>
 
-    <!-- Portail Professionnel Bienvenue / Connexion / Inscription -->
+    <!-- Portail Professionnel Bienvenue / Connexion / Inscription Neo-Brutaliste -->
     <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-4 hidden">
-      <div class="modal-box rounded-3xl w-full max-w-md p-5 sm:p-6 shadow-2xl relative border border-white/15 overflow-hidden flex flex-col max-h-[92vh]">
+      <div class="modal-box rounded-[12px] w-full max-w-md p-5 sm:p-6 shadow-[8px_8px_0px_#000000] relative border-[3px] border-black overflow-hidden flex flex-col max-h-[92vh]">
         
         <!-- Bouton fermer universel -->
-        <button id="close-auth-modal" onclick="closeAuthModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition cursor-pointer z-30">
+        <button id="close-auth-modal" onclick="closeAuthModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white w-8 h-8 rounded-[8px] bg-[#1a1a22] border-2 border-black shadow-[2px_2px_0px_#000000] flex items-center justify-center transition cursor-pointer z-30 font-black">
           ✕
         </button>
 
         <!-- Message d'erreur partagé -->
-        <div id="auth-error-box" class="hidden mb-3 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
+        <div id="auth-error-box" class="hidden mb-3 p-3 rounded-[8px] bg-red-500/10 border-2 border-red-500 text-red-400 text-xs font-semibold">
         </div>
 
         <!-- ================================================================
@@ -341,14 +437,14 @@
              ================================================================ -->
         <div id="auth-view-welcome" class="auth-step-pane flex flex-col space-y-3.5">
           <div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-condensed font-bold tracking-widest uppercase text-amber-400 mb-2">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#1a1a22] border-2 border-black text-[10px] font-condensed font-bold tracking-widest uppercase text-[#D95D39] shadow-[2px_2px_0px_#000000] mb-2">
               <span>🏀</span> Saison Régulière 2026/2027
             </div>
-            <h2 class="font-condensed font-black text-2xl sm:text-3xl text-white uppercase tracking-tight leading-tight">
-              Bienvenue sur <span class="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">HOOPS PRONO</span>
+            <h2 class="font-condensed font-black text-2xl sm:text-3xl text-[#F4F4F0] uppercase tracking-tight leading-tight">
+              Bienvenue sur <span class="text-[#D95D39]">NBA PRO</span> <span class="text-xs text-zinc-400 font-bold">(HOOPS PRONO)</span>
             </h2>
             <p class="text-xs text-zinc-400 leading-relaxed mt-1">
-              La référence des pronostics NBA entre potes. Pronostique chaque soir, défie tes amis en ligues privées et grimpe sur le podium.
+              L'arène Clean Arcade des pronostics NBA entre potes. Pronostique chaque soir, défie tes amis en ligues privées et grimpe sur le podium.
             </p>
           </div>
 
@@ -390,17 +486,17 @@
             </div>
           </div>
 
-          <!-- Boutons d'Action Principaux -->
+          <!-- Boutons d'Action Principaux Neo-Brutalistes -->
           <div class="space-y-2 pt-1">
-            <button onclick="switchAuthView('register')" class="w-full bg-white hover:bg-zinc-200 text-black font-condensed text-base font-black uppercase tracking-wider py-3 rounded-xl shadow-lg transition cursor-pointer flex items-center justify-center gap-2">
+            <button onclick="switchAuthView('register')" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-3 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer flex items-center justify-center gap-2">
               <span>Créer mon compte</span>
               <span>→</span>
             </button>
-            <button onclick="switchAuthView('login')" class="w-full bg-[#18181c] hover:bg-[#222228] border border-white/20 text-white font-condensed text-sm font-bold uppercase tracking-wider py-2.5 rounded-xl transition cursor-pointer">
+            <button onclick="switchAuthView('login')" class="btn-tactile w-full bg-[#1e1e24] hover:bg-[#282830] border-[2.5px] border-black text-[#F4F4F0] font-condensed text-sm font-bold uppercase tracking-wider py-2.5 rounded-[8px] shadow-[3px_3px_0px_#000000] transition cursor-pointer">
               J'ai déjà un compte (Connexion)
             </button>
             <div class="text-center pt-1">
-              <button onclick="closeAuthModal()" class="text-xs text-zinc-500 hover:text-zinc-300 font-medium transition cursor-pointer underline">
+              <button onclick="closeAuthModal()" class="text-xs text-zinc-400 hover:text-[#D95D39] font-medium transition cursor-pointer underline">
                 Continuer et explorer en invité →
               </button>
             </div>
@@ -475,15 +571,15 @@
             <button 
               type="submit" 
               id="reg-submit-btn" 
-              class="w-full bg-white hover:bg-zinc-200 text-black font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer mt-2"
+              class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer mt-2"
             >
               Créer mon compte & Jouer 🏀
             </button>
           </form>
 
-          <div class="text-center text-xs text-zinc-400 pt-2 border-t border-white/10">
+          <div class="text-center text-xs text-zinc-400 pt-2 border-t border-black/30">
             <span>Déjà un compte ?</span>
-            <button onclick="switchAuthView('login')" class="text-white font-bold ml-1 hover:underline cursor-pointer">
+            <button onclick="switchAuthView('login')" class="text-[#D95D39] font-bold ml-1 hover:underline cursor-pointer">
               Se connecter
             </button>
           </div>
@@ -497,7 +593,7 @@
             <button onclick="switchAuthView('welcome')" class="text-xs text-zinc-400 hover:text-white font-bold flex items-center gap-1 transition cursor-pointer">
               ← Retour
             </button>
-            <span class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-500">Connexion</span>
+            <span class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400">Connexion</span>
           </div>
 
           <div>
@@ -514,7 +610,7 @@
                 required 
                 minlength="3" 
                 placeholder="Pseudo ou email" 
-                class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-white"
+                class="w-full bg-[#1a1a22] border-[3px] border-black rounded-[8px] px-3.5 py-2.5 text-sm text-[#F4F4F0] placeholder:text-zinc-500 shadow-[3px_3px_0px_#000000] focus:outline-none"
               >
             </div>
 
@@ -526,22 +622,22 @@
                 required 
                 minlength="4" 
                 placeholder="••••••••" 
-                class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-white"
+                class="w-full bg-[#1a1a22] border-[3px] border-black rounded-[8px] px-3.5 py-2.5 text-sm text-[#F4F4F0] placeholder:text-zinc-500 shadow-[3px_3px_0px_#000000] focus:outline-none"
               >
             </div>
 
             <button 
               type="submit" 
               id="login-submit-btn" 
-              class="w-full bg-white hover:bg-zinc-200 text-black font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer mt-2"
+              class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer mt-2"
             >
               Se connecter
             </button>
           </form>
 
-          <div class="text-center text-xs text-zinc-400 pt-2 border-t border-white/10">
+          <div class="text-center text-xs text-zinc-400 pt-2 border-t border-black/30">
             <span>Pas encore de compte ?</span>
-            <button onclick="switchAuthView('register')" class="text-white font-bold ml-1 hover:underline cursor-pointer">
+            <button onclick="switchAuthView('register')" class="text-[#D95D39] font-bold ml-1 hover:underline cursor-pointer">
               Créer un compte
             </button>
           </div>
@@ -628,7 +724,7 @@
           <button 
             type="submit" 
             id="season-submit-btn" 
-            class="w-full bg-white hover:bg-zinc-200 text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer mt-2"
+            class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer mt-2"
           >
             Enregistrer mes 5 choix
           </button>
@@ -637,9 +733,9 @@
       </div>
     </div>
 
-    <!-- Modale Création de Ligue (Chantier 5) -->
+    <!-- Modale Création de Ligue (Chantier 5) Neo-Brutaliste -->
     <div id="create-league-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-      <div class="modal-box rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+      <div class="modal-box rounded-[12px] w-full max-w-sm p-5 space-y-4 shadow-[8px_8px_0px_#000000] relative border-[3px] border-black">
         <button id="close-create-league-modal" class="absolute top-4 right-4 text-zinc-400 hover:text-white transition cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -652,18 +748,18 @@
         <form id="create-league-form" class="space-y-3">
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">Nom de la ligue</label>
-            <input type="text" id="create-league-name" required minlength="3" maxlength="50" placeholder="Ex: Les Experts du Panier" class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-white">
+            <input type="text" id="create-league-name" required minlength="3" maxlength="50" placeholder="Ex: Les Experts du Panier" class="w-full bg-[#1a1a22] border-[3px] border-black rounded-[8px] px-3 py-2 text-sm text-[#F4F4F0] shadow-[3px_3px_0px_#000000] focus:outline-none">
           </div>
-          <button type="submit" class="btn-tactile w-full bg-white hover:bg-zinc-200 text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer">
+          <button type="submit" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer">
             Créer ma ligue
           </button>
         </form>
       </div>
     </div>
 
-    <!-- Modale Rejoindre une Ligue (Chantier 5) -->
+    <!-- Modale Rejoindre une Ligue (Chantier 5) Neo-Brutaliste -->
     <div id="join-league-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-      <div class="modal-box rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
+      <div class="modal-box rounded-[12px] w-full max-w-sm p-5 space-y-4 shadow-[8px_8px_0px_#000000] relative border-[3px] border-black">
         <button id="close-join-league-modal" class="absolute top-4 right-4 text-zinc-400 hover:text-white transition cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
@@ -676,9 +772,9 @@
         <form id="join-league-form" class="space-y-3">
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1">Code d'invitation (6 caractères)</label>
-            <input type="text" id="join-league-code" required minlength="6" maxlength="6" placeholder="ex: HP8K22" class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-base text-center font-mono font-black tracking-widest text-white uppercase focus:outline-none focus:border-white">
+            <input type="text" id="join-league-code" required minlength="6" maxlength="6" placeholder="ex: HP8K22" class="w-full bg-[#1a1a22] border-[3px] border-black rounded-[8px] px-3 py-2 text-base text-center font-mono font-black tracking-widest text-[#F4F4F0] uppercase shadow-[3px_3px_0px_#000000] focus:outline-none">
           </div>
-          <button type="submit" class="btn-tactile w-full bg-white hover:bg-zinc-200 text-black font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-xl shadow-md transition cursor-pointer">
+          <button type="submit" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-sm font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer">
             Rejoindre la ligue
           </button>
         </form>
@@ -799,12 +895,12 @@
           </div>
         </div>
 
-        <!-- Boutons d'action de partage -->
+        <!-- Boutons d'action de partage Neo-Brutalistes -->
         <div class="space-y-1.5 pt-0.5">
-          <button id="btn-native-share" class="w-full bg-white hover:bg-zinc-200 text-black font-condensed font-black text-sm uppercase tracking-wider py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2 cursor-pointer">
+          <button id="btn-native-share" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed font-black text-sm uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition flex items-center justify-center gap-2 cursor-pointer">
             <span>📲</span> Partager en Story / WhatsApp
           </button>
-          <button id="btn-copy-recap-text" class="w-full bg-[#18181c] hover:bg-[#222228] border border-white/10 text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <button id="btn-copy-recap-text" class="btn-tactile w-full bg-[#1e1e24] hover:bg-[#282830] border-[2.5px] border-black text-[#F4F4F0] font-condensed font-bold text-xs uppercase tracking-wider py-2 rounded-[8px] shadow-[3px_3px_0px_#000000] transition flex items-center justify-center gap-1.5 cursor-pointer">
             <span>📋</span> Copier le texte récapitulatif
           </button>
         </div>
@@ -867,9 +963,80 @@
             </p>
           </div>
         </div>
-        <button onclick="closeLegalModal()" class="w-full bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition cursor-pointer">
+        <button onclick="closeLegalModal()" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed font-black text-xs uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer">
           J'ai compris
         </button>
+      </div>
+    </div>
+
+    <!-- Modale Récapitulatif Complet des Pronostics de la Nuit (Gamification Arcade) -->
+    <div id="night-recap-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+      <div class="modal-box rounded-2xl w-full max-w-sm p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col space-y-3.5 border-[3px] border-black bg-[#16151E]">
+        <button onclick="closeNightRecapModal()" class="absolute top-3 right-3 text-zinc-400 hover:text-white transition cursor-pointer z-10 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <!-- Titre & Badge -->
+        <div class="space-y-1 text-center pt-1">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#100F15] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
+            <span>🏀</span> Bilan de tes Choix
+          </div>
+          <h3 class="font-condensed font-black text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none">
+            Récapitulatif des Pronos
+          </h3>
+          <p class="text-[11px] text-zinc-400 font-medium">Retrouve tes équipes sélectionnées et ton bonus x2</p>
+        </div>
+
+        <!-- Statistiques rapides : Total pronos, Bonus x2, Points max -->
+        <div id="night-recap-stats-bar" class="grid grid-cols-3 gap-2 text-center">
+          <!-- Injecté dynamiquement -->
+        </div>
+
+        <!-- Liste des pronos de la nuit / sélection -->
+        <div id="night-recap-matches-list" class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[50vh] divide-y divide-black/40">
+          <!-- Injecté dynamiquement -->
+        </div>
+
+        <!-- Actions : Partager / Bilan Wrapped et Fermer -->
+        <div class="pt-2 space-y-2">
+          <button onclick="openShareRecapModal(); closeNightRecapModal();" class="btn-tactile w-full py-2.5 px-4 rounded-[8px] bg-gradient-to-r from-[#D95D39] to-[#FF5722] text-white font-condensed font-black text-xs uppercase tracking-wider border-[2.5px] border-black shadow-[3px_3px_0px_#000000] cursor-pointer flex items-center justify-center gap-2">
+            <span>📲</span>
+            <span>Partager en Story / WhatsApp</span>
+          </button>
+          <button onclick="closeNightRecapModal()" class="btn-tactile w-full py-2 px-4 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Détails du Match (TV Broadcast Scoreboard x Neo-Brutalisme) -->
+    <div id="match-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
+      <div class="modal-box rounded-2xl w-full max-w-sm p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col space-y-3.5 border-[3px] border-black bg-[#16151E]">
+        <button onclick="closeMatchResultDetails()" class="absolute top-3 right-3 text-zinc-400 hover:text-white transition cursor-pointer z-10 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <!-- Titre & Badge TV -->
+        <div class="space-y-1 text-center pt-1">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#100F15] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
+            <span>📺</span> Match Recap & Détails
+          </div>
+          <h3 class="font-condensed font-black text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none">
+            Rapport Officiel
+          </h3>
+          <p class="text-[11px] text-zinc-400 font-medium">Scores finaux, cotes et issue de ton pronostic</p>
+        </div>
+
+        <div id="match-result-modal-content" class="space-y-3 pt-1 flex-1 overflow-y-auto pr-1">
+          <!-- Injecté dynamiquement par openMatchResultDetails() -->
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <button onclick="closeMatchResultDetails()" class="btn-tactile w-full py-2.5 px-4 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 font-condensed font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer">
+            Fermer
+          </button>
+        </div>
       </div>
     </div>
 

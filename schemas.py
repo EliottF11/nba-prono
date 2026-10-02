@@ -124,6 +124,7 @@ class UserStatsResponse(BaseModel):
     max_odds: float
     favorite_team: Optional[str] = None
     nemesis_team: Optional[str] = None
+    current_streak: Optional[int] = 0
     badges: List[BadgeResponse]
 
 
