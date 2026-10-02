@@ -15,58 +15,154 @@ router = APIRouter(prefix="/api/auth", tags=["Authentification"])
 
 AVAILABLE_AVATARS = [
     {
-        "id": "harden_side_eye",
-        "title": "Side-Eye Harden",
-        "meme": "Jugement & Gêne lunaire 👀",
-        "url": "/static/avatars/harden_side_eye.jpg"
+        "id": "wembanyama_spurs",
+        "title": "Victor Wembanyama",
+        "meme": "L'Alien français de San Antonio 👽🏀",
+        "url": "/static/avatars/wembanyama_spurs.jpg"
     },
     {
-        "id": "alonzo_acceptance",
-        "title": "L'Acceptation d'Alonzo",
-        "meme": "It is what it is... 🤷‍♂️",
-        "url": "/static/avatars/alonzo_acceptance.jpg"
+        "id": "curry_warriors",
+        "title": "Stephen Curry",
+        "meme": "Chef Curry : le sniper légendaire 👨‍🍳🎯",
+        "url": "/static/avatars/curry_warriors.jpg"
     },
     {
-        "id": "westbrook_confused",
-        "title": "Westbrook 'What?!'",
-        "meme": "Qu'est-ce que tu racontes man ? 🤔",
-        "url": "/static/avatars/westbrook_confused.jpg"
+        "id": "doncic_lakers",
+        "title": "Luka Magic Gold",
+        "meme": "Le maestro en tenue dorée 🪄🟡",
+        "url": "/static/avatars/doncic_lakers.jpg"
     },
     {
-        "id": "emo_jimmy",
-        "title": "Emo Jimmy Butler",
-        "meme": "Mon état émotionnel actuel 🖤",
-        "url": "/static/avatars/emo_jimmy.jpg"
+        "id": "jokic_nuggets",
+        "title": "Nikola Jokic",
+        "meme": "Le Joker impassible & génial 🃏🏔️",
+        "url": "/static/avatars/jokic_nuggets.jpg"
     },
     {
-        "id": "stank_face",
-        "title": "Stank Face DeAndre",
-        "meme": "Validation & Dégoût suprême 😤",
-        "url": "/static/avatars/stank_face.jpg"
+        "id": "giannis_bucks",
+        "title": "Giannis Antetokounmpo",
+        "meme": "Greek Freak en mission destruction 🦌⚡",
+        "url": "/static/avatars/giannis_bucks.jpg"
     },
     {
-        "id": "windhorst_why",
-        "title": "Windhorst 'Why is that?'",
-        "meme": "Théorie du complot NBA ☝️☝️",
-        "url": "/static/avatars/windhorst_why.jpg"
+        "id": "shai_thunder",
+        "title": "Shai Gilgeous-Alexander",
+        "meme": "Le sang-froid d'OKC & MVP mode ⚡🧊",
+        "url": "/static/avatars/shai_thunder.jpg"
     },
     {
-        "id": "iverson_stepover",
-        "title": "The Stepover d'Iverson",
-        "meme": "Le manque de respect maîtrisé 👑",
-        "url": "/static/avatars/iverson_stepover.jpg"
+        "id": "edwards_wolves",
+        "title": "Anthony Edwards",
+        "meme": "Ant-Man : posters & sourires ravageurs 🐺🔥",
+        "url": "/static/avatars/edwards_wolves.jpg"
     },
     {
-        "id": "kobe_barnes",
-        "title": "Kobe Inflexible vs Barnes",
-        "meme": "Stoïcisme absolu face au danger 🐍",
-        "url": "/static/avatars/kobe_barnes.jpg"
+        "id": "brunson_knicks",
+        "title": "Jalen Brunson",
+        "meme": "Le patron du Madison Square Garden 🗽🔥",
+        "url": "/static/avatars/brunson_knicks.jpg"
     },
     {
-        "id": "wade_lebron",
-        "title": "Célébration Wade & LeBron",
-        "meme": "Synergie & Alchimie parfaite ✈️🔥",
-        "url": "/static/avatars/wade_lebron.jpg"
+        "id": "durant_rockets",
+        "title": "Kevin Durant",
+        "meme": "Le sniper létal à toute distance 🚀🎯",
+        "url": "/static/avatars/durant_rockets.jpg"
+    },
+    {
+        "id": "booker_suns",
+        "title": "Devin Booker",
+        "meme": "Be Legendary dans la Valley 🏜️🔥",
+        "url": "/static/avatars/booker_suns.jpg"
+    },
+    {
+        "id": "lillard_bucks",
+        "title": "Damian Lillard",
+        "meme": "Dame Time : sang glacé dans les veines ⌚❄️",
+        "url": "/static/avatars/lillard_bucks.jpg"
+    },
+    {
+        "id": "young_hawks",
+        "title": "Trae Young",
+        "meme": "Ice Trae : le vilain adoré d'Atlanta 🥶🏹",
+        "url": "/static/avatars/young_hawks.jpg"
+    },
+    {
+        "id": "haliburton_pacers",
+        "title": "Tyrese Haliburton",
+        "meme": "Hali Time & Passes aveugles 🏎️✨",
+        "url": "/static/avatars/haliburton_pacers.jpg"
+    },
+    {
+        "id": "banchero_magic",
+        "title": "Paolo Banchero",
+        "meme": "La puissance d'Orlando 🪄🏰",
+        "url": "/static/avatars/banchero_magic.jpg"
+    },
+    {
+        "id": "cunningham_pistons",
+        "title": "Cade Cunningham",
+        "meme": "Le maestro de Motor City 🚗🎯",
+        "url": "/static/avatars/cunningham_pistons.jpg"
+    },
+    {
+        "id": "barnes_raptors",
+        "title": "Scottie Barnes",
+        "meme": "L'énergie contagieuse de Toronto 🦖😁",
+        "url": "/static/avatars/barnes_raptors.jpg"
+    },
+    {
+        "id": "zion_pelicans",
+        "title": "Zion Williamson",
+        "meme": "Force brute & Grand sourire ⚜️💥",
+        "url": "/static/avatars/zion_pelicans.jpg"
+    },
+    {
+        "id": "garland_cavs",
+        "title": "Darius Garland",
+        "meme": "Le meneur soyeux des Cavs 🎯⚔️",
+        "url": "/static/avatars/garland_cavs.jpg"
+    },
+    {
+        "id": "edey_grizzlies",
+        "title": "Zach Edey",
+        "meme": "La tour de contrôle impériale 🐻🧱",
+        "url": "/static/avatars/edey_grizzlies.jpg"
+    },
+    {
+        "id": "podziemski_warriors",
+        "title": "Brandin Podziemski",
+        "meme": "L'énergie pure de la Baie 🌉⚡",
+        "url": "/static/avatars/podziemski_warriors.jpg"
+    },
+    {
+        "id": "randle_wolves",
+        "title": "Julius Randle",
+        "meme": "Le taureau du Minnesota 🐺💪",
+        "url": "/static/avatars/randle_wolves.jpg"
+    },
+    {
+        "id": "george_jazz",
+        "title": "Keyonte George",
+        "meme": "Le dynamiteur de Salt Lake City 🎷⚡",
+        "url": "/static/avatars/george_jazz.jpg"
+    },
+    {
+        "id": "wallace_hawks",
+        "title": "Keaton Wallace",
+        "meme": "Le grand sourire d'Atlanta 🦅😁",
+        "url": "/static/avatars/wallace_hawks.jpg"
+    },
+    {
+        "id": "hornets_smile",
+        "title": "Buzz City Smile",
+        "meme": "Bonne humeur à Charlotte 🐝✨",
+        "url": "/static/avatars/hornets_smile.jpg"
+    },
+    {
+        "id": "kings_smile",
+        "title": "Sacramento Spark",
+        "meme": "Light the Beam & Garde le sourire 👑🟣",
+        "url": "/static/avatars/kings_smile.jpg"
     }
 ]
 
@@ -109,11 +205,18 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
             detail="Cette adresse email est déjà associée à un compte."
         )
 
-    # Création du nouvel utilisateur
+    # Création du nouvel utilisateur avec son avatar de départ (optionnel)
+    chosen_avatar = user_data.avatar_url
+    if chosen_avatar:
+        valid_urls = [a["url"] for a in AVAILABLE_AVATARS]
+        if chosen_avatar not in valid_urls:
+            chosen_avatar = valid_urls[0] if valid_urls else None
+
     new_user = User(
         username=clean_username,
         email=clean_email,
         hashed_password=hash_password(user_data.password),
+        avatar_url=chosen_avatar,
         total_points=0.0
     )
     db.add(new_user)

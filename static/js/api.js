@@ -50,10 +50,12 @@ const API = {
   },
 
   // --- Authentification ---
-  async register(username, email, password) {
+  async register(username, email, password, avatar_url = null) {
+    const payload = { username, email, password };
+    if (avatar_url) payload.avatar_url = avatar_url;
     const data = await this.request('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify(payload)
     });
     this.setToken(data.access_token);
     return data;

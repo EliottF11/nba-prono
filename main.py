@@ -91,6 +91,29 @@ def serve_frontend():
     """Sert l'application Web mobile-first à la racine."""
     return FileResponse("static/index.html")
 
+@app.get("/preview", include_in_schema=False)
+def serve_preview():
+    """Sert le simulateur iPhone officiel avec rechargement automatique en direct."""
+    return FileResponse("static/preview.html")
+
+@app.get("/api/dev/version", include_in_schema=False)
+def dev_version():
+    """Renvoie l'horodatage de dernière modification des fichiers pour le Hot-Reload."""
+    import os
+    latest = 0
+    for folder in ["static", "routers"]:
+        if os.path.exists(folder):
+            for root, _, files in os.walk(folder):
+                for f in files:
+                    if f.endswith((".js", ".css", ".html", ".py", ".json")):
+                        try:
+                            t = os.path.getmtime(os.path.join(root, f))
+                            if t > latest:
+                                latest = t
+                        except OSError:
+                            pass
+    return {"v": latest}
+
 @app.get("/api/health", tags=["Système"])
 def health_check():
     return {"status": "ok", "app": "NBA Prono MVP"}

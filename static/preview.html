@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aperçu iPhone 16 Pro — HOOPS Prono</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background-color: #090a0f;
+      color: #e4e4e7;
+      overflow-x: hidden;
+    }
+
+    /* Cadre iPhone 16 Pro Titanium */
+    .iphone-case {
+      width: 393px;
+      height: 852px;
+      border-radius: 54px;
+      background: #18191c;
+      box-shadow: 
+        0 0 0 4px #2c2d33,
+        0 0 0 7px #1c1d22,
+        0 25px 65px -10px rgba(0, 0, 0, 0.9),
+        0 0 100px -20px rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      transform-origin: top center;
+      transition: transform 0.2s ease;
+    }
+
+    /* Reflet subtil de verre sur le pourtour */
+    .iphone-case::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 54px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 33px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+    }
+
+    .camera-lens {
+      width: 10px;
+      height: 10px;
+      background: #0d121f;
+      border-radius: 50%;
+      box-shadow: inset 0 0 2px #263353;
+      margin-left: auto;
+    }
+
+    /* Barre Home Indicator iOS */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 138px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 10px;
+      z-index: 50;
+      pointer-events: none;
+      backdrop-blur: 4px;
+    }
+
+    /* Status Bar iOS */
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      z-index: 45;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 28px 0 28px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      pointer-events: none;
+    }
+
+    /* Iframe Écran */
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    /* Badge pulsation de live reload */
+    @keyframes flashBadge {
+      0% { opacity: 0; transform: translateY(-8px) scale(0.95); }
+      20% { opacity: 1; transform: translateY(0) scale(1); }
+      80% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    }
+    .badge-reload {
+      animation: flashBadge 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-3 select-none">
+
+  <!-- Barre d'outils supérieure compacte -->
+  <header class="w-full max-w-lg mb-3 flex items-center justify-between bg-zinc-900/80 backdrop-blur-md border border-white/10 px-3.5 py-2 rounded-2xl shadow-lg">
+    <div class="flex items-center space-x-2">
+      <div class="relative flex items-center justify-center">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+        <span class="absolute w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+      </div>
+      <span class="text-xs font-semibold text-zinc-200">iPhone 16 Pro</span>
+      <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-medium">LIVE</span>
+    </div>
+
+    <!-- Contrôles Zoom / Échelle -->
+    <div class="flex items-center space-x-1.5 text-xs">
+      <button onclick="setScale(0.70)" class="scale-btn px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition" data-scale="0.70">70%</button>
+      <button onclick="setScale(0.82)" class="scale-btn px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition" data-scale="0.82">82%</button>
+      <button onclick="setScale(1.0)" class="scale-btn px-2 py-1 rounded-lg bg-blue-600 text-white font-medium transition" data-scale="1.0">100%</button>
+      
+      <!-- Bouton de rafraîchissement manuel -->
+      <button onclick="manualReload()" title="Rafraîchir manuellement" class="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition ml-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification animée quand le code change -->
+  <div id="reload-toast" class="hidden fixed top-14 z-50 bg-emerald-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-xl flex items-center space-x-1.5">
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    </svg>
+    <span>Code modifié : écran actualisé !</span>
+  </div>
+
+  <!-- Conteneur simulateur pour zoom fluide -->
+  <div id="simulator-wrapper" class="flex justify-center w-full pb-8">
+    <div id="iphone-case" class="iphone-case">
+      
+      <!-- Status Bar Réaliste iOS -->
+      <div class="status-bar">
+        <!-- Heure en direct -->
+        <span id="ios-time">9:41</span>
+        
+        <!-- Icônes Signal, 5G, Batterie -->
+        <div class="flex items-center space-x-1.5">
+          <!-- Signal cellulaire -->
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2 17h2v3H2v-3zm4-4h2v7H6v-7zm4-4h2v11h-2V9zm4-4h2v15h-2V5zm4-4h2v19h-2V1z"/>
+          </svg>
+          <!-- 5G -->
+          <span class="text-[10px] font-bold tracking-tight">5G</span>
+          <!-- Batterie avec jauge pleine -->
+          <div class="w-5 h-2.5 border border-white/90 rounded-sm p-0.5 flex items-center">
+            <div class="h-full w-full bg-white rounded-2xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Island (Pilule animée) -->
+      <div class="dynamic-island">
+        <div class="camera-lens"></div>
+      </div>
+
+      <!-- Iframe de l'application -->
+      <iframe id="app-frame" src="/" class="iphone-screen" allow="fullscreen; geolocation; camera"></iframe>
+
+      <!-- Barre de geste iOS (Home Bar) -->
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Horloge iOS en direct
+    function updateIosClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('ios-time').innerText = `${hours}:${minutes}`;
+    }
+    setInterval(updateIosClock, 1000);
+    updateIosClock();
+
+    // 2. Gestion de l'échelle (Zoom)
+    let currentScale = 1.0;
+    function setScale(scale) {
+      currentScale = scale;
+      const phone = document.getElementById('iphone-case');
+      phone.style.transform = `scale(${scale})`;
+      
+      // Ajuster la hauteur visible du wrapper pour éviter les scrollbars superflues
+      const wrapper = document.getElementById('simulator-wrapper');
+      wrapper.style.height = `${852 * scale + 30}px`;
+
+      // Boutons actifs
+      document.querySelectorAll('.scale-btn').forEach(btn => {
+        if (parseFloat(btn.dataset.scale) === scale) {
+          btn.className = 'scale-btn px-2 py-1 rounded-lg bg-blue-600 text-white font-medium transition';
+        } else {
+          btn.className = 'scale-btn px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition';
+        }
+      });
+    }
+
+    // Auto-ajustement initial selon la largeur de l'écran
+    function autoFitScale() {
+      const availableWidth = window.innerWidth;
+      if (availableWidth < 430) {
+        setScale(0.70);
+      } else if (availableWidth < 500) {
+        setScale(0.82);
+      } else {
+        setScale(1.0);
+      }
+    }
+    window.addEventListener('resize', autoFitScale);
+    autoFitScale();
+
+    // 3. Rechargement manuel
+    function manualReload() {
+      const frame = document.getElementById('app-frame');
+      if (frame) {
+        frame.contentWindow.location.reload();
+        triggerToast("Écran rafraîchi !");
+      }
+    }
+
+    // 4. Hot-Reload Automatique en direct (Live Watcher)
+    let lastVersion = null;
+    let isChecking = false;
+
+    async function checkFileChanges() {
+      if (isChecking) return;
+      isChecking = true;
+      try {
+        const res = await fetch('/api/dev/version', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (lastVersion !== null && data.v !== lastVersion) {
+            console.log('[LIVE-RELOAD] Modification détectée -> rafraîchissement immédiat.');
+            const frame = document.getElementById('app-frame');
+            if (frame) {
+              frame.contentWindow.location.reload();
+              triggerToast("Code modifié : écran actualisé !");
+            }
+          }
+          lastVersion = data.v;
+        }
+      } catch (err) {
+        // En cas de reboot serveur momentané, on ignore sans crasher
+      } finally {
+        isChecking = false;
+      }
+    }
+
+    // Scrute toutes les 700 millisecondes
+    setInterval(checkFileChanges, 700);
+
+    // Toast visuel
+    function triggerToast(message) {
+      const toast = document.getElementById('reload-toast');
+      toast.querySelector('span').innerText = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('badge-reload');
+      setTimeout(() => {
+        toast.classList.remove('badge-reload');
+        toast.classList.add('hidden');
+      }, 2200);
+    }
+  </script>
+</body>
+</html>

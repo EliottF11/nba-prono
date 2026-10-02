@@ -48,8 +48,52 @@ function formatChatTime(dateStr) {
 }
 window.formatChatTime = formatChatTime;
 
+// --- Splash Screen Professionnel ---
+let splashDismissed = false;
+
+function initSplashScreen() {
+  const statusEl = document.getElementById('splash-status-text');
+
+  setTimeout(() => {
+    if (statusEl && !splashDismissed) {
+      statusEl.textContent = "⚡ Synchronisation des cotes NBA...";
+    }
+  }, 600);
+
+  setTimeout(() => {
+    if (statusEl && !splashDismissed) {
+      statusEl.textContent = "🔥 Coup d'envoi imminent !";
+    }
+  }, 1250);
+
+  setTimeout(() => {
+    dismissSplashScreen();
+  }, 1850);
+}
+
+function dismissSplashScreen() {
+  if (splashDismissed) return;
+  splashDismissed = true;
+
+  const splash = document.getElementById('app-splash-screen');
+  if (splash) {
+    splash.classList.add('splash-exit');
+    setTimeout(() => {
+      splash.classList.add('hidden');
+
+      // Si l'utilisateur n'est pas connecté et première visite, ouvrir le portail d'accueil
+      if (!state.currentUser && !sessionStorage.getItem('hoops_welcome_shown')) {
+        sessionStorage.setItem('hoops_welcome_shown', 'true');
+        openAuthModal('welcome');
+      }
+    }, 600);
+  }
+}
+window.dismissSplashScreen = dismissSplashScreen;
+
 document.addEventListener('DOMContentLoaded', async () => {
   registerServiceWorker();
+  initSplashScreen();
   initUIEvents();
   await checkSession();
   loadSeasonCandidates();
@@ -88,20 +132,6 @@ function initUIEvents() {
       renderMatchesList();
     });
   });
-
-  // Gestion modale d'authentification
-  const closeBtn = document.getElementById('close-auth-modal');
-  const switchBtn = document.getElementById('auth-switch-btn');
-  const authForm = document.getElementById('auth-form');
-
-  if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
-  if (switchBtn) {
-    switchBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      setAuthMode(state.authMode === 'login' ? 'register' : 'login');
-    });
-  }
-  if (authForm) authForm.addEventListener('submit', handleAuthSubmit);
 
   // Gestion modale pronostics d'avant-saison (Chantier 3)
   const closeSeasonBtn = document.getElementById('close-season-modal');
@@ -242,82 +272,216 @@ function selectTab(tab) {
   }
 }
 
-// --- Modale Auth ---
-function openAuthModal(mode = 'login') {
-  setAuthMode(mode);
-  document.getElementById('auth-modal').classList.remove('hidden');
-  document.getElementById('auth-username-input').focus();
+// --- Portail d'Accueil & Authentification Professionnelle ---
+let selectedSignupAvatarUrl = '/static/avatars/wembanyama_spurs.jpg';
+
+async function fetchAvatarsList() {
+  if (!availableAvatarsCache) {
+    try {
+      availableAvatarsCache = await API.getAvatars();
+    } catch (e) {
+      console.error("Erreur chargement avatars:", e);
+      availableAvatarsCache = [];
+    }
+  }
+  return availableAvatarsCache;
+}
+
+async function populateWelcomeAvatars() {
+  const avatars = await fetchAvatarsList();
+  const track = document.getElementById('welcome-avatars-track');
+  const picker = document.getElementById('reg-avatars-picker');
+
+  if (track && avatars.length > 0 && track.children.length === 0) {
+    // Doubler la liste pour créer la boucle infinie de défilement continu
+    const doubled = [...avatars, ...avatars];
+    track.innerHTML = doubled.map(av => `
+      <div class="flex flex-col items-center gap-1 shrink-0 select-none">
+        <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-11 h-11 rounded-xl object-cover border border-white/20 bg-[#18181b] shadow-sm" />
+        <span class="text-[9px] font-condensed font-bold text-zinc-300 max-w-[56px] truncate text-center">${escapeHtml(av.title.split(' ').pop())}</span>
+      </div>
+    `).join('');
+  }
+
+  if (picker && avatars.length > 0 && picker.children.length === 0) {
+    picker.innerHTML = avatars.map(av => {
+      const isSelected = av.url === selectedSignupAvatarUrl;
+      return `
+        <div onclick="selectSignupAvatar('${av.url}', '${escapeHtml(av.title)}')" class="avatar-signup-item flex flex-col items-center gap-1 p-1.5 rounded-xl border bg-[#141418] hover:bg-[#1e1e24] shrink-0 transition select-none ${
+          isSelected ? 'selected bg-white/10 border-white' : 'border-white/10 hover:border-white/30'
+        }" style="width: 72px;">
+          <div class="relative">
+            <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-12 h-12 rounded-xl object-cover border ${isSelected ? 'border-white' : 'border-white/20'} bg-[#18181b]" />
+            ${isSelected ? '<span class="absolute -top-1 -right-1 bg-white text-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold shadow">✓</span>' : ''}
+          </div>
+          <span class="text-[10px] font-condensed font-bold text-zinc-300 truncate w-full text-center leading-tight">${escapeHtml(av.title.split(' ').pop())}</span>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function selectSignupAvatar(url, title) {
+  selectedSignupAvatarUrl = url;
+  const label = document.getElementById('reg-selected-avatar-label');
+  if (label) label.textContent = title;
+
+  const picker = document.getElementById('reg-avatars-picker');
+  if (picker) {
+    picker.querySelectorAll('.avatar-signup-item').forEach(item => {
+      const isCurrent = item.innerHTML.includes(url);
+      item.classList.toggle('selected', isCurrent);
+      item.classList.toggle('border-white', isCurrent);
+      item.classList.toggle('bg-white/10', isCurrent);
+    });
+  }
+}
+
+function switchAuthView(view = 'welcome') {
+  const views = {
+    welcome: document.getElementById('auth-view-welcome'),
+    register: document.getElementById('auth-view-register'),
+    login: document.getElementById('auth-view-login')
+  };
+
+  const errBox = document.getElementById('auth-error-box');
+  if (errBox) errBox.classList.add('hidden');
+
+  Object.keys(views).forEach(key => {
+    if (views[key]) {
+      if (key === view) {
+        views[key].classList.remove('hidden');
+      } else {
+        views[key].classList.add('hidden');
+      }
+    }
+  });
+
+  if (view === 'register') {
+    const input = document.getElementById('reg-username-input');
+    if (input) setTimeout(() => input.focus(), 80);
+  } else if (view === 'login') {
+    const input = document.getElementById('login-identifier-input');
+    if (input) setTimeout(() => input.focus(), 80);
+  }
+}
+
+function openAuthModal(view = 'welcome') {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  switchAuthView(view);
+  populateWelcomeAvatars();
 }
 
 function closeAuthModal() {
-  document.getElementById('auth-modal').classList.add('hidden');
-  document.getElementById('auth-error-box').classList.add('hidden');
-  document.getElementById('auth-form').reset();
-}
-
-function setAuthMode(mode) {
-  state.authMode = mode;
-  const title = document.getElementById('auth-title');
-  const subtitle = document.getElementById('auth-subtitle');
-  const submitBtn = document.getElementById('auth-submit-btn');
-  const switchText = document.getElementById('auth-switch-text');
-  const switchBtn = document.getElementById('auth-switch-btn');
-  const usernameLabel = document.getElementById('auth-username-label');
-  const usernameInput = document.getElementById('auth-username-input');
-  const emailContainer = document.getElementById('auth-email-container');
-  const emailInput = document.getElementById('auth-email-input');
-
-  if (mode === 'login') {
-    title.textContent = 'Connexion';
-    subtitle.textContent = 'Accède à ta ligue et enregistre tes pronostics.';
-    submitBtn.textContent = 'Se connecter';
-    switchText.textContent = "Pas encore de compte ?";
-    switchBtn.textContent = "Créer un compte";
-    if (usernameLabel) usernameLabel.textContent = "Pseudo ou Email";
-    if (usernameInput) usernameInput.placeholder = "Pseudo ou adresse email";
-    if (emailContainer) emailContainer.classList.add('hidden');
-    if (emailInput) emailInput.removeAttribute('required');
-  } else {
-    title.textContent = 'Création de compte';
-    subtitle.textContent = 'Rejoins la ligue et défie tes amis.';
-    submitBtn.textContent = 'Créer mon compte';
-    switchText.textContent = "Déjà inscrit ?";
-    switchBtn.textContent = "Se connecter";
-    if (usernameLabel) usernameLabel.textContent = "Pseudo de joueur";
-    if (usernameInput) usernameInput.placeholder = "Ex: Anteto34";
-    if (emailContainer) emailContainer.classList.remove('hidden');
-    if (emailInput) emailInput.setAttribute('required', 'true');
-  }
-}
-
-async function handleAuthSubmit(e) {
-  e.preventDefault();
-  const username = document.getElementById('auth-username-input').value.trim();
-  const password = document.getElementById('auth-password-input').value;
+  const modal = document.getElementById('auth-modal');
+  if (modal) modal.classList.add('hidden');
   const errBox = document.getElementById('auth-error-box');
+  if (errBox) errBox.classList.add('hidden');
+}
 
-  errBox.classList.add('hidden');
+async function handleRegisterSubmit(e) {
+  if (e) e.preventDefault();
+  const username = document.getElementById('reg-username-input').value.trim();
+  const email = document.getElementById('reg-email-input').value.trim();
+  const password = document.getElementById('reg-password-input').value;
+  const errBox = document.getElementById('auth-error-box');
+  const submitBtn = document.getElementById('reg-submit-btn');
+
+  if (errBox) errBox.classList.add('hidden');
+
+  if (username.length < 3) {
+    if (errBox) {
+      errBox.textContent = "Le pseudo doit contenir au moins 3 caractères.";
+      errBox.classList.remove('hidden');
+    }
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <span class="inline-flex items-center gap-2">
+        <span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+        Création de ton compte...
+      </span>
+    `;
+  }
 
   try {
-    let res;
-    if (state.authMode === 'login') {
-      res = await API.login(username, password);
-    } else {
-      const email = document.getElementById('auth-email-input').value.trim();
-      res = await API.register(username, email, password);
-    }
-
+    const res = await API.register(username, email, password, selectedSignupAvatarUrl);
     state.currentUser = res.user;
     updateHeaderUser();
     closeAuthModal();
-    notify(`Connecté en tant que ${res.user.username}`, 'success');
+    if (typeof launchConfetti === 'function') {
+      launchConfetti();
+    }
+    notify(`Bienvenue sur le parquet, ${res.user.username} ! 🎉`, 'success');
     await refreshData();
     if (state.activeTab === 'profile') renderProfile();
   } catch (err) {
-    errBox.textContent = err.message;
-    errBox.classList.remove('hidden');
+    if (errBox) {
+      errBox.textContent = err.message || "Erreur lors de la création de compte.";
+      errBox.classList.remove('hidden');
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `Créer mon compte & Jouer 🏀`;
+    }
   }
 }
+
+async function handleLoginSubmit(e) {
+  if (e) e.preventDefault();
+  const identifier = document.getElementById('login-identifier-input').value.trim();
+  const password = document.getElementById('login-password-input').value;
+  const errBox = document.getElementById('auth-error-box');
+  const submitBtn = document.getElementById('login-submit-btn');
+
+  if (errBox) errBox.classList.add('hidden');
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <span class="inline-flex items-center gap-2">
+        <span class="animate-spin w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+        Connexion en cours...
+      </span>
+    `;
+  }
+
+  try {
+    const res = await API.login(identifier, password);
+    state.currentUser = res.user;
+    updateHeaderUser();
+    closeAuthModal();
+    if (typeof launchConfetti === 'function') {
+      launchConfetti();
+    }
+    notify(`Ravi de te revoir, ${res.user.username} ! 🏀`, 'success');
+    await refreshData();
+    if (state.activeTab === 'profile') renderProfile();
+  } catch (err) {
+    if (errBox) {
+      errBox.textContent = err.message || "Identifiant ou mot de passe incorrect.";
+      errBox.classList.remove('hidden');
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `Se connecter`;
+    }
+  }
+}
+
+window.switchAuthView = switchAuthView;
+window.selectSignupAvatar = selectSignupAvatar;
+window.handleRegisterSubmit = handleRegisterSubmit;
+window.handleLoginSubmit = handleLoginSubmit;
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
 
 // --- Chargement des données ---
 async function refreshData() {
@@ -2735,8 +2899,6 @@ window.filterPlayerSuggestions = filterPlayerSuggestions;
 window.selectWeeklyPlayer = selectWeeklyPlayer;
 window.clearWeeklyPlayerSelection = clearWeeklyPlayerSelection;
 
-
-
 // --- Modale Mentions Légales & Fair Use ---
 function openLegalModal() {
   const modal = document.getElementById('legal-modal');
@@ -2751,9 +2913,7 @@ function closeLegalModal() {
 window.openLegalModal = openLegalModal;
 window.closeLegalModal = closeLegalModal;
 
-// --- Modale Galerie d'Avatars Memes NBA ---
-let availableAvatarsCache = null;
-
+// --- Modale Galerie d'Avatars Superstars NBA ---
 async function openAvatarSelectorModal() {
   const modal = document.getElementById('avatar-selector-modal');
   const grid = document.getElementById('avatars-grid');
@@ -2762,37 +2922,39 @@ async function openAvatarSelectorModal() {
   modal.classList.remove('hidden');
 
   try {
-    if (!availableAvatarsCache) {
-      grid.innerHTML = `
-        <div class="py-8 text-center text-zinc-500 text-xs flex items-center justify-center gap-2">
-          <div class="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full"></div>
-          Chargement des avatars cultes...
-        </div>
-      `;
-      availableAvatarsCache = await API.getAvatars();
-    }
+    grid.innerHTML = `
+      <div class="py-8 text-center text-zinc-500 text-xs flex items-center justify-center gap-2">
+        <div class="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full"></div>
+        Chargement des superstars NBA...
+      </div>
+    `;
+    const avatars = await fetchAvatarsList();
 
     const currentUrl = state.currentUser ? state.currentUser.avatar_url : null;
 
-    grid.innerHTML = availableAvatarsCache.map(av => {
-      const isSelected = currentUrl === av.url;
-      return `
-        <div onclick="handleSelectAvatar('${av.url}')" class="flex items-center gap-3 p-2.5 rounded-xl border transition cursor-pointer select-none ${
-          isSelected 
-            ? 'bg-white/10 border-white shadow-lg' 
-            : 'bg-[#141417] hover:bg-[#1f1f24] border-white/10 hover:border-white/30'
-        }">
-          <img src="${av.url}" alt="${av.title}" class="w-12 h-12 rounded-xl object-cover border ${isSelected ? 'border-white ring-2 ring-white/50' : 'border-white/20'} bg-[#18181b] shrink-0 shadow" />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-1">
-              <span class="font-condensed font-bold text-sm text-white truncate">${av.title}</span>
-              ${isSelected ? '<span class="text-[10px] font-condensed font-black px-1.5 py-0.5 rounded bg-white text-black uppercase">Actif</span>' : ''}
+    grid.innerHTML = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        ${avatars.map(av => {
+          const isSelected = currentUrl === av.url;
+          return `
+            <div onclick="handleSelectAvatar('${av.url}')" class="flex items-center gap-2.5 p-2 rounded-xl border transition cursor-pointer select-none ${
+              isSelected 
+                ? 'bg-white/10 border-white shadow-lg ring-1 ring-white/50' 
+                : 'bg-[#141418] hover:bg-[#1f1f24] border-white/10 hover:border-white/30'
+            }">
+              <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-11 h-11 rounded-xl object-cover border ${isSelected ? 'border-white' : 'border-white/20'} bg-[#18181b] shrink-0 shadow" />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="font-condensed font-bold text-xs text-white truncate">${escapeHtml(av.title)}</span>
+                  ${isSelected ? '<span class="text-[9px] font-condensed font-black px-1.5 py-0.2 rounded bg-white text-black uppercase shrink-0">Actif</span>' : ''}
+                </div>
+                <p class="text-[10px] text-zinc-400 truncate leading-tight">${escapeHtml(av.meme)}</p>
+              </div>
             </div>
-            <p class="text-[11px] text-zinc-400 truncate">${av.meme}</p>
-          </div>
-        </div>
-      `;
-    }).join('');
+          `;
+        }).join('')}
+      </div>
+    `;
   } catch (err) {
     grid.innerHTML = `<div class="p-4 text-center text-rose-400 text-xs">Erreur de chargement des avatars.</div>`;
   }
@@ -2809,7 +2971,7 @@ async function handleSelectAvatar(avatarUrl) {
     if (state.currentUser) {
       state.currentUser.avatar_url = updated.avatar_url;
     }
-    notify("Avatar Meme NBA sélectionné ! 🔥", "success");
+    notify("Avatar Superstar NBA sélectionné ! 🏀", "success");
     if (typeof launchConfetti === 'function') {
       launchConfetti();
     }

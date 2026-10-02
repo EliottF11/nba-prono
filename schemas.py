@@ -9,6 +9,7 @@ class UserRegister(BaseModel):
     username: str = Field(..., min_length=3, max_length=30, description="Pseudo du joueur (3 à 30 caractères)")
     email: str = Field(..., min_length=5, max_length=120, description="Adresse e-mail")
     password: str = Field(..., min_length=4, max_length=100, description="Mot de passe (min 4 caractères)")
+    avatar_url: Optional[str] = Field(None, description="URL de l'avatar choisi lors de l'inscription")
 
 class UserLogin(BaseModel):
     username: str = Field(..., description="Pseudo ou adresse e-mail")
