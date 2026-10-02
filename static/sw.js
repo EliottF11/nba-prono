@@ -1,10 +1,10 @@
 // Service Worker pour HOOPS Prono (PWA)
-const CACHE_NAME = 'hoops-prono-v25';
+const CACHE_NAME = 'hoops-prono-v26';
 const STATIC_ASSETS = [
   '/',
-  '/static/css/style.css?v=25',
-  '/static/js/api.js?v=25',
-  '/static/js/app.js?v=25',
+  '/static/css/style.css?v=26',
+  '/static/js/api.js?v=26',
+  '/static/js/app.js?v=26',
   '/static/manifest.json',
   '/static/icons/icon.svg'
 ];

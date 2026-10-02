@@ -45,7 +45,7 @@
   </script>
   
   <!-- Feuille de style Neo-Brutalisme Dark Mode (Clean Arcade) -->
-  <link rel="stylesheet" href="/static/css/style.css?v=25">
+  <link rel="stylesheet" href="/static/css/style.css?v=26">
 </head>
 <body class="court-bg min-h-screen pb-20 text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
 
@@ -147,81 +147,12 @@
     <!-- Zone principale -->
     <main class="flex-1 p-3 sm:p-3.5 space-y-3.5 pb-28">
 
-      <!-- BANNER : Règles & Actions (Bilan & Défier) -->
-      <div class="rule-banner-box bg-[#18181e] border-[3px] border-black rounded-[10px] p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-[6px_6px_0px_#000000]">
-        <div class="space-y-0.5 min-w-0">
-          <div class="text-xs font-bold text-[#F4F4F0] flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#D95D39] border border-black shadow-[1px_1px_0px_#000000] shrink-0"></span>
-            <span class="font-condensed font-black uppercase tracking-wider text-xs sm:text-sm">Règle des cotes</span>
-          </div>
-          <p class="text-[10px] sm:text-[11px] text-zinc-400 truncate sm:whitespace-normal">
-            Trouve le vainqueur • Empoche la cote exacte en points
-          </p>
+      <!-- VUE 1 : PRONOSTICS (100% SWIPE TINDER NEO-BRUTALISTE) -->
+      <section id="matches-view" class="flex-1 flex flex-col justify-center items-center py-2 sm:py-4">
+        <!-- Liste / Deck central des cartes de match -->
+        <div id="matches-list" class="w-full flex justify-center items-center">
+          <!-- Injecté dynamiquement par renderTinderDeck() -->
         </div>
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <!-- Bouton Bilan Semaine (Story) -->
-          <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center gap-1 bg-[#1e1e24] hover:bg-[#282832] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-[#F4F4F0]">Bilan</span>
-          </button>
-
-          <!-- Bouton Partager / Défier -->
-          <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center gap-1 bg-[#D95D39] hover:bg-[#FF5722] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
-            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-            </svg>
-            <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-white">Défier</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- VUE 1 : PRONOSTICS -->
-      <section id="matches-view" class="space-y-3">
-        
-        <!-- MODULE AVANT-SAISON (Chantier 3) -->
-        <div id="season-banner-container">
-          <!-- Injecté dynamiquement par JS -->
-        </div>
-
-        <!-- Sélecteur de Semaines (Week 1, Week 2...) -->
-        <div class="flex items-center justify-between gap-2 bg-[#18181e] p-2 rounded-[10px] border-[3px] border-black shadow-[4px_4px_0px_#000000]">
-          <div class="flex items-center space-x-1.5 pl-2 text-zinc-400">
-            <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <span class="text-[11px] font-condensed font-black uppercase tracking-wider text-[#F4F4F0]">Semaine</span>
-          </div>
-          <div id="weeks-selector" class="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-            <!-- Injecté dynamiquement par JS -->
-          </div>
-        </div>
-
-        <!-- MODULE JOUEURS DE LA SEMAINE (Chantier 4) -->
-        <div id="weekly-players-container">
-          <!-- Injecté dynamiquement par JS -->
-        </div>
-
-        <!-- Filtres par statut Neo-Brutalistes -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs scrollbar-none">
-          <button class="filter-chip active px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#D95D39] text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="all">
-            Tous les matchs
-          </button>
-          <button class="filter-chip px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#18181e] text-zinc-300 hover:text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="upcoming">
-            Ouverts
-          </button>
-          <button class="filter-chip px-3.5 py-1.5 rounded-[8px] font-condensed font-black uppercase tracking-wider bg-[#18181e] text-zinc-300 hover:text-white border-[2.5px] border-black shadow-[3px_3px_0px_#000000] transition cursor-pointer" data-filter="finished">
-            Terminés
-          </button>
-        </div>
-
-        <!-- Liste des cartes de match -->
-        <div id="matches-list" class="space-y-3">
-          <!-- Injecté dynamiquement -->
-        </div>
-
       </section>
 
       <!-- VUE RÉSULTATS : SCORES DES MATCHS PASSÉS (Bandeaux TV US x Néo-Brutalisme) -->
@@ -346,12 +277,53 @@
       </section>
 
       <!-- SECTION 4 : PROFIL & STATISTIQUES (Chantier 1) -->
-      <section id="profile-view" class="p-4 space-y-4 hidden">
-        <div class="flex items-center justify-between pb-1 border-b border-white/10">
+      <section id="profile-view" class="p-3 sm:p-4 space-y-4 hidden">
+        <div class="flex items-center justify-between pb-1 border-b-2 border-black/80">
           <div>
             <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">Mon Profil</h2>
             <p class="text-xs text-zinc-400">Performances, cotes validées et trophées débloqués.</p>
           </div>
+        </div>
+
+        <!-- EN-TÊTE DU PROFIL : RÈGLE DES COTES, BILAN & DÉFIER (Déplacé depuis l'accueil) -->
+        <div class="rule-banner-box bg-[#18181e] border-[3px] border-black rounded-[8px] p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-[6px_6px_0px_#000000]">
+          <div class="space-y-0.5 min-w-0">
+            <div class="text-xs font-bold text-[#F4F4F0] flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#D95D39] border border-black shadow-[1px_1px_0px_#000000] shrink-0"></span>
+              <span class="font-condensed font-black uppercase tracking-wider text-xs sm:text-sm">Règle des cotes</span>
+            </div>
+            <p class="text-[10px] sm:text-[11px] text-zinc-400 truncate sm:whitespace-normal">
+              Trouve le vainqueur • Empoche la cote exacte en points
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <!-- Bouton Bilan Semaine (Story) -->
+            <button onclick="openShareRecapModal()" title="Bilan de la semaine" class="btn-tactile flex items-center gap-1 bg-[#1e1e24] hover:bg-[#282832] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-[#D95D39]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-[#F4F4F0]">Bilan</span>
+            </button>
+
+            <!-- Bouton Partager / Défier -->
+            <button onclick="shareApp()" title="Inviter des amis" class="btn-tactile flex items-center gap-1 bg-[#D95D39] hover:bg-[#FF5722] border-[2.5px] border-black px-2.5 py-1.5 rounded-[8px] text-xs font-bold shadow-[3px_3px_0px_#000000] transition cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              <span class="font-condensed font-bold uppercase tracking-wider text-[11px] text-white">Défier</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MODULE PRONOSTICS D'AVANT-SAISON (Déplacé depuis l'accueil) -->
+        <div id="season-banner-container">
+          <!-- Injecté dynamiquement par JS -->
+        </div>
+
+        <!-- MODULE JOUEURS DE LA SEMAINE (Déplacé depuis l'accueil) -->
+        <div id="weekly-players-container">
+          <!-- Injecté dynamiquement par JS -->
         </div>
 
         <!-- Conteneur injecté dynamiquement -->
@@ -1046,7 +1018,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=25"></script>
-  <script src="/static/js/app.js?v=25"></script>
+  <script src="/static/js/api.js?v=26"></script>
+  <script src="/static/js/app.js?v=26"></script>
 </body>
 </html>
