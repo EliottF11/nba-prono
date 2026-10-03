@@ -50,7 +50,7 @@
   </script>
   
   <!-- Feuille de style Neo-Brutalisme Dark Mode (Clean Arcade) -->
-  <link rel="stylesheet" href="/static/css/style.css?v=28">
+  <link rel="stylesheet" href="/static/css/style.css?v=31">
 </head>
 <body class="court-bg min-h-screen pb-20 text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
 
@@ -96,6 +96,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Script d'évacuation immédiat du splash screen (Garantie anti-blocage) -->
+  <script>
+    function dismissSplashScreen() {
+      var s = document.getElementById('app-splash-screen');
+      if (s) {
+        s.classList.add('splash-exit');
+        s.style.opacity = '0';
+        s.style.pointerEvents = 'none';
+        s.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        s.style.transform = 'scale(1.02) translateY(-20px)';
+        setTimeout(function() {
+          s.style.display = 'none';
+          s.classList.add('hidden');
+          s.classList.remove('flex');
+        }, 350);
+      }
+    }
+    // Auto-dismiss de secours inconditionnel à 1.5s
+    setTimeout(dismissSplashScreen, 1500);
+  </script>
 
   <!-- Wrapper Mobile-First Anti-Débordement Neo-Brutaliste -->
   <div class="w-full max-w-md mx-auto min-h-screen min-h-[100dvh] flex flex-col sm:border-x-[3px] sm:border-black bg-[#121212] sm:shadow-[8px_8px_0px_#000000] relative overflow-x-hidden">
@@ -286,8 +307,6 @@
 
         <!-- Conteneur injecté dynamiquement -->
         <div id="profile-content" class="space-y-4">
-          <!-- Injecté dynamiquement par renderProfile() -->
-        </div>
           <!-- Injecté dynamiquement par renderProfile() -->
         </div>
       </section>
@@ -637,7 +656,7 @@
           <!-- 3. MVP -->
           <div>
             <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1 flex items-center justify-between">
-              <span>⭐ MVP de la saison régulière</span>
+              <span class="flex items-center gap-1.5"><svg class="lucide-inline lucide-md lucide-gold" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> MVP de la saison régulière</span>
             </label>
             <select id="season-mvp" required class="w-full bg-[#16161b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-white">
               <option value="">Sélectionne le MVP...</option>
@@ -989,7 +1008,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=28"></script>
-  <script src="/static/js/app.js?v=28"></script>
+  <script src="/static/js/api.js?v=31"></script>
+  <script src="/static/js/app.js?v=31"></script>
 </body>
 </html>

@@ -256,8 +256,9 @@ header.sticky {
 .tab-btn.active svg {
   stroke: #D95D39 !important;
   fill: #D95D39 !important;
-  filter: drop-shadow(2px 2px 0px #000000) !important;
+  filter: drop-shadow(2px 2px 0px #000) !important;
   transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
 }
 
 /* Empêche les traits géométriques ouverts (lignes du moniteur / strates de cartes) de se fermer */
@@ -275,8 +276,8 @@ header.sticky {
 
 /* 4. Animations : Rebond au clic (scale 1.1) & feedback physique */
 .tab-btn:active svg {
-  transform: scale(0.92);
-  transition: transform 0.1s ease-in-out;
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
 }
 
 .tab-btn.tab-rebound svg {
@@ -783,10 +784,18 @@ img.rounded-xl,
 }
 
 #app-splash-screen.splash-exit {
-  opacity: 0;
-  transform: translateY(-30px) scale(1.02);
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 0 !important;
+  transform: translateY(-30px) scale(1.02) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#app-splash-screen.hidden,
+#app-splash-screen[style*="display: none"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 
 .splash-ball-wrapper {
