@@ -349,6 +349,12 @@ function selectTab(tab) {
   if (leaderboardView) leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
   if (profileView) profileView.classList.toggle('hidden', tab !== 'profile');
 
+  // Mise en retrait du footer mentions légales : masqué sur swipe matches, visible tout en bas sur les autres vues
+  const appLegalFooter = document.getElementById('app-legal-footer') || document.querySelector('footer');
+  if (appLegalFooter) {
+    appLegalFooter.classList.toggle('hidden', tab === 'matches');
+  }
+
   if (tab !== 'leagues' && state.chatPollingInterval) {
     clearInterval(state.chatPollingInterval);
     state.chatPollingInterval = null;
@@ -2618,10 +2624,18 @@ async function renderProfile() {
               </div>
             `}
           </div>
-          <!-- Bouton circulaire flottant modifier avatar -->
-          <div class="absolute bottom-0 right-0 sm:right-1 bg-[#D95D39] text-white p-2 rounded-full border-[2.5px] border-black shadow-[3px_3px_0px_#000000] hover:bg-[#FF5722] transition flex items-center justify-center cursor-pointer" title="Modifier mon avatar">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-          </div>
+          <!-- Bouton circulaire Crayon modifier avatar : petit cercle, fond blanc, bordure noire de 2px -->
+          <button 
+            type="button"
+            onclick="event.stopPropagation(); openAvatarSelectorModal();" 
+            class="absolute bottom-0 right-0 sm:bottom-0.5 sm:right-0.5 w-8 h-8 rounded-full bg-white text-black border-2 border-black shadow-[2px_2px_0px_#000000] hover:bg-zinc-100 active:scale-90 transition flex items-center justify-center cursor-pointer z-10" 
+            title="Modifier mon avatar"
+          >
+            <svg class="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+              <path d="m15 5 4 4"/>
+            </svg>
+          </button>
         </div>
 
         <!-- Pseudo écrit en très grand juste en dessous -->
@@ -2638,11 +2652,6 @@ async function renderProfile() {
             ${escapeHtml(stats.email || 'Membre Pick \'n\' Swipe')}
           </p>
         </div>
-
-        <!-- Bouton Neo-Brutaliste Changer Avatar -->
-        <button onclick="openAvatarSelectorModal()" class="btn-tactile bg-[#1a1a22] hover:bg-[#252530] text-zinc-200 border-[2.5px] border-black px-4 py-2 rounded-[8px] font-condensed font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#000000] cursor-pointer flex items-center gap-2">
-          <svg class='lucide-inline lucide-md lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg> Choisir mon avatar Superstar NBA
-        </button>
       </div>
 
       <!-- Grille des Statistiques du Joueur Neo-Brutales -->
@@ -2707,10 +2716,7 @@ async function renderProfile() {
       <div class="space-y-3 pt-2">
         <div class="flex items-center justify-between">
           <div>
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[6px] bg-[#1a1924] border-2 border-black text-[10px] font-condensed font-black tracking-widest uppercase text-[#FFB703] shadow-[1px_1px_0px_#000000]">
-              <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg> Trading Cards Neo-Brutales
-            </div>
-            <h3 class="font-condensed font-black text-xl uppercase tracking-tight text-white flex items-center gap-1.5 mt-1">
+            <h3 class="font-condensed font-black text-xl uppercase tracking-tight text-white flex items-center gap-1.5">
               <span>Badges & Cartes Rares</span>
             </h3>
           </div>
