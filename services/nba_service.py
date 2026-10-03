@@ -96,7 +96,26 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
         ).first()
 
         if not match:
-            continue
+            # Création automatique du match s'il n'existe pas
+            date_str_api = g.get("date")
+            if date_str_api:
+                deadline = datetime.fromisoformat(date_str_api)
+            else:
+                deadline = datetime.now(timezone.utc)
+                
+            week_number = max(1, ((deadline - datetime(2026, 10, 20, tzinfo=timezone.utc)).days // 7) + 1)
+            
+            match = Match(
+                home_team_id=home_id,
+                away_team_id=away_id,
+                home_odds=1.90,
+                away_odds=1.90,
+                deadline=deadline,
+                week_number=week_number,
+                status="upcoming"
+            )
+            db.add(match)
+            db.flush() # Assigne un ID pour la suite
 
         # Extraction des scores
         scores = g.get("scores", {})

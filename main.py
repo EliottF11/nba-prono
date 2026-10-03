@@ -125,6 +125,19 @@ def trigger_seed():
     seed_all_teams_and_matches()
     return {"status": "ok", "message": "Les 30 équipes et les matchs officiels 2026/2027 sont injectés avec succès !"}
 
+@app.get("/api/sync/{date_str}", tags=["Système"])
+def trigger_sync(date_str: str):
+    """Synchronise les matchs et scores pour une date donnée (YYYY-MM-DD)."""
+    db = SessionLocal()
+    try:
+        from services.nba_service import sync_scores_for_date
+        result = sync_scores_for_date(db, date_str)
+        return {"status": "ok", "result": result}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
