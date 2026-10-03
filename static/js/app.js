@@ -1976,7 +1976,7 @@ function renderLeaderboard() {
 
   podiumContainer.innerHTML = `
     <!-- 2ème Place -->
-    <div class="podium-step-2 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[110px]">
+    <div class="podium-step-2 rounded-[8px] p-2.5 text-center border-[3px] border-black bg-[#18181e] shadow-[6px_6px_0px_#000000] flex flex-col justify-end min-h-[110px]">
       ${top2 ? `
         <div class="flex justify-center mb-1">${getUserAvatarHtml(top2.username, 'sm', top2.avatar_url)}</div>
         <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-zinc-300 text-black font-black text-[10px] flex items-center justify-center">2</div>
@@ -1986,7 +1986,7 @@ function renderLeaderboard() {
     </div>
 
     <!-- 1ère Place (Au centre, surélevé) -->
-    <div class="podium-step-1 rounded-xl p-3 text-center border flex flex-col justify-end min-h-[135px]">
+    <div class="podium-step-1 rounded-[8px] p-3 text-center border-[3px] border-black bg-[#18181e] shadow-[6px_6px_0px_#000000] flex flex-col justify-end min-h-[135px] relative z-10 scale-105">
       ${top1 ? `
         <div class="flex justify-center mb-1.5">${getUserAvatarHtml(top1.username, 'md', top1.avatar_url)}</div>
         <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-white text-black font-black text-xs flex items-center justify-center shadow-md">1</div>
@@ -1996,7 +1996,7 @@ function renderLeaderboard() {
     </div>
 
     <!-- 3ème Place -->
-    <div class="podium-step-3 rounded-xl p-2.5 text-center border flex flex-col justify-end min-h-[95px]">
+    <div class="podium-step-3 rounded-[8px] p-2.5 text-center border-[3px] border-black bg-[#18181e] shadow-[6px_6px_0px_#000000] flex flex-col justify-end min-h-[95px]">
       ${top3 ? `
         <div class="flex justify-center mb-1">${getUserAvatarHtml(top3.username, 'sm', top3.avatar_url)}</div>
         <div class="w-5 h-5 mx-auto mb-1 rounded-full bg-zinc-700 text-zinc-100 font-black text-[10px] flex items-center justify-center">3</div>
@@ -2769,8 +2769,8 @@ async function renderProfile() {
 
                 <!-- Corps de la carte : Cadre central & Illustration de la carte -->
                 <div class="flex items-center gap-3 my-1">
-                  <div class="collector-emblem-box ${badge.unlocked ? 'bg-white/20' : 'bg-black/60'}">
-                    <span class="select-none filter drop-shadow-[2px_2px_0px_rgba(0,0,0,0.8)]">
+                  <div class="collector-emblem-box ${badge.unlocked ? 'bg-white/20 text-[#D95D39] filter drop-shadow-[2px_2px_0px_#000]' : 'bg-black/60 text-zinc-500'}">
+                    <span class="select-none flex items-center justify-center">
                       ${badge.icon}
                     </span>
                   </div>
@@ -3223,14 +3223,12 @@ function renderLeagueDetail(league) {
 
       <!-- Barre d'emojis rapides -->
       <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <button type="button" onclick="insertEmojiToChat('🏀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🏀</button>
-        <button type="button" onclick="insertEmojiToChat('🔥')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🔥</button>
-        <button type="button" onclick="insertEmojiToChat('🗑️')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🗑️</button>
-        <button type="button" onclick="insertEmojiToChat('👀')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">👀</button>
-        <button type="button" onclick="insertEmojiToChat('🐐')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🐐</button>
-        <button type="button" onclick="insertEmojiToChat('💩')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">💩</button>
-        <button type="button" onclick="insertEmojiToChat('🥱')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🥱</button>
-        <button type="button" onclick="insertEmojiToChat('🎯')" class="emoji-pill px-2 py-0.5 rounded-lg bg-[#181a24] border border-[#262a3c] text-xs cursor-pointer">🎯</button>
+        <button type="button" onclick="insertEmojiToChat('🏀')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M4.93 19.07l14.14-14.14"/></svg></button>
+        <button type="button" onclick="insertEmojiToChat('🔥')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-[#D95D39] cursor-pointer drop-shadow-[2px_2px_0px_#000]"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
+        <button type="button" onclick="insertEmojiToChat('🗑️')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-zinc-400 cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        <button type="button" onclick="insertEmojiToChat('👀')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button type="button" onclick="insertEmojiToChat('🐐')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-[#D95D39] cursor-pointer drop-shadow-[2px_2px_0px_#000]"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg></button>
+        <button type="button" onclick="insertEmojiToChat('🎯')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button>
       </div>
 
       <!-- Formulaire d'envoi -->

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   NBA PRO - DESIGN SYSTEM NEO-BRUTALISME DARK MODE (CLEAN ARCADE)
+   Pick 'n' Swipe - DESIGN SYSTEM NEO-BRUTALISME DARK MODE (CLEAN ARCADE)
    Règles strictes :
    - Fond : Gris asphalte très foncé (#121212)
    - Accent principal : Orange ballon de basket (#D95D39)
@@ -923,12 +923,16 @@ img.rounded-xl,
 .tinder-deck-container {
   position: relative;
   width: 100%;
-  /* Occupe la fenêtre entre le header et la barre basse sans déborder */
-  height: calc(100dvh - 165px);
+  height: 100%;
   min-height: 420px;
-  max-height: 580px;
+  max-height: none;
   margin: 0 auto;
   perspective: 1000px;
+  box-sizing: border-box;
+}
+
+.tinder-deck-wrapper {
+  padding: 16px;
   box-sizing: border-box;
 }
 
@@ -1569,7 +1573,7 @@ img.rounded-xl,
   color: rgba(255, 255, 255, 0.72);
 }
 
-/* Bloc central : Logo "NBA Pro" à la place de l'horloge */
+/* Bloc central : Logo "Pick 'n' Swipe" à la place de l'horloge */
 .tv-center-bug {
   width: 74px;
   flex-shrink: 0;
