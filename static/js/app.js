@@ -316,6 +316,11 @@ function selectTab(tab) {
     btn.classList.toggle('active', isCurrent);
     btn.classList.toggle('text-white', isCurrent);
     btn.classList.toggle('text-zinc-500', !isCurrent);
+    const icon = btn.querySelector('svg');
+    if (icon) {
+      if (isCurrent) icon.classList.remove('opacity-50', 'scale-90');
+      else icon.classList.add('opacity-50', 'scale-90');
+    }
     if (isCurrent) {
       btn.classList.remove('tab-rebound');
       void btn.offsetWidth;

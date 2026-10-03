@@ -310,54 +310,59 @@
       
       <!-- Onglet Matchs (Swipe Deck) -> Lucide Layers -->
       <button data-tab="matches" class="tab-btn active flex flex-col items-center py-1 transition cursor-pointer text-white" title="Matchs Swipe">
-        <svg class="tab-icon w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
-          <path class="stroke-only" d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/>
-          <path class="stroke-only" d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
-        </svg>
+        <svg class="tab-icon w-[26px] h-[26px] mb-1 overflow-visible transition-all duration-300" viewBox="0 0 24 24" fill="#F4F4F0" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(2px 2px 0px #000);">
+            <rect x="7" y="4" width="13" height="16" rx="2" transform="rotate(8 13.5 12)" />
+            <rect x="4" y="4" width="13" height="16" rx="2" transform="rotate(-4 10.5 12)" />
+            <path d="M13 9l-3 3 3 3M10 12h5" transform="rotate(-4 10.5 12)" />
+          </svg>
         <span class="font-condensed text-[10px] font-black uppercase tracking-wider">Matchs</span>
       </button>
 
       <!-- Onglet Résultats (Scores TV US) -> Lucide Monitor -->
       <button data-tab="results" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-zinc-500 hover:text-zinc-300" title="Scoreboard TV">
-        <svg class="tab-icon w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="20" height="14" x="2" y="3" rx="2"/>
-          <line class="stroke-only" x1="8" x2="16" y1="21" y2="21"/>
-          <line class="stroke-only" x1="12" x2="12" y1="17" y2="21"/>
-        </svg>
+        <svg class="tab-icon w-[26px] h-[26px] mb-1 overflow-visible transition-all duration-300 opacity-50 scale-90" viewBox="0 0 24 24" fill="#F4F4F0" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(2px 2px 0px #000);">
+            <rect x="2" y="7" width="20" height="13" rx="2" />
+            <path d="M9 3l3 4 3-4" />
+            <path d="M12 10v10" stroke-width="2" />
+            <text x="8.5" y="16.5" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="8" fill="#000" stroke="none">3</text>
+            <text x="15.5" y="16.5" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="8" fill="#000" stroke="none">1</text>
+          </svg>
         <span class="font-condensed text-[10px] font-black uppercase tracking-wider">Résultats</span>
       </button>
 
       <!-- Onglet Mes Ligues -> Lucide Users -->
       <button data-tab="leagues" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-zinc-500 hover:text-zinc-300" title="Mes Ligues">
-        <svg class="tab-icon w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path class="stroke-only" d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-          <path class="stroke-only" d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
+        <svg class="tab-icon w-[26px] h-[26px] mb-1 overflow-visible transition-all duration-300 opacity-50 scale-90" viewBox="0 0 24 24" fill="#F4F4F0" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(2px 2px 0px #000);">
+            <circle cx="6" cy="8" r="3" />
+            <path d="M2 20v-1a4 4 0 0 1 4-4h1" />
+            <circle cx="18" cy="8" r="3" />
+            <path d="M22 20v-1a4 4 0 0 0-4-4h-1" />
+            <circle cx="12" cy="9" r="4" />
+            <path d="M6 20v-2a5 5 0 0 1 12 0v2" />
+          </svg>
         <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Mes Ligues</span>
       </button>
 
       <!-- Onglet Classement Général -> Lucide Trophy -->
       <button data-tab="leaderboard" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-zinc-500 hover:text-zinc-300" title="Classement Général">
-        <svg class="tab-icon w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-          <path class="stroke-only" d="M4 22h16"/>
-          <path class="stroke-only" d="M10 14.66V17c0 .55-.45 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34"/>
-          <path class="stroke-only" d="M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34"/>
-          <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-        </svg>
+        <svg class="tab-icon w-[26px] h-[26px] mb-1 overflow-visible transition-all duration-300 opacity-50 scale-90" viewBox="0 0 24 24" fill="#F4F4F0" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(2px 2px 0px #000);">
+            <rect x="2" y="12" width="6.5" height="9" />
+            <rect x="8.5" y="7" width="7" height="14" />
+            <rect x="15.5" y="14" width="6.5" height="7" />
+            <text x="5.25" y="18.5" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="6" fill="#000" stroke="none">2</text>
+            <text x="12" y="14" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="6.5" fill="#000" stroke="none">1</text>
+            <text x="18.75" y="19" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="5.5" fill="#000" stroke="none">3</text>
+          </svg>
         <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Classement</span>
       </button>
 
       <!-- Onglet Profil -> Lucide User -->
       <button data-tab="profile" class="tab-btn flex flex-col items-center py-1 transition cursor-pointer text-zinc-500 hover:text-zinc-300" title="Mon Profil">
-        <svg class="tab-icon w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
+        <svg class="tab-icon w-[26px] h-[26px] mb-1 overflow-visible transition-all duration-300 opacity-50 scale-90" viewBox="0 0 24 24" fill="#F4F4F0" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(2px 2px 0px #000);">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="9.5" r="3.5" />
+            <path d="M6.5 18a6.5 6.5 0 0 1 11 0" />
+          </svg>
         <span class="font-condensed text-[11px] font-black uppercase tracking-wider">Profil</span>
       </button>
 
