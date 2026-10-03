@@ -343,16 +343,32 @@ function selectTab(tab) {
   const leaderboardView = document.getElementById('leaderboard-view');
   const profileView = document.getElementById('profile-view');
 
-  if (matchesView) matchesView.classList.toggle('hidden', tab !== 'matches');
-  if (resultsView) resultsView.classList.toggle('hidden', tab !== 'results');
-  if (leaguesView) leaguesView.classList.toggle('hidden', tab !== 'leagues');
-  if (leaderboardView) leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
-  if (profileView) profileView.classList.toggle('hidden', tab !== 'profile');
+  if (matchesView) {
+    matchesView.classList.toggle('hidden', tab !== 'matches');
+    matchesView.style.display = tab === 'matches' ? '' : 'none';
+  }
+  if (resultsView) {
+    resultsView.classList.toggle('hidden', tab !== 'results');
+    resultsView.style.display = tab === 'results' ? '' : 'none';
+  }
+  if (leaguesView) {
+    leaguesView.classList.toggle('hidden', tab !== 'leagues');
+    leaguesView.style.display = tab === 'leagues' ? '' : 'none';
+  }
+  if (leaderboardView) {
+    leaderboardView.classList.toggle('hidden', tab !== 'leaderboard');
+    leaderboardView.style.display = tab === 'leaderboard' ? '' : 'none';
+  }
+  if (profileView) {
+    profileView.classList.toggle('hidden', tab !== 'profile');
+    profileView.style.display = tab === 'profile' ? '' : 'none';
+  }
 
   // Mise en retrait du footer mentions légales : masqué sur swipe matches, visible tout en bas sur les autres vues
   const appLegalFooter = document.getElementById('app-legal-footer') || document.querySelector('footer');
   if (appLegalFooter) {
     appLegalFooter.classList.toggle('hidden', tab === 'matches');
+    appLegalFooter.style.display = tab === 'matches' ? 'none' : '';
   }
 
   if (tab !== 'leagues' && state.chatPollingInterval) {

@@ -50,9 +50,9 @@
   </script>
   
   <!-- Feuille de style Neo-Brutalisme Dark Mode (Clean Arcade) -->
-  <link rel="stylesheet" href="/static/css/style.css?v=32">
+  <link rel="stylesheet" href="/static/css/style.css?v=33">
 </head>
-<body class="court-bg min-h-screen pb-20 text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
+<body class="court-bg min-h-screen text-[#F4F4F0] w-full overflow-x-hidden select-none bg-[#121212]">
 
   <!-- ==========================================================================
        ÉCRAN D'ANIMATION DE LANCEMENT (SPLASH SCREEN OFFICIEL)
@@ -167,10 +167,10 @@
     </header>
 
     <!-- Zone principale -->
-    <main class="flex-1 p-3 sm:p-3.5 space-y-3.5 pb-28">
+    <main class="flex-1 p-2 sm:p-3 flex flex-col min-h-0 relative">
 
       <!-- VUE 1 : PRONOSTICS (100% SWIPE TINDER NEO-BRUTALISTE) -->
-      <section id="matches-view" class="flex-1 flex flex-col justify-center items-center py-2 sm:py-4">
+      <section id="matches-view" class="flex-1 flex flex-col justify-center items-center w-full min-h-0">
         <!-- Liste / Deck central des cartes de match -->
         <div id="matches-list" class="w-full flex justify-center items-center">
           <!-- Injecté dynamiquement par renderTinderDeck() -->
@@ -178,7 +178,7 @@
       </section>
 
       <!-- VUE RÉSULTATS : SCORES DES MATCHS PASSÉS (Bandeaux TV US x Néo-Brutalisme) -->
-      <section id="results-view" class="hidden space-y-3.5">
+      <section id="results-view" class="hidden space-y-3.5 pb-28">
         
         <!-- En-tête TV Broadcast -->
         <div class="flex items-center justify-between pb-1 border-b-2 border-black/80">
@@ -229,7 +229,7 @@
       </section>
 
       <!-- VUE 2 : CLASSEMENT GÉNÉRAL -->
-      <section id="leaderboard-view" class="hidden space-y-4">
+      <section id="leaderboard-view" class="hidden space-y-4 pb-28">
         
         <div class="flex items-center justify-between">
           <div>
@@ -262,7 +262,7 @@
       </section>
 
       <!-- SECTION 3 : MES LIGUES (Chantier 5) -->
-      <section id="leagues-view" class="p-4 space-y-4 hidden">
+      <section id="leagues-view" class="space-y-4 pb-28 hidden">
         
         <!-- VUE A : LISTE DES LIGUES -->
         <div id="leagues-list-container" class="space-y-4">
@@ -297,7 +297,7 @@
       </section>
 
       <!-- SECTION 4 : PROFIL & STATISTIQUES (Chantier 1) -->
-      <section id="profile-view" class="p-3 sm:p-4 space-y-4 hidden">
+      <section id="profile-view" class="space-y-4 pb-28 hidden">
         <div class="flex items-center justify-between pb-1 border-b-2 border-black/80">
           <div>
             <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">Mon Profil</h2>
@@ -1008,7 +1008,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="/static/js/api.js?v=32"></script>
-  <script src="/static/js/app.js?v=32"></script>
+  <script src="/static/js/api.js?v=33"></script>
+  <script src="/static/js/app.js?v=33"></script>
 </body>
 </html>
