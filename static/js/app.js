@@ -2472,7 +2472,7 @@ async function renderProfile() {
                 <!-- Corps de la carte : Cadre central & Illustration de la carte -->
                 <div class="flex items-center gap-3 my-1">
                   <div class="collector-emblem-box ${badge.unlocked ? 'bg-white/20 text-[#D95D39] filter drop-shadow-[2px_2px_0px_#000]' : 'bg-black/60 text-zinc-500'}">
-                    <span class="select-none flex items-center justify-center">
+                    <span class="select-none flex items-center justify-center ${badge.unlocked ? '' : 'opacity-40 grayscale'}">
                       ${badge.icon}
                     </span>
                   </div>
