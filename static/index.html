@@ -385,10 +385,10 @@
         <div id="auth-view-welcome" class="auth-step-pane flex flex-col space-y-3.5">
           <div>
             <h2 class="font-condensed font-black text-2xl sm:text-3xl text-[#F4F4F0] uppercase tracking-tight leading-tight">
-              Bienvenue sur <span class="text-[#D95D39]">Pick 'n' Swipe</span> <span class="text-xs text-zinc-400 font-bold">(HOOPS PRONO)</span>
+              Bienvenue sur <span class="text-[#D95D39]">Pick 'n' Swipe</span>
             </h2>
             <p class="text-xs text-zinc-400 leading-relaxed mt-1">
-              L'arène Clean Arcade des pronostics NBA entre potes. Pronostique chaque soir, défie tes amis en ligues privées et grimpe sur le podium.
+              Le jeu de pronostics basket 100% gratuit entre amis.
             </p>
           </div>
 
@@ -434,7 +434,6 @@
           <div class="space-y-2 pt-1">
             <button onclick="switchAuthView('register')" class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-3 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer flex items-center justify-center gap-2">
               <span>Créer mon compte</span>
-              <span>→</span>
             </button>
             <button onclick="switchAuthView('login')" class="btn-tactile w-full bg-[#1e1e24] hover:bg-[#282830] border-[2.5px] border-black text-[#F4F4F0] font-condensed text-sm font-bold uppercase tracking-wider py-2.5 rounded-[8px] shadow-[3px_3px_0px_#000000] transition cursor-pointer">
               J'ai déjà un compte (Connexion)
@@ -455,12 +454,11 @@
             <button onclick="switchAuthView('welcome')" class="text-xs text-zinc-400 hover:text-white font-bold flex items-center gap-1 transition cursor-pointer">
               ← Retour
             </button>
-            <span class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-500">Inscription</span>
           </div>
 
           <div>
             <h3 class="font-condensed font-black text-2xl text-white uppercase tracking-tight">Crée ton profil joueur</h3>
-            <p class="text-xs text-zinc-400">Rejoins la compétition et personnalise ton identité NBA.</p>
+            <p class="text-xs text-zinc-400">Rejoins la compétition et personnalise ton identité.</p>
           </div>
 
           <form id="auth-register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-3">
@@ -502,7 +500,7 @@
             <!-- Choix interactif de l'avatar NBA de départ -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Choisis ton joueur NBA</label>
+                <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Choisis ton avatar</label>
                 <span id="reg-selected-avatar-label" class="text-[10px] text-amber-400 font-condensed font-bold">Wembanyama</span>
               </div>
               <div class="overflow-x-auto scrollbar-none py-1 px-0.5">
@@ -517,7 +515,7 @@
               id="reg-submit-btn" 
               class="btn-tactile w-full bg-[#D95D39] hover:bg-[#FF5722] text-white font-condensed text-base font-black uppercase tracking-wider py-2.5 rounded-[8px] border-[3px] border-black shadow-[4px_4px_0px_#000000] transition cursor-pointer mt-2"
             >
-              Créer mon compte & Jouer <svg class="lucide-inline lucide-md lucide-white" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+              Créer mon compte & Jouer
             </button>
           </form>
 
@@ -537,7 +535,6 @@
             <button onclick="switchAuthView('welcome')" class="text-xs text-zinc-400 hover:text-white font-bold flex items-center gap-1 transition cursor-pointer">
               ← Retour
             </button>
-            <span class="text-[10px] font-condensed font-black uppercase tracking-wider text-zinc-400">Connexion</span>
           </div>
 
           <div>
