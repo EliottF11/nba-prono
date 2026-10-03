@@ -1081,54 +1081,7 @@ function renderTinderDeck(container, filtered) {
       <!-- AFFICHE DU MATCH : ÉQUIPE EXTÉRIEUR (GAUCHE) vs ÉQUIPE DOMICILE (DROITE) -->
       <div class="grid grid-cols-2 gap-2.5 items-stretch my-auto py-1 relative z-20">
         
-        <!-- ÉQUIPE EXTÉRIEUR (GAUCHE) -->
-        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
-          awaySelected 
-            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
-            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
-        }">
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
-                Extérieur
-              </span>
-              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
-                ${getTeamFormDotsHtml(match.away_team.recent_form)}
-              </div>
-            </div>
-            <div class="flex items-center gap-2 mb-1">
-              <div 
-                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
-                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
-              >
-                ${escapeHtml(match.away_team.code)}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
-                  ${escapeHtml(match.away_team.city)}
-                </div>
-                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
-                  ${escapeHtml(match.away_team.name)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
-            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
-            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
-              ${match.away_odds.toFixed(2)}
-            </span>
-          </div>
-
-          ${awaySelected ? `
-            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
-              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- ÉQUIPE DOMICILE (DROITE) -->
+        <!-- ÉQUIPE DOMICILE (GAUCHE) -->
         <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
           homeSelected 
             ? 'border-[#0077FE] bg-[#0077FE]/20 shadow-[3px_3px_0px_#000000]' 
@@ -1175,7 +1128,54 @@ function renderTinderDeck(container, filtered) {
           ` : ''}
         </div>
 
-      </div>
+      <!-- ÉQUIPE EXTÉRIEUR (DROITE) -->
+        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
+          awaySelected 
+            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
+            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
+        }">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
+                Extérieur
+              </span>
+              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
+                ${getTeamFormDotsHtml(match.away_team.recent_form)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+              <div 
+                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
+              >
+                ${escapeHtml(match.away_team.code)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
+                  ${escapeHtml(match.away_team.city)}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
+                  ${escapeHtml(match.away_team.name)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
+            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
+              ${match.away_odds.toFixed(2)}
+            </span>
+          </div>
+
+          ${awaySelected ? `
+            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
+              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
+            </div>
+          ` : ''}
+        </div>
+
+        </div>
 
       <!-- GROS BOUTON BONUS x2 ARCADE (Aspect physique néo-brutaliste enfonçable) -->
       <div class="arcade-bonus-wrapper relative z-20">
@@ -1364,7 +1364,7 @@ function attachSwipeListeners(cardEl, match, isFinished) {
       if (badgeRight) badgeRight.style.opacity = '0';
 
       if (pastThreshold) {
-        cardEl.style.borderColor = awayColor;
+        cardEl.style.borderColor = homeColor;
         cardEl.style.boxShadow = isBoosted 
           ? `0 0 35px #FF5722, 0 0 20px ${awayColor}, 6px 6px 0px #000000` 
           : `0 0 20px ${awayColor}, 6px 6px 0px #000000`;
@@ -1386,7 +1386,7 @@ function attachSwipeListeners(cardEl, match, isFinished) {
       if (badgeLeft) badgeLeft.style.opacity = '0';
 
       if (pastThreshold) {
-        cardEl.style.borderColor = homeColor;
+        cardEl.style.borderColor = awayColor;
         cardEl.style.boxShadow = isBoosted 
           ? `0 0 35px #FF5722, 0 0 20px ${homeColor}, 6px 6px 0px #000000` 
           : `0 0 20px ${homeColor}, 6px 6px 0px #000000`;
@@ -1459,7 +1459,7 @@ function attachSwipeListeners(cardEl, match, isFinished) {
 
 // --- Action de Validation suite au Swipe ---
 async function triggerSwipeAction(match, direction) {
-  const chosenTeam = direction === 'right' ? match.home_team : match.away_team;
+  const chosenTeam = direction === 'left' ? match.home_team : match.away_team;
   const isFinished = match.status === 'finished';
 
   // Haptic feedback Arcade sur validation de swipe
@@ -4507,5 +4507,6 @@ window.handleScoreboardClick = handleScoreboardClick;
 window.openMatchResultDetails = openMatchResultDetails;
 window.closeMatchResultDetails = closeMatchResultDetails;
 window.getTeamSaturatedGradient = getTeamSaturatedGradient;
+
 
 

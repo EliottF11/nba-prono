@@ -117,8 +117,8 @@
     <!-- Top Bar Sportive Clean Arcade Neo-Brutaliste -->
     <header class="sticky top-0 z-30 bg-[#16161b] border-b-[3px] border-black px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shadow-[0_4px_0px_#000000] min-h-[52px]">
       
-      <!-- Centre : Logo Principal Typographique centré et responsive (max-h: 38px) -->
-      <div class="flex-1 flex justify-center items-center px-1">
+      <!-- Gauche : Logo Principal Typographique -->
+      <div class="flex items-center justify-start shrink-0">
         <button onclick="selectTab('matches')" class="inline-flex items-center justify-center cursor-pointer transition-transform active:scale-95" title="Accueil Pronostics">
           <img 
             src="/static/icons/logo-principal.png" 
@@ -129,7 +129,7 @@
       </div>
 
       <!-- Côté Droit : Streak & Utilisateur alignés horizontalement au même niveau -->
-      <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0 justify-end">
+      <div class="flex flex-1 items-center space-x-1.5 sm:space-x-2 shrink-0 justify-end">
         <!-- Badge Streak (Série de victoires consécutives) -->
         <div id="user-streak-badge" class="flex items-center space-x-1.5 bg-[#18181e] border-2 border-black px-2 sm:px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] shrink-0" title="Série de victoires consécutives (Streak)">
           <span class="streak-flame flex items-center justify-center select-none" aria-hidden="true">
