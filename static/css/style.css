@@ -219,19 +219,12 @@ header.sticky {
 /* 1. Général : stroke-width 2.5 (Bold Arcade) */
 .tab-btn svg.tab-icon,
 .tab-btn svg {
-  width: 24px;
-  height: 24px;
-  stroke-width: 2.5;
-  stroke: rgba(244, 244, 240, 0.6);
-  fill: none;
-  transition: transform 0.2s ease-in-out, stroke 0.2s ease-in-out, fill 0.2s ease-in-out, filter 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
 }
 
 /* 2. État Inactif (Non sélectionné) : Blanc cassé #F4F4F0 opacité 60%, fill none/transparent */
 .tab-btn:not(.active) svg {
-  stroke: rgba(244, 244, 240, 0.6) !important;
-  fill: none !important;
-  filter: none !important;
+  /* Retrait des surcharges fill/stroke */
 }
 
 .tab-btn:not(.active) span {
@@ -239,7 +232,6 @@ header.sticky {
 }
 
 .tab-btn:hover:not(.active) svg {
-  stroke: #F4F4F0 !important;
   transform: translateY(-2px);
 }
 
@@ -254,9 +246,6 @@ header.sticky {
 
 .tab-btn.active svg.tab-icon,
 .tab-btn.active svg {
-  stroke: #D95D39 !important;
-  fill: #D95D39 !important;
-  filter: drop-shadow(2px 2px 0px #000) !important;
   transform: scale(1.1);
   transition: transform 0.2s ease-in-out;
 }
