@@ -2298,7 +2298,7 @@ async function renderProfile() {
     container.innerHTML = `
       <div class="p-6 bg-[#18181e] rounded-[8px] border-[3px] border-black text-center space-y-4 shadow-[6px_6px_0px_#000000]">
         <div class="w-16 h-16 mx-auto rounded-full bg-[#121216] border-[3px] border-black flex items-center justify-center text-3xl shadow-[3px_3px_0px_#000000]">
-          <svg class='lucide-inline lucide-xl lucide-muted' viewBox='0 0 24 24'><path d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>
+          <img src="/static/icons/tab-profile.png" alt="Profile" class="w-10 h-10 object-contain opacity-50" />
         </div>
         <div class="font-condensed font-black text-2xl text-[#F4F4F0] uppercase tracking-wide">Connecte-toi pour voir ton profil</div>
         <p class="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
