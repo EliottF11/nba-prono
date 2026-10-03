@@ -15,8 +15,6 @@ const state = {
   leaderboard: [],
   seasonPrediction: null,
   seasonCandidates: null,
-  weeklyPlayerCandidates: null,
-  weeklyPlayersMap: {}, // weekNumber -> WeeklyPlayerPredictionResponse
   myLeagues: [],
   activeLeague: null,
   activeLeagueVotesMatchId: null,
@@ -108,7 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initUIEvents();
     await checkSession();
     loadSeasonCandidates();
-    loadWeeklyPlayerCandidates();
     await refreshData();
   } catch (err) {
     console.error("Erreur cycle d'initialisation:", err);
@@ -3577,7 +3574,6 @@ window.openShareRecapModal = openShareRecapModal;
 window.closeShareRecapModal = closeShareRecapModal;
 window.switchWrappedPeriod = switchWrappedPeriod;
 window.launchConfetti = launchConfetti;
-window.filterPlayerSuggestions = filterPlayerSuggestions;
 
 // --- Modale Mentions Légales & Fair Use ---
 function openLegalModal() {
