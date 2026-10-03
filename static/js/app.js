@@ -944,38 +944,7 @@ function renderTinderDeck(container, filtered) {
           </div>
         </div>
 
-        <!-- BOUTON STYLISÉ INVITANT À VOIR LE RÉCAPITULATIF DES PRONOSTICS -->
-        <div class="pt-1 space-y-2">
-          <button 
-            onclick="openNightRecapModal()" 
-            class="btn-arcade-recap btn-tactile w-full py-3.5 px-4 rounded-[10px] bg-gradient-to-r from-[#D95D39] via-[#FF5722] to-[#FF9800] text-white font-condensed font-black text-base sm:text-lg uppercase tracking-wider border-[3px] border-black shadow-[5px_5px_0px_#000000] cursor-pointer flex items-center justify-center gap-2.5"
-          >
-            <svg class='lucide-inline lucide-xl lucide-orange' viewBox='0 0 24 24'><line x1='12' x2='12' y1='20' y2='10'/><line x1='18' x2='18' y1='20' y2='4'/><line x1='6' x2='6' y1='20' y2='16'/></svg>
-            <span>Voir le récapitulatif de mes pronostics</span>
-          </button>
-
-          <!-- Boutons de secours : Revoir la pile et Annuler le dernier swipe -->
-          <div class="flex items-center justify-center gap-2 pt-1">
-            <button 
-              onclick="resetTinderDeck()" 
-              class="btn-tactile flex-1 py-2 px-3 rounded-[8px] bg-[#1a1924] hover:bg-[#252433] text-zinc-300 font-condensed font-bold text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <span>↺</span>
-              <span>Revoir la pile</span>
-            </button>
-
-            ${hasHistory ? `
-              <button 
-                onclick="undoLastSwipe()" 
-                class="btn-tactile flex-1 py-2 px-3 rounded-[8px] bg-[#FACC15] hover:bg-[#fde047] text-black font-condensed font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a5 5 0 015 5v2m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
-                </svg>
-                <span>Annuler le dernier</span>
-              </button>
-            ` : ''}
-          </div>
+        
         </div>
 
       </div>
@@ -1957,7 +1926,7 @@ function renderLeaderboard() {
   const rowsContainer = document.getElementById('leaderboard-table-rows');
   if (!podiumContainer || !rowsContainer) return;
 
-  const lb = state.leaderboard;
+  const lb = state.displayedLeaderboard || state.leaderboard;
 
   if (lb.length === 0) {
     podiumContainer.innerHTML = '';
@@ -3191,26 +3160,7 @@ function renderLeagueDetail(league) {
       </div>
     </div>
 
-    <!-- Bouton Bilan Partageable de la Ligue (Format Story / WhatsApp) -->
-    <div class="pt-1">
-      <button 
-        onclick="openShareRecapModal(${league.id})" 
-        class="w-full bg-[#181a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-black text-xs uppercase tracking-wider py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
-      >
-        <svg class='lucide-inline lucide-md lucide-white' viewBox='0 0 24 24'><path d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/><circle cx='12' cy='13' r='3'/></svg> Carte Bilan Partageable (Story & WhatsApp)
-      </button>
     </div>
-
-    <!-- Mur de chambrage / Mini-chat (Signature MPP) -->
-    <div class="bg-[#12141a] border border-[#1f222d] rounded-2xl p-3.5 space-y-3 shadow-lg">
-      <div class="flex items-center justify-between pb-2 border-b border-[#1b1e28]">
-        <div class="flex items-center space-x-2">
-          <svg class='lucide-inline lucide-lg lucide-white' viewBox='0 0 24 24'><path d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z'/></svg>
-          <div>
-            <h3 class="font-condensed font-black text-sm uppercase tracking-wide text-white">Mur de chambrage</h3>
-            <p class="text-[10px] text-slate-400">Trash-talk en direct entre membres de la ligue</p>
-          </div>
-        </div>
         <button onclick="loadLeagueMessages(${league.id})" class="text-[11px] text-slate-400 hover:text-white p-1 cursor-pointer" title="Rafraîchir les messages">
           <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8'/><path d='M21 3v5h-5'/><path d='M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16'/><path d='M8 16H3v5'/></svg>
         </button>
@@ -3219,16 +3169,6 @@ function renderLeagueDetail(league) {
       <!-- Liste des messages -->
       <div id="league-chat-messages" class="max-h-64 overflow-y-auto space-y-2 pr-1 text-xs">
         <div class="text-center text-slate-500 text-[11px] py-4">Chargement des messages...</div>
-      </div>
-
-      <!-- Barre d'emojis rapides -->
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        <button type="button" onclick="insertEmojiToChat('🏀')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.93 4.93l14.14 14.14"/><path d="M4.93 19.07l14.14-14.14"/></svg></button>
-        <button type="button" onclick="insertEmojiToChat('🔥')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-[#D95D39] cursor-pointer drop-shadow-[2px_2px_0px_#000]"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
-        <button type="button" onclick="insertEmojiToChat('🗑️')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-zinc-400 cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-        <button type="button" onclick="insertEmojiToChat('👀')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button type="button" onclick="insertEmojiToChat('🐐')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-[#D95D39] cursor-pointer drop-shadow-[2px_2px_0px_#000]"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg></button>
-        <button type="button" onclick="insertEmojiToChat('🎯')" class="emoji-pill px-2 py-1 rounded-lg bg-[#181a24] border border-[#262a3c] text-white cursor-pointer"><svg class="lucide-inline w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button>
       </div>
 
       <!-- Formulaire d'envoi -->
@@ -4510,3 +4450,23 @@ window.getTeamSaturatedGradient = getTeamSaturatedGradient;
 
 
 
+
+
+window.handleLeaderboardFilterChange = async function() {
+  const selectEl = document.getElementById('leaderboard-league-select');
+  if (!selectEl) return;
+  const val = selectEl.value;
+  
+  if (val === 'general') {
+    state.displayedLeaderboard = state.leaderboard;
+  } else {
+    try {
+      const detail = await API.getLeagueDetail(val);
+      state.displayedLeaderboard = detail.members || [];
+    } catch (e) {
+      notify("Erreur lors du chargement du classement de la ligue", "error");
+      return;
+    }
+  }
+  renderLeaderboard();
+};
