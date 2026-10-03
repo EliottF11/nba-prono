@@ -218,12 +218,7 @@ function initUIEvents() {
   if (nativeShareBtn) nativeShareBtn.addEventListener('click', handleNativeShareRecap);
   if (copyRecapBtn) copyRecapBtn.addEventListener('click', handleCopyRecapText);
 
-  // Fermer les suggestions de recherche de joueur au clic à l'extérieur
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#weekly-players-container')) {
-      document.querySelectorAll('[id^="weekly-"][id*="-suggestions-"]').forEach(el => {
-        el.classList.add('hidden');
-      });
+  
     }
   });
 }
@@ -650,19 +645,7 @@ async function refreshData() {
       countBadge.textContent = `${openCount} OUVERT${openCount > 1 ? 'S' : ''}`;
     }
 
-    // Chargement des Joueurs de la Semaine (Chantier 4)
-    if (state.currentUser && weeks.length > 0) {
-      try {
-        const wpList = await Promise.all(weeks.map(w => API.getWeeklyPlayerPrediction(w.week)));
-        wpList.forEach(wp => {
-          if (wp) {
-            state.weeklyPlayersMap[wp.week_number] = wp;
-          }
-        });
-      } catch (e) {
-        console.error("Erreur chargement joueurs de la semaine:", e);
-      }
-    }
+    
 
     // Calcul et mise à jour de la streak (Série de victoires)
     let streak = 0;
@@ -683,7 +666,7 @@ async function refreshData() {
 
     renderSeasonBanner();
     renderWeeksSelector();
-    renderWeeklyPlayersCard();
+    
     renderMatchesList();
     renderLeaderboard();
   } catch (err) {
@@ -753,7 +736,7 @@ async function filterByWeek(week) {
   state.tinderDeckIndex = 0;
   state.swipeHistory = [];
   renderWeeksSelector();
-  renderWeeklyPlayersCard();
+  
   try {
     const matches = await API.getMatches(state.matchesFilter, state.selectedWeek);
     state.matches = matches;
@@ -1883,23 +1866,7 @@ async function voteForTeam(matchId, teamId, isFinished) {
     return;
   }
 
-  // Chantier 4 : Obligation de choisir ses Joueurs de la Semaine (Est & Ouest)
-  const targetMatch = state.matches.find(m => m.id === matchId);
-  const weekNum = targetMatch ? targetMatch.week_number : 1;
-  const wp = state.weeklyPlayersMap[weekNum];
-
-  if (!wp || !wp.east_player || !wp.west_player) {
-    notify(`Choisis d'abord tes 2 Joueurs de la Semaine pour la Week ${weekNum} !`, "error");
-    const container = document.getElementById('weekly-players-container');
-    if (container) {
-      container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      container.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
-      setTimeout(() => {
-        container.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#09090b]');
-      }, 2000);
-    }
-    return;
-  }
+  
 
   if (state.myPredictions[matchId] === teamId) {
     return;
@@ -2297,222 +2264,7 @@ async function handleSeasonSubmit(e) {
   }
 }
 
-// --- Pronostics Hebdomadaires - Joueurs de la Semaine (Chantier 4) ---
-async function loadWeeklyPlayerCandidates() {
-  if (!state.weeklyPlayerCandidates) {
-    try {
-      state.weeklyPlayerCandidates = await API.getWeeklyCandidates();
-    } catch (err) {
-      console.error("Erreur chargement candidats joueurs hebdo:", err);
-    }
-  }
-}
 
-function renderWeeklyPlayersCard() {
-  const container = document.getElementById('weekly-players-container');
-  if (!container) return;
-
-  const availableWeeks = state.availableWeeks || [];
-  const defaultWeek = availableWeeks[0]?.week || 1;
-  const currentWeek = state.selectedWeek === 'all' ? defaultWeek : parseInt(state.selectedWeek);
-
-  const wp = state.weeklyPlayersMap[currentWeek];
-  const isLocked = wp ? wp.is_locked : false;
-  const hasChoices = wp && !!wp.east_player && !!wp.west_player;
-
-  const candidates = state.weeklyPlayerCandidates || { east: [], west: [] };
-  const eastList = [...(candidates.east || [])].sort((a, b) => a.localeCompare(b, 'fr'));
-  const westList = [...(candidates.west || [])].sort((a, b) => a.localeCompare(b, 'fr'));
-
-  const matchedEast = wp ? findMatchingPlayerOption(eastList, wp.east_player) : '';
-  const matchedWest = wp ? findMatchingPlayerOption(westList, wp.west_player) : '';
-
-  container.innerHTML = `
-    <div class="p-3.5 bg-[#121216] rounded-2xl border ${hasChoices ? 'border-white/20' : 'border-[rgba(255,255,255,0.10)]'} shadow-md space-y-3 transition-all duration-300">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <svg class='lucide-inline lucide-lg lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>
-          <div>
-            <div class="flex items-center gap-1.5">
-              <span class="font-condensed font-black text-sm uppercase tracking-wide text-white">
-                Joueurs de la Semaine • Week ${currentWeek}
-              </span>
-              <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${
-                isLocked 
-                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
-                  : hasChoices 
-                    ? 'bg-white text-black font-bold' 
-                    : 'bg-white/10 text-white border border-white/20'
-              }">
-                ${isLocked ? `<svg class="lucide-inline lucide-sm lucide-muted" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Verrouillé` : hasChoices ? `<svg class="lucide-inline lucide-sm lucide-green" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> 2/2 Validés` : `<svg class="lucide-inline lucide-sm lucide-amber" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> Obligatoire`}
-              </span>
-            </div>
-            <p class="text-[10px] text-zinc-400 leading-tight mt-0.5">
-              ${isLocked 
-                ? 'Les matchs de cette semaine ont débuté. Choix définitivement verrouillés.' 
-                : hasChoices 
-                  ? 'Tes 2 choix sont enregistrés ! Modifiables avant le premier match.' 
-                  : 'Recherche 1 joueur Est et 1 joueur Ouest pour débloquer tes pronostics.'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-        <!-- Conférence Est -->
-        <div class="relative">
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-zinc-300 inline-block"></span>
-              <span>Conférence Est</span>
-            </span>
-            <span class="text-[9px] text-slate-500 font-mono">${eastList.length} joueurs</span>
-          </label>
-          <input type="hidden" id="weekly-east-select-${currentWeek}" value="${matchedEast || ''}">
-          
-          ${matchedEast ? `
-            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
-              <div class="flex items-center space-x-2 truncate">
-                <svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg>
-                <span class="font-bold text-xs text-white truncate">${matchedEast}</span>
-              </div>
-              ${!isLocked ? `
-                <button type="button" onclick="clearWeeklyPlayerSelection('east', ${currentWeek})" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-[#202535] hover:bg-[#282f42] border border-[#2f374e] transition cursor-pointer shrink-0">
-                  Changer
-                </button>
-              ` : ''}
-            </div>
-          ` : `
-            <div class="relative">
-              <input 
-                type="text" 
-                id="weekly-east-search-${currentWeek}" 
-                oninput="filterPlayerSuggestions('east', ${currentWeek})"
-                onfocus="filterPlayerSuggestions('east', ${currentWeek})"
-                ${isLocked ? 'disabled' : ''} 
-                placeholder="Tape un nom (ex: Tatum, Giannis...)"
-                autocomplete="off"
-                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white disabled:opacity-50"
-              >
-              <div id="weekly-east-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
-            </div>
-          `}
-        </div>
-
-        <!-- Conférence Ouest -->
-        <div class="relative">
-          <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-300 mb-1 flex items-center justify-between">
-            <span class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-zinc-500 inline-block"></span>
-              <span>Conférence Ouest</span>
-            </span>
-            <span class="text-[9px] text-slate-500 font-mono">${westList.length} joueurs</span>
-          </label>
-          <input type="hidden" id="weekly-west-select-${currentWeek}" value="${matchedWest || ''}">
-
-          ${matchedWest ? `
-            <div class="flex items-center justify-between p-2 rounded-xl bg-[#181a24] border border-white/20">
-              <div class="flex items-center space-x-2 truncate">
-                <span class="text-zinc-300 font-bold text-xs"></span>
-                <span class="font-bold text-xs text-white truncate">${matchedWest}</span>
-              </div>
-              ${!isLocked ? `
-                <button type="button" onclick="clearWeeklyPlayerSelection('west', ${currentWeek})" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-[#202535] hover:bg-[#282f42] border border-[#2f374e] transition cursor-pointer shrink-0">
-                  Changer
-                </button>
-              ` : ''}
-            </div>
-          ` : `
-            <div class="relative">
-              <input 
-                type="text" 
-                id="weekly-west-search-${currentWeek}" 
-                oninput="filterPlayerSuggestions('west', ${currentWeek})"
-                onfocus="filterPlayerSuggestions('west', ${currentWeek})"
-                ${isLocked ? 'disabled' : ''} 
-                placeholder="Tape un nom (ex: Doncic, Curry...)"
-                autocomplete="off"
-                class="w-full bg-[#181a24] border border-[#282c3e] rounded-xl px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white disabled:opacity-50"
-              >
-              <div id="weekly-west-suggestions-${currentWeek}" class="absolute z-30 left-0 right-0 top-full mt-1 bg-[#151822] border border-[#2c3244] rounded-xl shadow-2xl max-h-48 overflow-y-auto hidden divide-y divide-[#202535]"></div>
-            </div>
-          `}
-        </div>
-      </div>
-
-      ${!isLocked ? `
-        <button 
-          onclick="saveWeeklyPlayers(${currentWeek})" 
-          class="w-full ${
-            hasChoices 
-              ? 'bg-[#18181c] hover:bg-[#222228] text-zinc-200 border border-zinc-700' 
-              : 'bg-white hover:bg-zinc-200 text-black shadow-md'
-          } font-condensed font-black text-xs uppercase tracking-wider py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5"
-        >
-          <span>${hasChoices ? `<svg class="lucide-inline lucide-sm lucide-green" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg> Mettre à jour mes 2 choix` : `<svg class="lucide-inline lucide-sm lucide-amber-fill" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> Valider mes 2 Joueurs de la Semaine`}</span>
-        </button>
-      ` : ''}
-    </div>
-  `;
-}
-
-function filterPlayerSuggestions(conf, week) {
-  const input = document.getElementById(`weekly-${conf}-search-${week}`);
-  const suggBox = document.getElementById(`weekly-${conf}-suggestions-${week}`);
-  if (!input || !suggBox) return;
-
-  const q = (input.value || '').trim().toLowerCase();
-  const list = conf === 'east' 
-    ? (state.weeklyPlayerCandidates?.east || []) 
-    : (state.weeklyPlayerCandidates?.west || []);
-
-  const filtered = list.filter(p => p.toLowerCase().includes(q)).slice(0, 10);
-
-  if (filtered.length === 0) {
-    suggBox.innerHTML = `<div class="p-2.5 text-center text-slate-500 text-[11px]">Aucun joueur correspondant</div>`;
-    suggBox.classList.remove('hidden');
-    return;
-  }
-
-  suggBox.innerHTML = filtered.map(p => `
-    <div 
-      onclick="selectWeeklyPlayer('${conf}', ${week}, '${p.replace(/'/g, "\\'")}')" 
-      class="player-suggest-item px-3 py-2 text-xs font-semibold text-slate-200 hover:text-white cursor-pointer flex items-center justify-between"
-    >
-      <span>${p}</span>
-      <span class="text-[9px] text-slate-500 font-bold uppercase">${conf === 'east' ? 'EST' : 'OUEST'}</span>
-    </div>
-  `).join('');
-  suggBox.classList.remove('hidden');
-}
-
-function selectWeeklyPlayer(conf, week, playerName) {
-  const hiddenInput = document.getElementById(`weekly-${conf}-select-${week}`);
-  if (hiddenInput) hiddenInput.value = playerName;
-  if (!state.weeklyPlayersMap[week]) {
-    state.weeklyPlayersMap[week] = { week_number: week, is_locked: false, east_player: null, west_player: null };
-  }
-  if (conf === 'east') state.weeklyPlayersMap[week].east_player = playerName;
-  if (conf === 'west') state.weeklyPlayersMap[week].west_player = playerName;
-  renderWeeklyPlayersCard();
-}
-
-function clearWeeklyPlayerSelection(conf, week) {
-  const hiddenInput = document.getElementById(`weekly-${conf}-select-${week}`);
-  if (hiddenInput) hiddenInput.value = '';
-  if (state.weeklyPlayersMap[week]) {
-    if (conf === 'east') state.weeklyPlayersMap[week].east_player = '';
-    if (conf === 'west') state.weeklyPlayersMap[week].west_player = '';
-  }
-  renderWeeklyPlayersCard();
-}
-
-async function saveWeeklyPlayers(weekNumber) {
-  if (!state.currentUser) {
-    openAuthModal('login');
-    notify("Connecte-toi pour valider tes Joueurs de la Semaine", "info");
-    return;
-  }
 
   const eastEl = document.getElementById(`weekly-east-select-${weekNumber}`);
   const westEl = document.getElementById(`weekly-west-select-${weekNumber}`);
@@ -2527,9 +2279,8 @@ async function saveWeeklyPlayers(weekNumber) {
   try {
     const res = await API.saveWeeklyPlayerPrediction(weekNumber, eastPlayer, westPlayer);
     state.weeklyPlayersMap[weekNumber] = res;
-    renderWeeklyPlayersCard();
+    
     if (state.activeTab === 'profile') renderProfile();
-    notify(`Joueurs de la Semaine ${weekNumber} validés ! Tu peux maintenant pronostiquer tes matchs.`, "success");
   } catch (err) {
     notify(err.message, "error");
   }
@@ -3830,7 +3581,6 @@ async function handleCopyRecapText() {
 // Export pour handlers HTML inline
 window.openSeasonModal = openSeasonModal;
 window.closeSeasonModal = closeSeasonModal;
-window.saveWeeklyPlayers = saveWeeklyPlayers;
 window.openCreateLeagueModal = openCreateLeagueModal;
 window.closeCreateLeagueModal = closeCreateLeagueModal;
 window.openJoinLeagueModal = openJoinLeagueModal;
@@ -3850,8 +3600,6 @@ window.closeShareRecapModal = closeShareRecapModal;
 window.switchWrappedPeriod = switchWrappedPeriod;
 window.launchConfetti = launchConfetti;
 window.filterPlayerSuggestions = filterPlayerSuggestions;
-window.selectWeeklyPlayer = selectWeeklyPlayer;
-window.clearWeeklyPlayerSelection = clearWeeklyPlayerSelection;
 
 // --- Modale Mentions Légales & Fair Use ---
 function openLegalModal() {
