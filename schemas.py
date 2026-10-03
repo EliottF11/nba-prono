@@ -162,9 +162,9 @@ class SeasonPredictionCreate(BaseModel):
     cup_winner: Optional[str] = Field(None, description="Vainqueur du tournoi NBA (NBA Cup)")
     mvp: str = Field(..., min_length=2, max_length=100, description="MVP de la saison régulière")
     dpoy: str = Field(..., min_length=2, max_length=100, description="Défenseur de l'année (DPOY)")
-    roy: str = Field(..., min_length=2, max_length=100, description="Rookie de l'année (ROY)
+    roy: str = Field(..., min_length=2, max_length=100, description="Rookie de l'année (ROY)")
     sixth_man: Optional[str] = Field(None, description="6ème Homme")
-    mip: Optional[str] = Field(None, description="MIP (Progression)")")
+    mip: Optional[str] = Field(None, description="MIP (Progression)")
 
 
 class SeasonPredictionResponse(BaseModel):
