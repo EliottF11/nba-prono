@@ -2690,7 +2690,7 @@ function renderLeaguesList() {
 
   listContainer.innerHTML = leagues.map(l => {
     const isCreator = state.currentUser && state.currentUser.id === l.creator_id;
-    const rankLabel = l.user_rank ? (l.user_rank === 1 ? `<svg class="lucide-inline lucide-sm lucide-gold" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg> #1` : `#${l.user_rank}`) : "-";
+    const rankLabel = l.user_rank ? (l.user_rank === 1 ? `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> #1` : `#${l.user_rank}`) : "-";
 
     return `
       <div 
@@ -2860,9 +2860,9 @@ function renderLeagueDetail(league) {
         ${members.map(member => {
           const isMe = state.currentUser && state.currentUser.id === member.user_id;
           let rankBadge = `<span class="text-slate-400 font-bold">${member.rank}</span>`;
-          if (member.rank === 1) rankBadge = `<svg class="lucide-inline lucide-sm lucide-gold" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>`;
-          else if (member.rank === 2) rankBadge = `<svg class="lucide-inline lucide-sm lucide-silver" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>`;
-          else if (member.rank === 3) rankBadge = `<svg class="lucide-inline lucide-sm lucide-bronze" viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>`;
+          if (member.rank === 1) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
+          else if (member.rank === 2) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
+          else if (member.rank === 3) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
 
           return `
             <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
