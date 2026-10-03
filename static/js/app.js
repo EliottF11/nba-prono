@@ -2074,7 +2074,7 @@ function renderSeasonBanner() {
               <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">5 Choix Clés</span>
             </div>
             <p class="text-[11px] text-slate-400 leading-tight mt-0.5">
-              Champion, MVP, DPOY, ROY, In-Season Cup : pronostique avant le 1er match !
+              MVP, ROY, DPOY, 6th Man, MIP : pronostique tes trophées avant le 1er match !
             </p>
           </div>
         </div>
@@ -2088,7 +2088,7 @@ function renderSeasonBanner() {
 
   const p = state.seasonPrediction;
   const isLocked = p ? p.is_locked : false;
-  const picksCount = p ? [p.nba_champion, p.cup_winner, p.mvp, p.dpoy, p.roy].filter(Boolean).length : 0;
+  const picksCount = p ? [p.mvp, p.dpoy, p.roy, p.sixth_man, p.mip].filter(Boolean).length : 0;
   const hasAllPicks = picksCount === 5;
 
   if (isLocked) {
@@ -2180,24 +2180,24 @@ async function openSeasonModal() {
   const p = state.seasonPrediction;
   const isLocked = p ? p.is_locked : false;
 
-  const champSelect = document.getElementById('season-champion');
-  const cupSelect = document.getElementById('season-cup');
   const mvpSelect = document.getElementById('season-mvp');
   const dpoySelect = document.getElementById('season-dpoy');
   const roySelect = document.getElementById('season-roy');
+  const sixthSelect = document.getElementById('season-sixth-man');
+  const mipSelect = document.getElementById('season-mip');
   const submitBtn = document.getElementById('season-submit-btn');
   const lockAlert = document.getElementById('season-lock-alert');
   const errBox = document.getElementById('season-error-box');
 
   if (errBox) errBox.classList.add('hidden');
 
-  if (champSelect && p) setSelectValueFuzzy(champSelect, p.nba_champion);
-  if (cupSelect && p) setSelectValueFuzzy(cupSelect, p.cup_winner);
   if (mvpSelect && p) setSelectValueFuzzy(mvpSelect, p.mvp);
   if (dpoySelect && p) setSelectValueFuzzy(dpoySelect, p.dpoy);
   if (roySelect && p) setSelectValueFuzzy(roySelect, p.roy);
+  if (sixthSelect && p) setSelectValueFuzzy(sixthSelect, p.sixth_man);
+  if (mipSelect && p) setSelectValueFuzzy(mipSelect, p.mip);
 
-  const selects = [champSelect, cupSelect, mvpSelect, dpoySelect, roySelect];
+  const selects = [mvpSelect, dpoySelect, roySelect, sixthSelect, mipSelect];
 
   if (isLocked) {
     selects.forEach(s => { if (s) s.disabled = true; });
@@ -2260,13 +2260,13 @@ async function handleSeasonSubmit(e) {
   const errBox = document.getElementById('season-error-box');
   if (errBox) errBox.classList.add('hidden');
 
-  const nba_champion = document.getElementById('season-champion')?.value;
-  const cup_winner = document.getElementById('season-cup')?.value;
   const mvp = document.getElementById('season-mvp')?.value;
   const dpoy = document.getElementById('season-dpoy')?.value;
   const roy = document.getElementById('season-roy')?.value;
+  const sixth_man = document.getElementById('season-sixth-man')?.value;
+  const mip = document.getElementById('season-mip')?.value;
 
-  if (!nba_champion || !cup_winner || !mvp || !dpoy || !roy) {
+  if (!mvp || !dpoy || !roy || !sixth_man || !mip) {
     if (errBox) {
       errBox.textContent = "Merci de compléter les 5 pronostics avant de valider.";
       errBox.classList.remove('hidden');
@@ -2276,11 +2276,13 @@ async function handleSeasonSubmit(e) {
 
   try {
     const updated = await API.saveSeasonPrediction({
-      nba_champion,
-      cup_winner,
+      nba_champion: null,
+      cup_winner: null,
       mvp,
       dpoy,
-      roy
+      roy,
+      sixth_man,
+      mip
     });
     state.seasonPrediction = updated;
     closeSeasonModal();
