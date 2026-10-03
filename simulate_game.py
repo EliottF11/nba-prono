@@ -41,7 +41,7 @@ def simulate_first_upcoming_match():
 
         for pred in predictions:
             if pred.selected_team_id == winner_id:
-                pred.points_won = round(winning_odds, 2)
+                pred.points_won = round(winning_odds * 10, 2)
             else:
                 pred.points_won = 0.0
             affected_users.add(pred.user_id)

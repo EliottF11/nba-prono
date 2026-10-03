@@ -130,6 +130,8 @@ def get_my_season_prediction(
             user_id=current_user.id,
             nba_champion=None,
             cup_winner=None,
+            sixth_man=None,
+            mip=None,
             mvp=None,
             dpoy=None,
             roy=None,
@@ -143,6 +145,8 @@ def get_my_season_prediction(
         user_id=pred.user_id,
         nba_champion=pred.nba_champion,
         cup_winner=pred.cup_winner,
+        sixth_man=pred.sixth_man,
+        mip=pred.mip,
         mvp=pred.mvp,
         dpoy=pred.dpoy,
         roy=pred.roy,
@@ -173,7 +177,10 @@ def save_season_prediction(
     pred = db.query(SeasonPrediction).filter(SeasonPrediction.user_id == current_user.id).first()
     if pred:
         pred.nba_champion = data.nba_champion.strip()
-        pred.cup_winner = data.cup_winner.strip()
+        pred.cup_winner = data.cup_winner.strip() if data.cup_winner else None
+        pred.sixth_man = data.sixth_man.strip() if data.sixth_man else None
+        pred.mip = data.mip.strip() if data.mip else None
+        pred.nba_champion = data.nba_champion.strip() if data.nba_champion else None
         pred.mvp = data.mvp.strip()
         pred.dpoy = data.dpoy.strip()
         pred.roy = data.roy.strip()
@@ -181,8 +188,10 @@ def save_season_prediction(
     else:
         pred = SeasonPrediction(
             user_id=current_user.id,
-            nba_champion=data.nba_champion.strip(),
-            cup_winner=data.cup_winner.strip(),
+            nba_champion=data.nba_champion.strip() if data.nba_champion else None,
+            cup_winner=data.cup_winner.strip() if data.cup_winner else None,
+            sixth_man=data.sixth_man.strip() if data.sixth_man else None,
+            mip=data.mip.strip() if data.mip else None,
             mvp=data.mvp.strip(),
             dpoy=data.dpoy.strip(),
             roy=data.roy.strip()
@@ -197,6 +206,8 @@ def save_season_prediction(
         user_id=pred.user_id,
         nba_champion=pred.nba_champion,
         cup_winner=pred.cup_winner,
+        sixth_man=pred.sixth_man,
+        mip=pred.mip,
         mvp=pred.mvp,
         dpoy=pred.dpoy,
         roy=pred.roy,

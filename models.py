@@ -115,11 +115,13 @@ class SeasonPrediction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False, index=True)
-    nba_champion = Column(String(100), nullable=False)
-    cup_winner = Column(String(100), nullable=False)
+    nba_champion = Column(String(100), nullable=True)
+    cup_winner = Column(String(100), nullable=True)
     mvp = Column(String(100), nullable=False)
     dpoy = Column(String(100), nullable=False)
     roy = Column(String(100), nullable=False)
+    sixth_man = Column(String(100), nullable=True)
+    mip = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 

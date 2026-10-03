@@ -42,7 +42,12 @@ def run_migrations():
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255)",
             "ALTER TABLE matches ADD COLUMN IF NOT EXISTS week_number INTEGER DEFAULT 1",
-            "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
+                        "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE season_predictions ADD COLUMN IF NOT EXISTS sixth_man VARCHAR(100)",
+            "ALTER TABLE season_predictions ADD COLUMN IF NOT EXISTS mip VARCHAR(100)",
+            "ALTER TABLE season_predictions ALTER COLUMN nba_champion DROP NOT NULL",
+            "ALTER TABLE season_predictions ALTER COLUMN cup_winner DROP NOT NULL",
+
             "CREATE TABLE IF NOT EXISTS league_messages (id SERIAL PRIMARY KEY, league_id INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, content VARCHAR(280) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
             "CREATE INDEX IF NOT EXISTS ix_league_messages_league_id ON league_messages (league_id)",
             "CREATE INDEX IF NOT EXISTS ix_league_messages_user_id ON league_messages (user_id)",
@@ -60,7 +65,10 @@ def run_migrations():
             ("users", "email", "ALTER TABLE users ADD COLUMN email VARCHAR(120)"),
             ("users", "avatar_url", "ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255)"),
             ("matches", "week_number", "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"),
-            ("predictions", "is_boosted", "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"),
+                        ("predictions", "is_boosted", "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"),
+            ("season_predictions", "sixth_man", "ALTER TABLE season_predictions ADD COLUMN sixth_man VARCHAR(100)"),
+            ("season_predictions", "mip", "ALTER TABLE season_predictions ADD COLUMN mip VARCHAR(100)"),
+
         ]
         for table, col, stmt in migrations:
             try:

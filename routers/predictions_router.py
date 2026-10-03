@@ -325,7 +325,7 @@ def resolve_match(
     for pred in predictions:
         if pred.selected_team_id == winner_team_id:
             multiplier = 2.0 if pred.is_boosted else 1.0
-            pred.points_won = round(winning_odds * multiplier, 2)
+            pred.points_won = round((winning_odds * 10) * multiplier, 2)
         else:
             pred.points_won = 0.0
         affected_user_ids.add(pred.user_id)
