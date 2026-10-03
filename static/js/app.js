@@ -883,7 +883,7 @@ function renderTinderDeck(container, filtered) {
         <!-- En-tête de fin de pile Arcade -->
         <div class="space-y-1.5 pt-1">
           <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#14131A] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
-            <svg class='lucide-inline lucide-md lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg> Tous les matchs sont pronostiqués !
+            Tous les matchs sont pronostiqués !
           </div>
           <h3 class="font-condensed font-black text-2xl sm:text-3xl uppercase tracking-wider text-[#F4F4F0] leading-none pt-1">
             Pile de la nuit terminée
@@ -3920,7 +3920,6 @@ async function renderResultsView() {
     if (displayed.length === 0) {
       container.innerHTML = `
         <div class="p-8 text-center bg-[#18181e] border-[3px] border-black rounded-[10px] shadow-[4px_4px_0px_#000000] space-y-2">
-          <div class="text-3xl"><svg class='lucide-inline lucide-2xl lucide-orange' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14'/></svg></div>
           <div class="font-condensed font-black text-lg text-white uppercase tracking-wider">Aucun match terminé</div>
           <p class="text-xs text-zinc-400">Les résultats s'afficheront ici en direct dès la clôture des rencontres.</p>
         </div>
