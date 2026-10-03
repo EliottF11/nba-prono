@@ -1006,16 +1006,16 @@ function renderTinderDeck(container, filtered) {
       </div>
 
       <!-- Overlays dynamiques d'illumination au swipe -->
-      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
-      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
 
       <!-- Badges de validation avec icône lors du swipe -->
-      <div class="swipe-badge-left" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
+      <div class="swipe-badge-left" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        <span>${escapeHtml(match.away_team.code)}</span>
-      </div>
-      <div class="swipe-badge-right" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
         <span>${escapeHtml(match.home_team.code)}</span>
+      </div>
+      <div class="swipe-badge-right" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
+        <span>${escapeHtml(match.away_team.code)}</span>
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
       </div>
 
