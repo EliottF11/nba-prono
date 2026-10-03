@@ -217,10 +217,6 @@ function initUIEvents() {
   if (closeRecapBtn) closeRecapBtn.addEventListener('click', closeShareRecapModal);
   if (nativeShareBtn) nativeShareBtn.addEventListener('click', handleNativeShareRecap);
   if (copyRecapBtn) copyRecapBtn.addEventListener('click', handleCopyRecapText);
-
-  
-    }
-  });
 }
 
 // --- Session & Utilisateur ---
@@ -2266,25 +2262,7 @@ async function handleSeasonSubmit(e) {
 
 
 
-  const eastEl = document.getElementById(`weekly-east-select-${weekNumber}`);
-  const westEl = document.getElementById(`weekly-west-select-${weekNumber}`);
-  const eastPlayer = eastEl?.value;
-  const westPlayer = westEl?.value;
 
-  if (!eastPlayer || !westPlayer) {
-    notify("Sélectionne 1 joueur Est et 1 joueur Ouest !", "error");
-    return;
-  }
-
-  try {
-    const res = await API.saveWeeklyPlayerPrediction(weekNumber, eastPlayer, westPlayer);
-    state.weeklyPlayersMap[weekNumber] = res;
-    
-    if (state.activeTab === 'profile') renderProfile();
-  } catch (err) {
-    notify(err.message, "error");
-  }
-}
 
 // --- Gradients Pop Saturés pour les Cartes à Collectionner (Badges & Trophées) ---
 function getBadgePopGradient(badgeId) {
