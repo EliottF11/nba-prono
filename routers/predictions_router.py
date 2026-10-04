@@ -700,14 +700,14 @@ def get_my_wrapped(
     nem_line = f"🐈‍⬛ Chat noir : {nemesis_team}\n" if nemesis_team else ""
 
     share_text = (
-        f"🏀 MON WRAPPED HOOPS PRONO ({period_title}) 🏀\n"
+        f"🏀 MON WRAPPED PICK 'N' SWIPE ({period_title}) 🏀\n"
         f"👤 Joueur : {current_user.username}\n"
         f"🏆 Classement : {rank_str}\n"
         f"⭐ Points : +{round(points_period, 1)} pts (Total : {round(current_user.total_points, 1)})\n"
         f"🎯 Réussite : {won_preds}/{finished_preds} ({winrate}%)\n"
         f"🔥 Plus grosse cote : {max_odds_won if max_odds_won > 0 else '-'}\n"
         f"{fav_line}{nem_line}"
-        f"👉 Viens me défier sur https://hoops-prono.onrender.com !"
+        f"👉 Viens me défier sur https://pick-n-swipe.onrender.com !"
     )
 
     return {
