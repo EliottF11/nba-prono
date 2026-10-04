@@ -492,7 +492,7 @@ def get_my_stats(
             "id": "rookie",
             "name": "Rookie",
             "description": "5 bons pronos validés",
-            "icon": "<img src=\'/static/icons/badges/badge_home.png\' class=\'w-10 h-10 object-contain drop-shadow-[2px_2px_0px_#000000]\' alt=\'icon\'/>",
+            "icon": "<img src='/static/icons/badges/badge_rookie.png' class='w-10 h-10 object-contain drop-shadow-[2px_2px_0px_#000000]' alt='icon'/>",
             "unlocked": rookie_unlocked,
             "current": min(won_preds, rookie_target),
             "target": rookie_target,

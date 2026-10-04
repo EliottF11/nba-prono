@@ -420,7 +420,7 @@ async function populateWelcomeAvatars() {
     track.innerHTML = doubled.map(av => `
       <div class="flex flex-col items-center gap-1 shrink-0 select-none">
         <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-11 h-11 rounded-xl object-cover border border-white/20 bg-[#18181b] shadow-sm" />
-        <span class="text-[9px] font-condensed font-bold text-zinc-300 max-w-[56px] truncate text-center">${escapeHtml(av.title.split(' ').pop())}</span>
+        
       </div>
     `).join('');
   }
@@ -436,7 +436,7 @@ async function populateWelcomeAvatars() {
             <img src="${av.url}" alt="${escapeHtml(av.title)}" class="w-12 h-12 rounded-xl object-cover border ${isSelected ? 'border-white' : 'border-white/20'} bg-[#18181b]" />
             ${isSelected ? `<span class="absolute -top-1 -right-1 bg-white text-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-bold shadow"><svg class="lucide-inline lucide-xs lucide-green" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>` : ""}
           </div>
-          <span class="text-[10px] font-condensed font-bold text-zinc-300 truncate w-full text-center leading-tight">${escapeHtml(av.title.split(' ').pop())}</span>
+          
         </div>
       `;
     }).join('');
@@ -882,12 +882,14 @@ function getNextNbaNightTimestamp() {
 // --- Rendu de la Pile Tinder (Style Clean Arcade Neo-Brutalisme) ---
 function renderTinderDeck(container, filtered) {
   if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="p-8 text-center bg-[#18181e] rounded-[10px] border-[3px] border-black shadow-[6px_6px_0px_#000000] text-zinc-400 text-xs font-semibold">
-        Aucun match dans cette catégorie.
-      </div>
-    `;
-    return;
+    if (state.predictionFilter !== 'unpredicted') {
+      container.innerHTML = `
+        <div class="p-8 text-center bg-[#18181e] rounded-[10px] border-[3px] border-black shadow-[6px_6px_0px_#000000] text-zinc-400 text-xs font-semibold">
+          Aucun match dans cette catégorie.
+        </div>
+      `;
+      return;
+    }
   }
 
   const total = filtered.length;
@@ -918,7 +920,7 @@ function renderTinderDeck(container, filtered) {
             Pile de la nuit terminée
           </h3>
           <p class="text-xs text-zinc-400 font-medium max-w-xs mx-auto">
-            Tu as passé en revue l'ensemble des ${total} matchs. Tes choix sont verrouillés pour le coup d'envoi !
+            Tu as passé en revue l'ensemble des ${upcomingMatches.length} matchs. Tes choix sont verrouillés pour le coup d'envoi !
           </p>
         </div>
 
@@ -1631,6 +1633,10 @@ function renderMatchesListView(container, filtered) {
   `;
 
   if (filtered.length === 0) {
+    if (state.predictionFilter === 'unpredicted') {
+      renderTinderDeck(container, filtered);
+      return;
+    }
     container.innerHTML = `
       ${toolbarHtml}
       <div class="p-8 text-center bg-[#18181e] rounded-[10px] border-[3px] border-black shadow-[6px_6px_0px_#000000] text-zinc-400 text-xs font-semibold">
@@ -2074,7 +2080,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-gradient-to-r from-[#171924] via-[#1b1e2c] to-[#171924] rounded-2xl border border-amber-500/20 shadow-lg flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0 text-amber-400">
-            <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
+            <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2148,7 +2154,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.12)] shadow-md flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0 text-white">
-            <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
+            <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2406,7 +2412,7 @@ async function renderProfile() {
           </h1>
           <div class="flex items-center justify-center gap-2 pt-0.5">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-[#1a1924] border-2 border-black text-xs font-condensed font-black uppercase text-[#FFB703] shadow-[2px_2px_0px_#000000]">
-              <svg class='lucide-inline lucide-sm lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
+              <img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
             </span>
           </div>
           <p class="text-[11px] text-zinc-400 font-medium">
@@ -2542,7 +2548,7 @@ async function renderProfile() {
                     ></div>
                   </div>
                   <div class="collector-holo-stamp pt-0.5 ${badge.unlocked ? 'text-black/80 font-black' : 'text-zinc-500'}">
-                    <svg class='lucide-inline lucide-xs lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg> PICK 'N' SWIPE • TROPHÉE <svg class='lucide-inline lucide-xs lucide-amber-fill' viewBox='0 0 24 24'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>
+                    <img src="/static/icons/badges/badge_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> PICK 'N' SWIPE • TROPHÉE <img src="/static/icons/badges/badge_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
                   </div>
                 </div>
 
@@ -2712,7 +2718,7 @@ function renderLeaguesList() {
     listContainer.innerHTML = `
       <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
         <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center text-2xl border border-amber-500/20 shadow-lg shadow-amber-500/10">
-          <svg class='lucide-inline lucide-md lucide-amber-fill' viewBox='0 0 24 24'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47 1-1 1H7.5c-.55 0-1-.45-1-1v-2.34'/><path d='M14 14.66V17c0 .55.45 1 1 1h1.5c.55 0 1-.45 1-1v-2.34'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2Z'/></svg>
+          <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
         </div>
         <div class="font-condensed font-black text-lg text-white">Aucune ligue pour le moment</div>
         <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
@@ -2720,7 +2726,7 @@ function renderLeaguesList() {
         </p>
         <div class="flex items-center justify-center gap-2 pt-1">
           <button onclick="openJoinLeagueModal()" class="px-4 py-2 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-bold text-xs uppercase tracking-wider transition cursor-pointer">
-            <svg class='lucide-inline lucide-sm lucide-amber' viewBox='0 0 24 24'><path d='m15.5 7.5 2.3-2.3a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4L18 10'/><path d='m2.1 21.8 6.4-6.3'/><path d='M8.5 15.5 10 14'/><circle cx='15' cy='9' r='5'/></svg> Rejoindre
+            <img src="/static/icons/badges/icon_key.jpg" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="key"/> Rejoindre
           </button>
           <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer">
             + Créer une ligue
@@ -3688,12 +3694,8 @@ async function openAvatarSelectorModal() {
                   </div>
                 ` : ''}
               </div>
-              <span class="text-[10px] font-condensed font-black uppercase text-[#F4F4F0] leading-tight truncate w-full text-center">
-                ${escapeHtml(av.title.split(' ').pop())}
-              </span>
-              <span class="text-[8px] text-zinc-400 truncate w-full text-center leading-none mt-0.5">
-                ${isSelected ? '<strong class="text-[#D95D39]">ACTIF</strong>' : escapeHtml(av.meme || '')}
-              </span>
+              
+              ${isSelected ? \'<span class="text-[8px] truncate w-full text-center leading-none mt-0.5"><strong class="text-[#D95D39]">ACTIF</strong></span>\' : \'\'}
             </div>
           `;
         }).join('')}
