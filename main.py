@@ -29,15 +29,12 @@ run_migrations()
 
 def daily_morning_sync():
     """Tâche automatique quotidienne exécutée chaque matin à 07:00."""
-    print("[SCHEDULER] Execution de la synchronisation automatique des scores de la nuit...")
     db = SessionLocal()
     try:
         from services.nba_service import sync_scores_for_date
         today_str = datetime.now().strftime("%Y-%m-%d")
         result = sync_scores_for_date(db, today_str)
-        print(f"[SCHEDULER] Synchronisation reussie : {result}")
     except Exception as e:
-        print(f"[SCHEDULER] Erreur synchronisation : {e}")
     finally:
         db.close()
 
@@ -50,15 +47,12 @@ async def lifespan(app: FastAPI):
         from seed import seed_all_teams_and_matches
         seed_all_teams_and_matches()
     except Exception as e:
-        print(f"[STARTUP] Erreur initialisation automatique : {e}")
 
     # Enregistrement de la tâche quotidienne à 07h00
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
     scheduler.start()
-    print("[STARTUP] Planificateur automatique demarre (synchronisation quotidienne des scores a 07h00).")
     yield
     scheduler.shutdown()
-    print("[SHUTDOWN] Planificateur arrete.")
 
 app = FastAPI(
     title="NBA Prono MVP API",

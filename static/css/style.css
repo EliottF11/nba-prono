@@ -334,6 +334,7 @@ button.btn-tactile,
   box-shadow: var(--shadow-neo-sm) !important;
   border-radius: var(--radius-neo-sm) !important;
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    touch-action: manipulation;
 }
 
 /* Comportement tactile Neo-Brutaliste au clic / enfoncement */
@@ -1078,6 +1079,7 @@ img.rounded-xl,
   font-family: var(--font-blocky);
   font-size: 1.1rem;
   transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    touch-action: manipulation;
 }
 
 .btn-action-swipe:hover {

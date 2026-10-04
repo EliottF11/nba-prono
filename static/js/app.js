@@ -109,7 +109,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadSeasonCandidates();
     await refreshData();
   } catch (err) {
-    console.error("Erreur cycle d'initialisation:", err);
   } finally {
     // Évacuation garantie du splash screen
     setTimeout(dismissSplashScreen, 500);
@@ -397,12 +396,10 @@ async function fetchAvatarsList() {
       availableAvatarsCache = await res.json();
     }
   } catch (e) {
-    console.warn("Erreur chargement avatars via API, tentative fetch direct:", e);
     try {
       const res = await fetch('/api/auth/avatars');
       availableAvatarsCache = await res.json();
     } catch (err2) {
-      console.error("Échec fallback fetch avatars:", err2);
       availableAvatarsCache = [];
     }
   }
@@ -607,6 +604,15 @@ window.closeAuthModal = closeAuthModal;
 
 // --- Chargement des données ---
 async function refreshData() {
+  const container = document.getElementById('matches-list');
+  if (container && (!state.matches || state.matches.length === 0)) {
+    container.innerHTML = `
+      <div class="py-12 text-center flex flex-col items-center justify-center gap-2.5">
+        <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="arcade-ball-loader-lg" />
+        <span class="text-zinc-400 font-condensed uppercase tracking-wider text-sm">Chargement du parquet...</span>
+      </div>
+    `;
+  }
   try {
     const promises = [
       API.getMatches(state.matchesFilter, state.selectedWeek),
@@ -669,7 +675,6 @@ async function refreshData() {
     renderMatchesList();
     renderLeaderboard();
   } catch (err) {
-    console.error('Erreur chargement:', err);
     notify("Erreur lors de la synchronisation des données", "error");
   }
 }
@@ -2036,7 +2041,6 @@ async function loadSeasonCandidates() {
       state.seasonCandidates = await API.getSeasonCandidates();
       populateSeasonSelects();
     } catch (err) {
-      console.error("Erreur chargement candidats d'avant-saison:", err);
     }
   }
 }
@@ -2200,7 +2204,6 @@ async function openSeasonModal() {
     try {
       state.seasonPrediction = await API.getSeasonPrediction();
     } catch (e) {
-      console.error("Erreur seasonPrediction:", e);
     }
   }
 
@@ -2615,8 +2618,8 @@ function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/static/sw.js')
-        .then(() => console.log('PWA Service Worker actif'))
-        .catch(err => console.log('Erreur SW:', err));
+        .then(() => {})
+        .catch(err => {});
     });
   }
 }
@@ -2711,7 +2714,6 @@ async function loadAndRenderLeagues() {
       renderLeaguesList();
     }
   } catch (err) {
-    console.error("Erreur chargement ligues:", err);
     notify("Erreur lors de la récupération des ligues", "error");
   }
 }
@@ -2800,7 +2802,6 @@ async function viewLeague(leagueId) {
       }
     }, 3500);
   } catch (err) {
-    console.error("Erreur consultation ligue:", err);
     notify(err.message || "Impossible d'accéder à cette ligue", "error");
   }
 }
@@ -3054,7 +3055,6 @@ async function handleCreateLeagueSubmit(e) {
     await loadAndRenderLeagues();
     viewLeague(newLeague.id);
   } catch (err) {
-    console.error("Erreur création ligue:", err);
     notify(err.message || "Erreur lors de la création de la ligue", "error");
   }
 }
@@ -3077,7 +3077,6 @@ async function handleJoinLeagueSubmit(e) {
     await loadAndRenderLeagues();
     viewLeague(joined.id);
   } catch (err) {
-    console.error("Erreur rejoindre ligue:", err);
     notify(err.message || "Code invalide ou introuvable", "error");
   }
 }
@@ -3126,7 +3125,6 @@ async function leaveLeagueAction(leagueId) {
     backToLeaguesList();
     await loadAndRenderLeagues();
   } catch (err) {
-    console.error("Erreur départ ligue:", err);
     notify(err.message || "Impossible de quitter la ligue", "error");
   }
 }
@@ -3144,7 +3142,6 @@ async function openLeagueMatchVotesModal(matchId, explicitLeagueId = null) {
     try {
       state.myLeagues = await API.getMyLeagues();
     } catch (e) {
-      console.error(e);
     }
   }
 
@@ -3374,7 +3371,6 @@ async function loadLeagueMessages(leagueId, isBackground = false) {
     }
   } catch (err) {
     if (!isBackground) {
-      console.error("Erreur chargement messages:", err);
       container.innerHTML = `
         <div class="text-center text-rose-400 text-[11px] py-4 space-y-2">
           <div><svg class='lucide-inline lucide-md lucide-red' viewBox='0 0 24 24'><path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/><path d='M12 9v4'/><path d='M12 17h.01'/></svg> ${escapeHtml(err.message || 'Impossible de charger les messages')}</div>
@@ -3407,7 +3403,6 @@ async function handleSendLeagueMessage(e, leagueId) {
     await loadLeagueMessages(leagueId, false);
     input.focus();
   } catch (err) {
-    console.error("Erreur envoi message:", err);
     notify(err.message || "Erreur lors de l'envoi du message", "error");
   } finally {
     if (submitBtn) {
@@ -3492,7 +3487,6 @@ function launchConfetti() {
     }
     animationFrame = requestAnimationFrame(update);
   } catch (e) {
-    console.warn("Confetti non disponible:", e);
   }
 }
 
@@ -3559,7 +3553,6 @@ async function loadWrappedData(period = 'weekly') {
       }
     }
   } catch (err) {
-    console.error("Erreur chargement Wrapped:", err);
   }
 }
 
@@ -3715,7 +3708,6 @@ async function openAvatarSelectorModal() {
       </div>
     `;
   } catch (err) {
-    console.error("Erreur openAvatarSelectorModal:", err);
     grid.innerHTML = `
       <div class="p-6 text-center text-rose-400 text-xs bg-[#18181e] border-2 border-black rounded-[8px] space-y-2">
         <p>Erreur lors du chargement des avatars.</p>
@@ -4058,7 +4050,6 @@ async function renderResultsView() {
     }).join('');
 
   } catch (err) {
-    console.error("Erreur chargement résultats:", err);
     container.innerHTML = `
       <div class="p-6 text-center text-rose-400 text-xs bg-[#18181e] border-2 border-red-500 rounded-[10px]">
         Erreur lors du chargement des résultats des matchs.

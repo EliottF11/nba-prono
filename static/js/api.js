@@ -44,7 +44,6 @@ const API = {
       }
       return data;
     } catch (error) {
-      console.error(`Erreur API (${endpoint}):`, error);
       throw error;
     }
   },

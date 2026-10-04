@@ -266,7 +266,6 @@
         if (res.ok) {
           const data = await res.json();
           if (lastVersion !== null && data.v !== lastVersion) {
-            console.log('[LIVE-RELOAD] Modification détectée -> rafraîchissement immédiat.');
             const frame = document.getElementById('app-frame');
             if (frame) {
               frame.contentWindow.location.reload();

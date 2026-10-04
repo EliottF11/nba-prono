@@ -217,7 +217,6 @@ def get_weekly_candidates():
                 "source": "api-sports"
             }
     except Exception as e:
-        print(f"[WARN] Impossible de charger les rosters synchronisés: {e}")
 
     return {
         "east": EAST_PLAYERS,
