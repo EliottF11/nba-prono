@@ -1938,7 +1938,20 @@ async function voteForTeam(matchId, teamId, isFinished) {
 function renderLeaderboard() {
   const podiumContainer = document.getElementById('leaderboard-podium');
   const rowsContainer = document.getElementById('leaderboard-table-rows');
+  const selectEl = document.getElementById('leaderboard-league-select');
   if (!podiumContainer || !rowsContainer) return;
+
+  if (selectEl && state.myLeagues && state.myLeagues.length > 0) {
+    const currentVal = selectEl.value;
+    let optionsHtml = `<option value="general">🌍 Classement Général</option>`;
+    state.myLeagues.forEach(l => {
+      optionsHtml += `<option value="${l.id}">🏆 ${l.name}</option>`;
+    });
+    if (selectEl.innerHTML !== optionsHtml) {
+      selectEl.innerHTML = optionsHtml;
+      selectEl.value = currentVal || 'general';
+    }
+  }
 
   const lb = state.displayedLeaderboard || state.leaderboard;
 
@@ -2505,7 +2518,7 @@ async function renderProfile() {
                 <!-- En-tête de la carte à collectionner -->
                 <div class="flex items-center justify-between border-b-2 border-black pb-1.5 text-[10px] font-condensed font-black uppercase tracking-wider">
                   <span class="${badge.unlocked ? 'text-black font-black' : 'text-zinc-400'}">
-                    CARD #${cardNum} • SÉRIE 1
+                    TROPHÉE
                   </span>
                   ${badge.unlocked ? `
                     <span class="px-2 py-0.5 rounded-[4px] bg-black text-[#FFD54F] border border-black shadow-[1px_1px_0px_#000000] flex items-center gap-1">
