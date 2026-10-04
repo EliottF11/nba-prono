@@ -2080,7 +2080,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-gradient-to-r from-[#171924] via-[#1b1e2c] to-[#171924] rounded-2xl border border-amber-500/20 shadow-lg flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-xl shrink-0 text-amber-400">
-            <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
+            <img src="/static/icons/badges/icon_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2154,7 +2154,7 @@ function renderSeasonBanner() {
       <div class="p-3.5 bg-[#121216] rounded-2xl border border-[rgba(255,255,255,0.12)] shadow-md flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-xl shrink-0 text-white">
-            <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
+            <img src="/static/icons/badges/icon_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
           </div>
           <div>
             <div class="flex items-center gap-2">
@@ -2412,7 +2412,7 @@ async function renderProfile() {
           </h1>
           <div class="flex items-center justify-center gap-2 pt-0.5">
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[6px] bg-[#1a1924] border-2 border-black text-xs font-condensed font-black uppercase text-[#FFB703] shadow-[2px_2px_0px_#000000]">
-              <img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
+              <img src="/static/icons/badges/icon_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> Rang #${stats.rank || '-'} • ${stats.total_points.toFixed(1)} PTS
             </span>
           </div>
           <p class="text-[11px] text-zinc-400 font-medium">
@@ -2548,7 +2548,7 @@ async function renderProfile() {
                     ></div>
                   </div>
                   <div class="collector-holo-stamp pt-0.5 ${badge.unlocked ? 'text-black/80 font-black' : 'text-zinc-500'}">
-                    <img src="/static/icons/badges/badge_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> PICK 'N' SWIPE • TROPHÉE <img src="/static/icons/badges/badge_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
+                    <img src="/static/icons/badges/icon_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> PICK 'N' SWIPE • TROPHÉE <img src="/static/icons/badges/icon_trophy.png" class="w-3 h-3 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
                   </div>
                 </div>
 
@@ -2718,7 +2718,7 @@ function renderLeaguesList() {
     listContainer.innerHTML = `
       <div class="p-6 bg-[#12141a] rounded-2xl border border-[#1f222d] text-center space-y-4 shadow-xl">
         <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 mx-auto flex items-center justify-center text-2xl border border-amber-500/20 shadow-lg shadow-amber-500/10">
-          <img src="/static/icons/badges/badge_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
+          <img src="/static/icons/badges/icon_trophy.png" class="w-5 h-5 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>
         </div>
         <div class="font-condensed font-black text-lg text-white">Aucune ligue pour le moment</div>
         <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
@@ -2739,7 +2739,7 @@ function renderLeaguesList() {
 
   listContainer.innerHTML = leagues.map(l => {
     const isCreator = state.currentUser && state.currentUser.id === l.creator_id;
-    const rankLabel = l.user_rank ? (l.user_rank === 1 ? `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> #1` : `#${l.user_rank}`) : "-";
+    const rankLabel = l.user_rank ? (l.user_rank === 1 ? `<img src="/static/icons/badges/icon_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> #1` : `#${l.user_rank}`) : "-";
 
     return `
       <div 
@@ -2909,9 +2909,9 @@ function renderLeagueDetail(league) {
         ${members.map(member => {
           const isMe = state.currentUser && state.currentUser.id === member.user_id;
           let rankBadge = `<span class="text-slate-400 font-bold">${member.rank}</span>`;
-          if (member.rank === 1) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
-          else if (member.rank === 2) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
-          else if (member.rank === 3) rankBadge = `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
+          if (member.rank === 1) rankBadge = `<img src="/static/icons/badges/icon_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
+          else if (member.rank === 2) rankBadge = `<img src="/static/icons/badges/icon_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
+          else if (member.rank === 3) rankBadge = `<img src="/static/icons/badges/icon_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/>`;
 
           return `
             <div class="grid grid-cols-12 px-3.5 py-3 items-center text-xs transition ${
