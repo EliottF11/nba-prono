@@ -217,6 +217,7 @@ def get_weekly_candidates():
                 "source": "api-sports"
             }
     except Exception as e:
+        pass
 
     return {
         "east": EAST_PLAYERS,
