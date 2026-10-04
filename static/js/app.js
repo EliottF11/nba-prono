@@ -1,5 +1,5 @@
 /**
- * HOOPS PRONO - Logique applicative
+ * Pick 'n' Swipe - Logique applicative
  * Interface sportive épurée, sélection 1-clic et classement en direct.
  */
 
@@ -2626,7 +2626,7 @@ function registerServiceWorker() {
 
 async function shareApp() {
   const shareData = {
-    title: 'HOOPS PRONO - Rejoins la ligue !',
+    title: "Pick 'n' Swipe - Rejoins la ligue !",
     text: 'Viens pronostiquer les matchs de basket avec nous en 1-clic ! Qui sera n°1 ?',
     url: window.location.origin
   };
@@ -3093,8 +3093,8 @@ async function copyLeagueCode(code) {
 async function shareLeague(code, name) {
   const shareUrl = `${window.location.origin}/?join=${code}`;
   const shareData = {
-    title: `Rejoins ma ligue HOOPS Prono : ${name}`,
-    text: `Rejoins ma ligue privée "${name}" sur HOOPS Prono avec le code : ${code} !`,
+    title: `Rejoins ma ligue Pick 'n' Swipe : ${name}`,
+    text: `Rejoins ma ligue privée "${name}" sur Pick 'n' Swipe avec le code : ${code} !`,
     url: shareUrl
   };
 
@@ -3490,7 +3490,7 @@ function launchConfetti() {
   }
 }
 
-// --- HOOPS WRAPPED (Hebdomadaire & Fin de Saison) ---
+// --- PICK 'N' SWIPE WRAPPED (Hebdomadaire & Fin de Saison) ---
 let currentWrappedPeriod = 'weekly';
 let currentWrappedShareText = '';
 
@@ -3586,7 +3586,7 @@ async function handleNativeShareRecap() {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: "Mon Wrapped HOOPS Prono",
+        title: "Mon Wrapped Pick 'n' Swipe",
         text: text,
         url: window.location.origin
       });
@@ -3604,7 +3604,7 @@ async function handleNativeShareRecap() {
 }
 
 async function handleCopyRecapText() {
-  const text = currentWrappedShareText || (state.currentUser ? ` HOOPS PRONO - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
+  const text = currentWrappedShareText || (state.currentUser ? ` Pick 'n' Swipe - Bilan de ${state.currentUser.username} : ${state.currentUser.total_points.toFixed(1)} pts !\nRejoins-moi sur ${window.location.origin}` : "");
   try {
     await navigator.clipboard.writeText(text);
     notify("Texte récapitulatif copié dans le presse-papier !", "success");
