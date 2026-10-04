@@ -35,6 +35,7 @@ def daily_morning_sync():
         today_str = datetime.now().strftime("%Y-%m-%d")
         result = sync_scores_for_date(db, today_str)
     except Exception as e:
+        pass
     finally:
         db.close()
 
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
         from seed import seed_all_teams_and_matches
         seed_all_teams_and_matches()
     except Exception as e:
+        pass
 
     # Enregistrement de la tâche quotidienne à 07h00
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
