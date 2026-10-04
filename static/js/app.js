@@ -2581,6 +2581,14 @@ async function renderProfile() {
           <span>Se déconnecter</span>
         </button>
       </div>
+
+      <!-- Mentions Légales & Avertissement Nominatif (Fair Use) -->
+      <div class="pt-6 pb-6 text-center space-y-1">
+        <p class="font-medium text-zinc-400 text-[10px]">Pick 'n' Swipe — Plateforme indépendante.</p>
+        <button onclick="openLegalModal()" class="text-zinc-500 hover:text-zinc-300 underline transition cursor-pointer text-[10px]">
+          Mentions Légales & Avertissement Nominatif (Fair Use)
+        </button>
+      </div>
     `;
   } catch (err) {
     container.innerHTML = `
