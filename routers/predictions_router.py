@@ -472,7 +472,7 @@ def get_my_stats(
     boost_target = 1
     boost_unlocked = boost_won_count >= boost_target
 
-    scorer_target = 30
+    scorer_target = 1000
     user_points = int(current_user.total_points or 0)
     scorer_unlocked = user_points >= scorer_target
 
@@ -551,7 +551,7 @@ def get_my_stats(
         {
             "id": "scorer",
             "name": "Scoreur d'Élite",
-            "description": "Atteindre 30 points au total",
+            "description": "Atteindre 1000 points au total",
             "icon": "<img src=\'/static/icons/badges/badge_cards.png\' class=\'w-10 h-10 object-contain drop-shadow-[2px_2px_0px_#000000]\' alt=\'icon\'/>",
             "unlocked": scorer_unlocked,
             "current": min(user_points, scorer_target),
