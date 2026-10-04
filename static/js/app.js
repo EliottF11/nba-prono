@@ -7,6 +7,7 @@ const state = {
   currentUser: null,
   activeTab: 'matches',
   matchesFilter: 'all',
+  predictionFilter: 'unpredicted',
   selectedWeek: 'all',
   availableWeeks: [],
   matches: [],
@@ -770,17 +771,15 @@ function getTeamFormDotsHtml(formArray) {
 
 // Récupération des matchs filtrés
 function getFilteredMatches() {
-  let filtered = state.matches;
-  if (state.matchesFilter === 'upcoming') {
-    filtered = filtered.filter(m => m.status === 'upcoming');
-  } else if (state.matchesFilter === 'finished') {
-    filtered = filtered.filter(m => m.status === 'finished');
-  } else {
-    // En mode Tinder ou par défaut, on place toujours les matchs ouverts (upcoming) en premier dans la pile
-    const upcoming = filtered.filter(m => m.status === 'upcoming');
-    const finished = filtered.filter(m => m.status === 'finished');
-    filtered = upcoming.concat(finished);
+  // Toujours filtrer sur 'upcoming' dans la vue principale (les terminés sont dans 'Résultats')
+  let filtered = state.matches.filter(m => m.status === 'upcoming');
+  
+  if (state.predictionFilter === 'unpredicted') {
+    filtered = filtered.filter(m => !state.myPredictions[m.id]);
+  } else if (state.predictionFilter === 'predicted') {
+    filtered = filtered.filter(m => state.myPredictions[m.id]);
   }
+  
   return filtered;
 }
 
@@ -790,6 +789,28 @@ function setMatchesViewMode(mode) {
   renderMatchesList();
 }
 window.setMatchesViewMode = setMatchesViewMode;
+
+// Changement du filtre de prédiction
+function setPredictionFilter(filter) {
+  state.predictionFilter = filter;
+  state.tinderDeckIndex = 0; // reset swipe deck
+  
+  const tabUnpred = document.getElementById('tab-unpredicted');
+  const tabPred = document.getElementById('tab-predicted');
+  
+  if (tabUnpred && tabPred) {
+    if (filter === 'unpredicted') {
+      tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
+      tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
+    } else {
+      tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
+      tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
+    }
+  }
+  
+  renderMatchesList();
+}
+window.setPredictionFilter = setPredictionFilter;
 
 // Réinitialisation de la pile Tinder
 function resetTinderDeck() {
@@ -1421,7 +1442,9 @@ async function triggerSwipeAction(match, direction) {
 
   if (isFinished) {
     notify("Match terminé : passage au match suivant", "info");
-    state.tinderDeckIndex++;
+    if (state.predictionFilter !== 'unpredicted') {
+      state.tinderDeckIndex++;
+    }
     setTimeout(() => renderMatchesList(), 240);
     return;
   }
@@ -1449,7 +1472,9 @@ async function triggerSwipeAction(match, direction) {
   });
 
   // Avancement de l'index de la pile
-  state.tinderDeckIndex++;
+  if (state.predictionFilter !== 'unpredicted') {
+    state.tinderDeckIndex++;
+  }
 
   // Mise à jour optimiste du vote
   state.myPredictions[match.id] = chosenTeam.id;
@@ -1535,8 +1560,12 @@ async function undoLastSwipe() {
   const lastSwipe = state.swipeHistory.pop();
   if (!lastSwipe) return;
 
-  // Recul de l'index de la pile
-  state.tinderDeckIndex = Math.max(0, state.tinderDeckIndex - 1);
+  // Recul de l'index de la pile (on restaure l'index tel qu'il était)
+  if (lastSwipe.deckIndex !== undefined) {
+    state.tinderDeckIndex = lastSwipe.deckIndex;
+  } else {
+    state.tinderDeckIndex = Math.max(0, state.tinderDeckIndex - 1);
+  }
 
   // Restauration du pronostic précédent
   if (lastSwipe.previousVote) {
