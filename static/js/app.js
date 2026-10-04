@@ -3695,7 +3695,7 @@ async function openAvatarSelectorModal() {
                 ` : ''}
               </div>
               
-              ${isSelected ? \'<span class="text-[8px] truncate w-full text-center leading-none mt-0.5"><strong class="text-[#D95D39]">ACTIF</strong></span>\' : \'\'}
+              ${isSelected ? '<span class="text-[8px] truncate w-full text-center leading-none mt-0.5"><strong class="text-[#D95D39]">ACTIF</strong></span>' : ''}
             </div>
           `;
         }).join('')}
