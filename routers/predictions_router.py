@@ -137,17 +137,7 @@ def make_prediction(
             detail="L'équipe choisie ne dispute pas ce match."
         )
 
-    # Chantier 4 : Obligation de choisir ses Joueurs de la Semaine (Est & Ouest)
-    weekly_pred = db.query(WeeklyPlayerPrediction).filter(
-        WeeklyPlayerPrediction.user_id == current_user.id,
-        WeeklyPlayerPrediction.week_number == match.week_number
-    ).first()
 
-    if not weekly_pred or not weekly_pred.east_player or not weekly_pred.west_player:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Tu dois obligatoirement choisir tes 2 Joueurs de la Semaine (Est & Ouest) pour la Week {match.week_number} avant de valider tes matchs !"
-        )
 
     # Recherche d'un éventuel pronostic déjà existant
     existing_pred = db.query(Prediction).filter(
