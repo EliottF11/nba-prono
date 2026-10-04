@@ -802,9 +802,12 @@ function setPredictionFilter(filter) {
     if (filter === 'unpredicted') {
       tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
       tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
+      // Optionnel : on peut remettre en Tinder si on veut, mais on garde le dernier choix
     } else {
       tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
       tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
+      // Force le mode Liste pour "Mes Pronos" (Le Swipe n'a pas de sens pour voir ses pronos)
+      state.matchesViewMode = 'list';
     }
   }
   
@@ -1593,6 +1596,7 @@ window.undoLastSwipe = undoLastSwipe;
 function renderMatchesListView(container, filtered) {
   const toolbarHtml = `
     <div class="flex items-center justify-between gap-2 mb-2 px-1">
+      ${state.predictionFilter === 'unpredicted' ? `
       <div class="flex items-center gap-1.5">
         <button 
           onclick="setMatchesViewMode('tinder')" 
@@ -1607,6 +1611,7 @@ function renderMatchesListView(container, filtered) {
           <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><line x1='8' x2='21' y1='6' y2='6'/><line x1='8' x2='21' y1='12' y2='12'/><line x1='8' x2='21' y1='18' y2='18'/><line x1='3' x2='3.01' y1='6' y2='6'/><line x1='3' x2='3.01' y1='12' y2='12'/><line x1='3' x2='3.01' y1='18' y2='18'/></svg> Liste
         </button>
       </div>
+      ` : '<div></div>'}
 
       <div class="inline-flex items-center gap-1.5 bg-[#18181e] border-2 border-black px-2.5 py-0.5 rounded-[8px] shadow-[2px_2px_0px_#000000]">
         <span class="font-condensed font-black text-xs uppercase text-[#F4F4F0] tracking-wider">
