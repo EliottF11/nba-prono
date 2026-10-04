@@ -1496,6 +1496,15 @@ async function triggerSwipeAction(match, direction) {
       notify(`Prono validé : ${chosenTeam.city} ! `, "success");
     }
   } catch (err) {
+    // Rollback de la mise à jour optimiste
+    if (previousVote) {
+      state.myPredictions[match.id] = previousVote;
+    } else {
+      delete state.myPredictions[match.id];
+    }
+    if (state.predictionFilter !== 'unpredicted') {
+      state.tinderDeckIndex = Math.max(0, state.tinderDeckIndex - 1);
+    }
     notify(err.message, "error");
   }
 
