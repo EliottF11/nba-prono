@@ -4,7 +4,7 @@ Contient les 30 franchises NBA officielles et les VRAIES confrontations officiel
 du calendrier NBA de la SAISON 2026/2027 (Opening Week, 20 au 22 Octobre 2026).
 Source officielle NBA.com (Saison 2026-2027).
 """
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from database import engine, SessionLocal, Base
 from models import Team, Match, User, Prediction
 
