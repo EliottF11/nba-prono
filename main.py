@@ -143,6 +143,41 @@ def trigger_sync(date_str: str):
     finally:
         db.close()
 
+@app.get("/api/mock-preseason", tags=["Système"])
+def trigger_mock_preseason():
+    """Injecte 2 faux matchs de présaison pour tester la Ligue Flash, car l'API gratuite bloque les dates de 2024."""
+    db = SessionLocal()
+    try:
+        from models import Match, Team
+        from datetime import datetime, timedelta, timezone
+        
+        # Prendre 2 équipes au hasard
+        teams = db.query(Team).limit(4).all()
+        if len(teams) < 4:
+            return {"status": "error", "message": "Pas assez d'équipes en base. Lancer /api/seed d'abord."}
+            
+        deadline1 = datetime.now(timezone.utc) + timedelta(hours=2)
+        deadline2 = datetime.now(timezone.utc) + timedelta(hours=4)
+        
+        m1 = Match(
+            home_team_id=teams[0].id, away_team_id=teams[1].id,
+            home_odds=1.85, away_odds=1.95,
+            deadline=deadline1, week_number=1, status="upcoming", season_stage="preseason"
+        )
+        m2 = Match(
+            home_team_id=teams[2].id, away_team_id=teams[3].id,
+            home_odds=2.10, away_odds=1.75,
+            deadline=deadline2, week_number=1, status="upcoming", season_stage="preseason"
+        )
+        db.add_all([m1, m2])
+        db.commit()
+        return {"status": "ok", "message": "2 matchs de présaison injectés ! Va sur l'app !"}
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
