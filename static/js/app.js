@@ -425,12 +425,11 @@ async function spinWheel() {
     const bonus = await API.spinBonusWheel();
     
     const wheel = document.getElementById('bonus-wheel');
-    const targetDeg = getBonusRotation(bonus.bonus_type);
-    // 5 tours complets (1800deg) + angle du bonus, en négatif pour pointer vers le haut
-    const finalRot = 1800 + targetDeg; 
+    // Le getBonusRotation inclut déjà les 5 tours complets
+    const finalRot = getBonusRotation(bonus.bonus_type); 
     
     if (wheel) {
-      wheel.style.transform = `rotate(-${finalRot}deg)`;
+      wheel.style.transform = `rotate(${finalRot}deg)`;
     }
     
     setTimeout(() => {
@@ -464,11 +463,13 @@ async function spinWheel() {
 window.spinWheel = spinWheel;
 
 function getBonusRotation(type) {
-  if (type === 'DOUBLE') return 45;
-  if (type === 'SHIELD') return 135;
-  if (type === 'ALL_IN') return 225;
-  if (type === 'UPSET') return 315;
-  return 0;
+  const baseSpins = 360 * 5; // 5 tours complets = 1800
+  // Angles positifs calculés pour placer le centre du quartier à 0° (en haut)
+  if (type === 'DOUBLE') return baseSpins + 45;
+  if (type === 'SHIELD') return baseSpins + 315;
+  if (type === 'ALL_IN') return baseSpins + 225;
+  if (type === 'UPSET') return baseSpins + 135;
+  return baseSpins;
 }
 
 function getBonusColor(type) {
