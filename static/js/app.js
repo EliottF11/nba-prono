@@ -985,27 +985,26 @@ function getTeamFormDotsHtml(formArray) {
 // Récupération des matchs filtrés
 function getFilteredMatches() {
   // Toujours filtrer sur 'upcoming' dans la vue principale
-  let upcoming = state.matches.filter(m => m.status === 'upcoming');
+  let filtered = state.matches.filter(m => m.status === 'upcoming');
   
+  if (state.predictionFilter === 'unpredicted') {
+    filtered = filtered.filter(m => !state.myPredictions[m.id]);
+  } else if (state.predictionFilter === 'predicted') {
+    filtered = filtered.filter(m => state.myPredictions[m.id]);
+  }
+
   // Injection des pubs AdSense In-Feed tous les AD_FREQUENCY matchs (positions fixes)
   const withAds = [];
   let matchCount = 0;
-  for (let i = 0; i < upcoming.length; i++) {
-    withAds.push(upcoming[i]);
+  for (let i = 0; i < filtered.length; i++) {
+    withAds.push(filtered[i]);
     matchCount++;
-    if (matchCount % AD_FREQUENCY === 0 && i !== upcoming.length - 1) {
+    if (matchCount % AD_FREQUENCY === 0 && i !== filtered.length - 1) {
       withAds.push({ isAd: true, id: 'ad-' + i });
     }
   }
   
-  let filtered = withAds;
-  if (state.predictionFilter === 'unpredicted') {
-    filtered = filtered.filter(m => m.isAd || !state.myPredictions[m.id]);
-  } else if (state.predictionFilter === 'predicted') {
-    filtered = filtered.filter(m => m.isAd || state.myPredictions[m.id]);
-  }
-  
-  return filtered;
+  return withAds;
 }
 
 // Changement du mode de vue des matchs ('tinder' ou 'list')
