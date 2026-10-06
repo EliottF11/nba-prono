@@ -327,4 +327,18 @@ class PropPredictionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# --- SCHEMAS BONUSES ---
+
+class WeeklyUserBonusResponse(BaseModel):
+    id: int
+    user_id: int
+    week_number: int
+    year: int
+    bonus_type: str
+    is_used: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 

@@ -86,6 +86,7 @@ class Prediction(Base):
     selected_team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
     points_won = Column(Float, default=0.0, nullable=False)
     is_boosted = Column(Boolean, default=False, nullable=False)   # Bonus x2 activé (max 1 par semaine)
+    applied_bonus = Column(String(20), nullable=True)             # Nouveau : 'DOUBLE', 'SHIELD', 'ALL_IN', 'UPSET'
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     # Relations
@@ -267,4 +268,30 @@ class PropPrediction(Base):
 
     def __repr__(self):
         return f"<PropPrediction User {self.user_id} Prop {self.prop_id} -> {self.choice}>"
+
+
+class WeeklyUserBonus(Base):
+    """
+    Modèle des bonus hebdomadaires aléatoires (Roue des bonus).
+    1 bonus max par semaine par utilisateur.
+    Types : 'DOUBLE', 'SHIELD', 'ALL_IN', 'UPSET'
+    """
+    __tablename__ = "weekly_user_bonuses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    week_number = Column(Integer, nullable=False, index=True)
+    year = Column(Integer, nullable=False, index=True)
+    bonus_type = Column(String(20), nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    user = relationship("User", backref="weekly_bonuses")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "week_number", "year", name="uq_user_weekly_bonus"),
+    )
+
+    def __repr__(self):
+        return f"<WeeklyUserBonus User {self.user_id} W{self.week_number}/{self.year} -> {self.bonus_type}>"
 
