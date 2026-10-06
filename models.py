@@ -58,6 +58,7 @@ class Match(Base):
     away_odds = Column(Float, nullable=False)                   # Ex: 2.75
     deadline = Column(DateTime, nullable=False)                 # Heure limite pour pronostiquer
     status = Column(String(20), default="upcoming", nullable=False) # "upcoming", "live", "finished"
+    season_stage = Column(String(50), default="regular", nullable=False) # "preseason", "regular", "playin", "playoffs"
     winner_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True) # Renseigné quand terminé
     home_score = Column(Integer, nullable=True)                 # Score final domicile (ex: 112)
     away_score = Column(Integer, nullable=True)                 # Score final extérieur (ex: 108)

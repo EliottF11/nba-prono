@@ -258,23 +258,63 @@ def toggle_prediction_boost(
 @router.get("/leaderboard", response_model=List[LeaderboardEntry])
 def get_leaderboard(db: Session = Depends(get_db)):
     """
-    Renvoie le classement général des joueurs trié par points décroissants.
+    Renvoie le classement général des joueurs trié par points décroissants (Uniquement Saison Régulière).
     """
-    users = db.query(User).order_by(User.total_points.desc(), User.id.asc()).all()
+    users = db.query(User).all()
     leaderboard = []
 
-    for rank, user in enumerate(users, start=1):
-        preds = user.predictions
-        won = sum(1 for p in preds if p.points_won > 0)
-        leaderboard.append(LeaderboardEntry(
-            rank=rank,
-            user_id=user.id,
-            username=user.username,
-            total_points=user.total_points,
-            avatar_url=user.avatar_url,
-            predictions_count=len(preds),
-            won_count=won
-        ))
+    for user in users:
+        regular_preds = [p for p in user.predictions if p.match.season_stage == 'regular']
+        total_pts = sum(p.points_won for p in regular_preds)
+        won = sum(1 for p in regular_preds if p.points_won > 0)
+        leaderboard.append({
+            "user_id": user.id,
+            "username": user.username,
+            "total_points": round(total_pts, 2),
+            "avatar_url": user.avatar_url,
+            "predictions_count": len(regular_preds),
+            "won_count": won
+        })
+
+    # Tri manuel
+    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
+    
+    # Assignation du rang
+    for rank, entry in enumerate(leaderboard, start=1):
+        entry["rank"] = rank
+
+    return leaderboard
+
+
+@router.get("/leaderboard/flash", response_model=List[LeaderboardEntry])
+def get_leaderboard_flash(db: Session = Depends(get_db)):
+    """
+    Renvoie le classement pour le Tournoi Flash Présaison.
+    """
+    users = db.query(User).all()
+    leaderboard = []
+
+    for user in users:
+        preseason_preds = [p for p in user.predictions if p.match.season_stage == 'preseason']
+        if not preseason_preds:
+            continue # Ne pas inclure les joueurs sans prono présaison ? Ou les inclure avec 0 pts. On peut les inclure.
+        total_pts = sum(p.points_won for p in preseason_preds)
+        won = sum(1 for p in preseason_preds if p.points_won > 0)
+        leaderboard.append({
+            "user_id": user.id,
+            "username": user.username,
+            "total_points": round(total_pts, 2),
+            "avatar_url": user.avatar_url,
+            "predictions_count": len(preseason_preds),
+            "won_count": won
+        })
+
+    # Tri manuel
+    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
+    
+    # Assignation du rang
+    for rank, entry in enumerate(leaderboard, start=1):
+        entry["rank"] = rank
 
     return leaderboard
 

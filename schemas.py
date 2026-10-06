@@ -52,6 +52,7 @@ class MatchResponse(BaseModel):
     away_odds: float
     deadline: datetime
     status: str
+    season_stage: str
     week_number: int = 1
     winner_team_id: Optional[int] = None
     home_score: Optional[int] = None

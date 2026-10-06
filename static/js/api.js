@@ -122,6 +122,10 @@ const API = {
     return await this.request('/api/leaderboard');
   },
 
+  async getFlashLeaderboard() {
+    return await this.request('/api/leaderboard/flash');
+  },
+
   // --- Pronostics d'Avant-Saison (Chantier 3) ---
   async getSeasonCandidates() {
     return await this.request('/api/season/candidates');

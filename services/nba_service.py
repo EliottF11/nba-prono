@@ -105,6 +105,17 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
                 
             week_number = max(1, ((deadline - datetime(2026, 10, 20, tzinfo=timezone.utc)).days // 7) + 1)
             
+            # Détection du season_stage (Pre-season, Regular Season, Play-ins, etc.)
+            api_stage = g.get("stage") or ""
+            print(f"[SYNC DEBUG] Match {home_api_name} vs {away_api_name} | api_stage: '{api_stage}'")
+            season_stage = 'regular'
+            if 'pre-season' in api_stage.lower() or 'preseason' in api_stage.lower():
+                season_stage = 'preseason'
+            elif 'playin' in api_stage.lower() or 'play-in' in api_stage.lower():
+                season_stage = 'playin'
+            elif 'playoff' in api_stage.lower() or 'play-off' in api_stage.lower():
+                season_stage = 'playoffs'
+            
             match = Match(
                 home_team_id=home_id,
                 away_team_id=away_id,
@@ -112,10 +123,21 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
                 away_odds=1.90,
                 deadline=deadline,
                 week_number=week_number,
-                status="upcoming"
+                status="upcoming",
+                season_stage=season_stage
             )
             db.add(match)
             db.flush() # Assigne un ID pour la suite
+
+        # Si le match existait déjà, on met à jour son season_stage au cas où
+        if match:
+            api_stage = g.get("stage") or ""
+            if 'pre-season' in api_stage.lower() or 'preseason' in api_stage.lower():
+                match.season_stage = 'preseason'
+            elif 'playin' in api_stage.lower() or 'play-in' in api_stage.lower():
+                match.season_stage = 'playin'
+            elif 'playoff' in api_stage.lower() or 'play-off' in api_stage.lower():
+                match.season_stage = 'playoffs'
 
         # Extraction des scores
         scores = g.get("scores", {})

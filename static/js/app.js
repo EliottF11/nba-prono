@@ -4589,6 +4589,15 @@ window.handleLeaderboardFilterChange = async function() {
   
   if (val === 'general') {
     state.displayedLeaderboard = state.leaderboard;
+  } else if (val === 'flash') {
+    try {
+      const flashLb = await API.getFlashLeaderboard();
+      state.displayedLeaderboard = flashLb || [];
+    } catch (err) {
+      console.error(err);
+      notify("Erreur chargement classement flash", "error");
+      state.displayedLeaderboard = [];
+    }
   } else {
     try {
       const detail = await API.getLeagueDetail(val);
