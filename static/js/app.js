@@ -776,13 +776,25 @@ function getTeamFormDotsHtml(formArray) {
 
 // Récupération des matchs filtrés
 function getFilteredMatches() {
-  // Toujours filtrer sur 'upcoming' dans la vue principale (les terminés sont dans 'Résultats')
-  let filtered = state.matches.filter(m => m.status === 'upcoming');
+  // Toujours filtrer sur 'upcoming' dans la vue principale
+  let upcoming = state.matches.filter(m => m.status === 'upcoming');
   
+  // Injection des pubs AdSense In-Feed tous les AD_FREQUENCY matchs (positions fixes)
+  const withAds = [];
+  let matchCount = 0;
+  for (let i = 0; i < upcoming.length; i++) {
+    withAds.push(upcoming[i]);
+    matchCount++;
+    if (matchCount % AD_FREQUENCY === 0 && i !== upcoming.length - 1) {
+      withAds.push({ isAd: true, id: 'ad-' + i });
+    }
+  }
+  
+  let filtered = withAds;
   if (state.predictionFilter === 'unpredicted') {
-    filtered = filtered.filter(m => !state.myPredictions[m.id]);
+    filtered = filtered.filter(m => m.isAd || !state.myPredictions[m.id]);
   } else if (state.predictionFilter === 'predicted') {
-    filtered = filtered.filter(m => state.myPredictions[m.id]);
+    filtered = filtered.filter(m => m.isAd || state.myPredictions[m.id]);
   }
   
   return filtered;
@@ -878,6 +890,8 @@ function startRetroCountdown(targetTimestamp) {
   retroCountdownInterval = setInterval(update, 1000);
 }
 
+const AD_FREQUENCY = 15;
+
 function getNextNbaNightTimestamp() {
   const d = new Date();
   d.setHours(d.getHours() + 6);
@@ -972,6 +986,28 @@ function renderTinderDeck(container, filtered) {
   const thirdMatch = currentIndex + 2 < total ? filtered[currentIndex + 2] : null;
 
   function renderCardContent(match, idx, isTop = false) {
+    // Rend le composant AdCard s'il s'agit d'une pub insérée dynamiquement
+    if (match.isAd) {
+      return `
+        <!-- Overlay dynamique pour le swipe (visuel neutre) -->
+        <div class="swipe-overlay-left" style="background: linear-gradient(90deg, rgba(255,255,255,0.2) 0%, transparent 80%);"></div>
+        <div class="swipe-overlay-right" style="background: linear-gradient(270deg, rgba(255,255,255,0.2) 0%, transparent 80%);"></div>
+        
+        <div class="flex flex-col h-full items-center justify-center bg-[#16151c] rounded-[10px] border-2 border-black/80 relative z-20 overflow-hidden">
+          <div class="absolute top-2 right-3 text-[10px] font-black uppercase text-zinc-500 bg-black/40 px-2 py-0.5 rounded-[4px]">Sponsorisé</div>
+          <div class="w-full h-full flex flex-col justify-center px-4 py-8">
+            <ins class="adsbygoogle"
+                 style="display:block; width:100%; height:100%; min-height: 250px;"
+                 data-ad-format="fluid"
+                 data-ad-layout-key="..."
+                 data-ad-client="ca-pub-8596902559458518"
+                 data-ad-slot="..."></ins>
+          </div>
+          <div class="absolute bottom-2 text-center text-[10px] font-medium text-zinc-500 uppercase">Swipe pour passer</div>
+        </div>
+      `;
+    }
+
     const isFinished = match.status === 'finished';
     const deadline = new Date(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
@@ -1243,8 +1279,16 @@ function renderTinderDeck(container, filtered) {
   // Attachement des écouteurs gestuels tactiles et pointeur sur la carte supérieure
   const topCardEl = document.getElementById('tinder-top-card');
   if (topCardEl) {
-    attachSwipeListeners(topCardEl, topMatch, topMatch.status === 'finished');
+    // Permettre le swipe même si c'est une pub (considérée comme "finished" pour ne pas déclencher de pronostic)
+    const isFinishedOrAd = (topMatch && (topMatch.status === 'finished' || topMatch.isAd));
+    attachSwipeListeners(topCardEl, topMatch, isFinishedOrAd);
   }
+
+  // Initialisation AdSense In-Feed
+  const ads = container.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status="done"])');
+  ads.forEach(() => {
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+  });
 }
 
 // --- Gestion des Gestes de Glissement (Swipe & Haptics) ---
@@ -1440,6 +1484,14 @@ function attachSwipeListeners(cardEl, match, isFinished) {
 
 // --- Action de Validation suite au Swipe ---
 async function triggerSwipeAction(match, direction) {
+  if (match.isAd) {
+    if (state.predictionFilter !== 'unpredicted') {
+      state.tinderDeckIndex++;
+    }
+    setTimeout(() => renderMatchesList(), 240);
+    return;
+  }
+
   const chosenTeam = direction === 'left' ? match.home_team : match.away_team;
   const isFinished = match.status === 'finished';
 
@@ -1652,6 +1704,22 @@ function renderMatchesListView(container, filtered) {
   }
 
   const listItemsHtml = filtered.map(match => {
+    if (match.isAd) {
+      return `
+        <div class="mb-4 bg-[#16151c] rounded-[10px] border-[3px] border-black shadow-[4px_4px_0px_#000000] overflow-hidden p-3 relative">
+          <div class="absolute top-1 left-2 text-[9px] font-black uppercase text-zinc-500 bg-black/40 px-1.5 py-0.5 rounded-[4px]">Sponsorisé</div>
+          <div class="w-full flex items-center justify-center min-h-[120px] rounded-[8px] bg-[#121216] border-2 border-black/50 mt-4">
+            <ins class="adsbygoogle"
+                 style="display:block; width:100%; height:100%;"
+                 data-ad-format="fluid"
+                 data-ad-layout-key="..."
+                 data-ad-client="ca-pub-8596902559458518"
+                 data-ad-slot="..."></ins>
+          </div>
+        </div>
+      `;
+    }
+
     const isFinished = match.status === 'finished';
     const deadline = new Date(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
@@ -1829,6 +1897,12 @@ function renderMatchesListView(container, filtered) {
       ${listItemsHtml}
     </div>
   `;
+
+  // Initialisation AdSense In-Feed
+  const ads = container.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status="done"])');
+  ads.forEach(() => {
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+  });
 }
 
 // --- Action Bonus x2 Arcade (Neo-Brutaliste Physique avec Lock & Vibration) ---
@@ -2749,7 +2823,7 @@ function renderLeaguesList() {
         </p>
         <div class="flex items-center justify-center gap-2 pt-1">
           <button onclick="openJoinLeagueModal()" class="px-4 py-2 rounded-xl bg-[#171a24] hover:bg-[#202534] border border-[#2b3044] text-slate-200 font-condensed font-bold text-xs uppercase tracking-wider transition cursor-pointer">
-            <img src="/static/icons/badges/icon_key.jpg" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="key"/> Rejoindre
+            Rejoindre
           </button>
           <button onclick="openCreateLeagueModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase tracking-wider transition shadow-md cursor-pointer">
             + Créer une ligue
