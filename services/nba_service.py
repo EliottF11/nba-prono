@@ -68,7 +68,13 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
     met à jour les scores des matchs et calcule les gains des pronostics terminés.
     """
     headers = get_headers()
-    url = f"{BASE_URL}/games?league={NBA_LEAGUE_ID}&date={date_str}"
+    # Récupérer l'année de la date pour le paramètre season (requis par l'API)
+    year = date_str.split('-')[0]
+    season_param = "2024" # Par défaut pour cette saison
+    if year >= "2024":
+        season_param = year
+    
+    url = f"{BASE_URL}/games?league={NBA_LEAGUE_ID}&season={season_param}&date={date_str}"
 
     with httpx.Client(timeout=15) as client:
         res = client.get(url, headers=headers)
