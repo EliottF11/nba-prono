@@ -87,6 +87,11 @@ def serve_frontend():
     """Sert l'application Web mobile-first à la racine."""
     return FileResponse("static/index.html")
 
+@app.get("/ads.txt", include_in_schema=False)
+def serve_ads_txt():
+    """Sert le fichier ads.txt pour Google AdSense."""
+    return FileResponse("static/ads.txt")
+
 @app.get("/preview", include_in_schema=False)
 def serve_preview():
     """Sert le simulateur iPhone officiel avec rechargement automatique en direct."""

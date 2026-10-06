@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pick 'n' Swipe — Motion Design Launch</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+
+  #canvas {
+    width: 390px;
+    height: 844px;
+    background: #121216;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #000;
+    box-shadow: 8px 8px 0px #000;
+  }
+
+  /* ========== START SCREEN ========== */
+  #start-screen {
+    position: absolute;
+    inset: 0;
+    background: #121216;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    cursor: pointer;
+  }
+  #start-screen .play-btn {
+    width: 90px; height: 90px;
+    background: #D95D39;
+    border: 3px solid #000;
+    border-radius: 50%;
+    box-shadow: 5px 5px 0px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+  }
+  #start-screen .play-btn:hover { transform: scale(1.08); }
+  #start-screen .play-btn svg { margin-left: 5px; }
+  #start-screen p {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #F4F4F0;
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin-top: 20px;
+    text-transform: uppercase;
+  }
+  #start-screen .sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* ========== SCENES CONTAINER ========== */
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .scene.active {
+    visibility: visible;
+  }
+
+  /* ========== SCENE 1: HOOK ========== */
+  #scene1 { background: #000; }
+  #scene1 .basketball {
+    font-size: 80px;
+    filter: drop-shadow(4px 4px 0px #000);
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #scene1 .hook-text {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #F4F4F0;
+    font-size: 52px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 3px;
+    text-shadow: 4px 4px 0px #000;
+    opacity: 0;
+    transform: scale(1.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+  }
+  #scene1 .flash-overlay {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ========== SCENE 2: PROBLEM ========== */
+  #scene2 { background: #121216; }
+  #scene2 .chat-container {
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+  .chat-bubble {
+    background: #18181e;
+    border: 2.5px solid #000;
+    box-shadow: 4px 4px 0px #000;
+    border-radius: 12px;
+    padding: 10px 14px;
+    max-width: 80%;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .chat-bubble .name {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 3px;
+  }
+  .chat-bubble .msg {
+    font-size: 13px;
+    color: #F4F4F0;
+    font-weight: 700;
+  }
+  .chat-bubble:nth-child(1) .name { color: #D95D39; }
+  .chat-bubble:nth-child(2) { align-self: flex-end; }
+  .chat-bubble:nth-child(2) .name { color: #10B981; }
+  .chat-bubble:nth-child(3) .name { color: #FFD54F; }
+
+  #scene2 .problem-text {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #D95D39;
+    font-size: 42px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 2px;
+    text-shadow: 3px 3px 0px #000;
+    opacity: 0;
+    position: absolute;
+    bottom: 120px;
+    width: 90%;
+  }
+  .glitch { position: relative; }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    opacity: 0;
+  }
+  .glitch.active::before {
+    color: #ff0040;
+    left: -2px; top: -1px;
+    animation: glitch1 0.12s linear 2;
+    opacity: 0.7;
+  }
+  .glitch.active::after {
+    color: #00f0ff;
+    left: 2px; top: 1px;
+    animation: glitch2 0.12s linear 2;
+    opacity: 0.7;
+  }
+  @keyframes glitch1 {
+    0% { clip-path: inset(20% 0 60% 0); }
+    50% { clip-path: inset(50% 0 20% 0); }
+    100% { clip-path: inset(10% 0 70% 0); }
+  }
+  @keyframes glitch2 {
+    0% { clip-path: inset(60% 0 10% 0); }
+    50% { clip-path: inset(30% 0 40% 0); }
+    100% { clip-path: inset(70% 0 5% 0); }
+  }
+
+  /* ========== SCENE 3: SWIPE REVEAL ========== */
+  #scene3 { background: #121216; }
+  .match-card {
+    width: 320px;
+    background: #18181e;
+    border: 3px solid #000;
+    box-shadow: 6px 6px 0px #000;
+    border-radius: 16px;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+  .match-card .vs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .match-card .team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .match-card .team-logo {
+    width: 64px; height: 64px;
+    background: #222;
+    border: 2.5px solid #000;
+    border-radius: 12px;
+    box-shadow: 3px 3px 0px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+  .match-card .team-name {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #F4F4F0;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .match-card .vs-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #D95D39;
+    text-shadow: 2px 2px 0px #000;
+  }
+  .match-card .odds-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 8px;
+  }
+  .match-card .odd {
+    flex: 1;
+    text-align: center;
+    background: #121216;
+    border: 2px solid #000;
+    border-radius: 8px;
+    padding: 6px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: #FFD54F;
+    box-shadow: 2px 2px 0px #000;
+  }
+  .swipe-trail {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 100%;
+    border-radius: 16px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .swipe-trail.right { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3)); }
+  .swipe-trail.left { background: linear-gradient(-90deg, transparent, rgba(217,93,57,0.4)); }
+
+  #scene3 .reveal-text {
+    font-family: 'Bebas Neue', sans-serif;
+    color: #F4F4F0;
+    font-size: 56px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: 3px;
+    text-shadow: 4px 4px 0px #000;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+    opacity: 0;
+  }
+  #scene3 .word {
+    display: inline-block;
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  #scene3 .word.w-orange { color: #D95D39; }
+
+  /* ========== SCENE 4: FEATURES ========== */
+  #scene4 { background: #121216; }
+  .panels-container {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+  }
+  .feature-panel {
+    flex: 1;
+    border: 3px solid #000;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(-100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-panel:nth-child(1) { background: linear-gradient(135deg, #0d1f17, #121216); }
+  .feature-panel:nth-child(2) { background: linear-gradient(135deg, #1f1a0d, #121216); }
+  .feature-panel:nth-child(3) { background: linear-gradient(135deg, #1f0d0d, #121216); }
+  .feature-panel .panel-icon { font-size: 40px; }
+  .feature-panel .panel-stat {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    text-shadow: 3px 3px 0px #000;
+  }
+  .feature-panel:nth-child(1) .panel-stat { color: #10B981; }
+  .feature-panel:nth-child(2) .panel-stat { color: #FFD54F; }
+  .feature-panel:nth-child(3) .panel-stat { color: #D95D39; }
+  .feature-panel .panel-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #F4F4F0;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 0px #000;
+  }
+
+  /* ========== SCENE 5: CTA ========== */
+  #scene5 { background: #000; }
+  #scene5 .logo-container {
+    text-align: center;
+    opacity: 0;
+    transform: scale(3);
+  }
+  #scene5 .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: #F4F4F0;
+    letter-spacing: 4px;
+    text-shadow: 5px 5px 0px #000;
+    line-height: 1;
+  }
+  #scene5 .logo-sub {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    color: #D95D39;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  #scene5 .cta-btn {
+    margin-top: 40px;
+    background: #D95D39;
+    border: 3px solid #000;
+    box-shadow: 6px 6px 0px #000;
+    border-radius: 14px;
+    padding: 16px 36px;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  #scene5 .cta-btn span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #fff;
+    letter-spacing: 3px;
+  }
+  #scene5 .free-tag {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 900;
+    color: #888;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 16px;
+    opacity: 0;
+  }
+  #scene5 .flash-overlay {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ========== SCENE 6: URGENCY ========== */
+  #scene6 { background: #000; }
+  #scene6 .urgency-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: #FFD54F;
+    letter-spacing: 2px;
+    text-align: center;
+    text-shadow: 3px 3px 0px #000;
+    opacity: 0;
+  }
+  #scene6 .url-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    color: #F4F4F0;
+    letter-spacing: 1px;
+    margin-top: 20px;
+    opacity: 0;
+    padding: 8px 20px;
+    border: 2px solid #333;
+    border-radius: 8px;
+  }
+
+  /* ========== SCREEN SHAKE ========== */
+  @keyframes shake {
+    0%, 100% { transform: translate(0); }
+    10% { transform: translate(-8px, 4px); }
+    20% { transform: translate(6px, -6px); }
+    30% { transform: translate(-4px, 2px); }
+    40% { transform: translate(4px, -4px); }
+    50% { transform: translate(-2px, 6px); }
+    60% { transform: translate(6px, -2px); }
+    70% { transform: translate(-6px, 4px); }
+    80% { transform: translate(2px, -8px); }
+    90% { transform: translate(-4px, 2px); }
+  }
+  .shake { animation: shake 0.3s ease-out; }
+
+  /* ========== PARTICLE BURST ========== */
+  .particle {
+    position: absolute;
+    width: 8px; height: 8px;
+    border: 2px solid #000;
+    box-shadow: 2px 2px 0px #000;
+    pointer-events: none;
+  }
+</style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8596902559458518"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div id="canvas">
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <div class="play-btn">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="#fff"><polygon points="5,3 19,12 5,21"/></svg>
+    </div>
+    <p>Lancer l'animation</p>
+    <span class="sub">Motion Design &bull; 20 secondes</span>
+  </div>
+
+  <!-- SCENE 1: HOOK -->
+  <div id="scene1" class="scene">
+    <div class="flash-overlay" id="flash1"></div>
+    <div class="basketball">&#x1F3C0;</div>
+    <div class="hook-text" style="transform: translate(-50%, -50%) scale(1.3);">LA SAISON<br>NBA ARRIVE.</div>
+  </div>
+
+  <!-- SCENE 2: PROBLEM -->
+  <div id="scene2" class="scene">
+    <div class="chat-container">
+      <div class="chat-bubble">
+        <div class="name">Mathis</div>
+        <div class="msg">T'as vu le match hier ? &#x1F525;</div>
+      </div>
+      <div class="chat-bubble">
+        <div class="name">L&eacute;o</div>
+        <div class="msg">Facile, je l'avais dit depuis le d&eacute;but &#x1F60F;</div>
+      </div>
+      <div class="chat-bubble">
+        <div class="name">Alex</div>
+        <div class="msg">N'importe quoi mdrrr &#x1F480;&#x1F480;</div>
+      </div>
+    </div>
+    <div class="problem-text glitch" data-text="TES POTES SE LA RACONTENT ?">TES POTES<br>SE LA RACONTENT ?</div>
+  </div>
+
+  <!-- SCENE 3: SWIPE REVEAL -->
+  <div id="scene3" class="scene">
+    <div class="match-card" id="card1">
+      <div class="swipe-trail right" id="trail1"></div>
+      <div class="vs-row">
+        <div class="team">
+          <div class="team-logo">&#x1F7E1;</div>
+          <div class="team-name">LAKERS</div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="team">
+          <div class="team-logo">&#x1F7E2;</div>
+          <div class="team-name">CELTICS</div>
+        </div>
+      </div>
+      <div class="odds-row">
+        <div class="odd">1.85</div>
+        <div class="odd">2.10</div>
+      </div>
+    </div>
+    <div class="match-card" id="card2">
+      <div class="swipe-trail left" id="trail2"></div>
+      <div class="vs-row">
+        <div class="team">
+          <div class="team-logo">&#x1F98C;</div>
+          <div class="team-name">BUCKS</div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="team">
+          <div class="team-logo">&#x1F30A;</div>
+          <div class="team-name">WARRIORS</div>
+        </div>
+      </div>
+      <div class="odds-row">
+        <div class="odd">2.25</div>
+        <div class="odd">1.65</div>
+      </div>
+    </div>
+    <div class="reveal-text" style="transform: translate(-50%, -50%);">
+      <span class="word">SWIPE.</span>
+      <span class="word w-orange">CHOISIS.</span>
+      <span class="word">DOMINE.</span>
+    </div>
+  </div>
+
+  <!-- SCENE 4: FEATURES -->
+  <div id="scene4" class="scene">
+    <div class="panels-container">
+      <div class="feature-panel">
+        <div class="panel-icon">&#x1F3AF;</div>
+        <div class="panel-stat" id="winrate-counter">67%</div>
+        <div class="panel-label">STATS EN DIRECT</div>
+      </div>
+      <div class="feature-panel">
+        <div class="panel-icon">&#x1F3C6;</div>
+        <div class="panel-stat">TOP 3</div>
+        <div class="panel-label">LIGUES PRIV&Eacute;ES</div>
+      </div>
+      <div class="feature-panel">
+        <div class="panel-icon">&#x2B50;</div>
+        <div class="panel-stat">RARE</div>
+        <div class="panel-label">BADGES &Agrave; COLLECTIONNER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 5: CTA -->
+  <div id="scene5" class="scene">
+    <div class="flash-overlay" id="flash5"></div>
+    <div class="logo-container">
+      <div class="logo-text">PICK 'N'<br>SWIPE</div>
+      <div class="logo-sub">Pronostics NBA entre potes</div>
+    </div>
+    <div class="cta-btn"><span>REJOINS LE PARQUET</span></div>
+    <div class="free-tag">100% GRATUIT &bull; ENTRE POTES</div>
+  </div>
+
+  <!-- SCENE 6: URGENCY -->
+  <div id="scene6" class="scene">
+    <div class="urgency-text">&#x23F0; LA SAISON<br>COMMENCE BIENT&Ocirc;T</div>
+    <div class="url-text">nba-prono.onrender.com</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+
+function createParticles(x, y, count, colors) {
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    p.style.width = (4 + Math.random() * 8) + 'px';
+    p.style.height = p.style.width;
+    canvas.appendChild(p);
+    gsap.to(p, {
+      x: (Math.random() - 0.5) * 300,
+      y: (Math.random() - 0.5) * 300,
+      rotation: Math.random() * 720,
+      opacity: 0,
+      duration: 0.8 + Math.random() * 0.4,
+      ease: "power2.out",
+      onComplete: () => p.remove()
+    });
+  }
+}
+
+function showScene(id) {
+  document.querySelectorAll('.scene').forEach(s => {
+    s.classList.remove('active');
+    s.style.opacity = 0;
+    s.style.visibility = 'hidden';
+  });
+  const scene = document.getElementById(id);
+  scene.classList.add('active');
+  scene.style.visibility = 'visible';
+  gsap.to(scene, { opacity: 1, duration: 0.05 });
+}
+
+function startAnimation() {
+  document.getElementById('start-screen').style.display = 'none';
+  const tl = gsap.timeline();
+
+  // ===== SCENE 1: HOOK (0s - 2s) =====
+  showScene('scene1');
+  const ball = document.querySelector('#scene1 .basketball');
+  const hookText = document.querySelector('#scene1 .hook-text');
+  const flash1 = document.getElementById('flash1');
+
+  tl.set(ball, { top: -100, opacity: 1 })
+    .to(ball, { top: '46%', duration: 0.4, ease: "bounce.out" })
+    .call(() => {
+      canvas.classList.add('shake');
+      setTimeout(() => canvas.classList.remove('shake'), 300);
+      createParticles(195, 400, 20, ['#D95D39', '#FFD54F', '#10B981', '#F4F4F0']);
+    })
+    .to(flash1, { opacity: 0.8, duration: 0.05 }, "-=0.05")
+    .to(flash1, { opacity: 0, duration: 0.15 })
+    .to(ball, { opacity: 0, scale: 0.3, duration: 0.2 }, "-=0.1")
+    .to(hookText, {
+      opacity: 1,
+      scale: 1,
+      x: '-50%',
+      y: '-50%',
+      duration: 0.25,
+      ease: "back.out(2)"
+    }, "-=0.1")
+    .call(() => {
+      canvas.classList.add('shake');
+      setTimeout(() => canvas.classList.remove('shake'), 200);
+    })
+    .to(hookText, { opacity: 1, duration: 0.8 })
+
+  // ===== SCENE 2: PROBLEM (2s - 4.5s) =====
+    .call(() => showScene('scene2'))
+    .from('#scene2', { opacity: 0, duration: 0.05 });
+
+  const bubbles = document.querySelectorAll('.chat-bubble');
+  bubbles.forEach((b, i) => {
+    tl.to(b, { opacity: 1, y: 0, duration: 0.2, ease: "back.out(1.5)" }, '-=' + (i > 0 ? '0.05' : '0'));
+  });
+
+  const problemText = document.querySelector('#scene2 .problem-text');
+  tl.to(problemText, { opacity: 1, duration: 0.15 }, "+=0.15")
+    .call(() => problemText.classList.add('active'))
+    .to(problemText, { opacity: 1, duration: 1.2 })
+    .call(() => problemText.classList.remove('active'))
+
+  // ===== SCENE 3: SWIPE (4.5s - 9s) =====
+    .call(() => showScene('scene3'));
+
+  const card1 = document.getElementById('card1');
+  const trail1 = document.getElementById('trail1');
+  const card2 = document.getElementById('card2');
+  const trail2 = document.getElementById('trail2');
+
+  tl.to(card1, { opacity: 1, duration: 0.2, ease: "back.out(1.5)" })
+    .to({}, { duration: 0.4 })
+    .to(trail1, { opacity: 1, duration: 0.15 })
+    .to(card1, {
+      x: 400, rotation: 15, opacity: 0,
+      duration: 0.35, ease: "power2.in"
+    })
+    .call(() => {
+      createParticles(350, 400, 12, ['#10B981', '#FFD54F']);
+    })
+    .to(card2, { opacity: 1, duration: 0.2, ease: "back.out(1.5)" })
+    .to({}, { duration: 0.3 })
+    .to(trail2, { opacity: 1, duration: 0.15 })
+    .to(card2, {
+      x: -400, rotation: -15, opacity: 0,
+      duration: 0.35, ease: "power2.in"
+    })
+    .call(() => {
+      createParticles(40, 400, 12, ['#D95D39', '#FFD54F']);
+    });
+
+  // "SWIPE. CHOISIS. DOMINE."
+  const words = document.querySelectorAll('#scene3 .word');
+  const revealText = document.querySelector('#scene3 .reveal-text');
+  tl.to(revealText, { opacity: 1, duration: 0.01 });
+  words.forEach((w, i) => {
+    tl.to(w, {
+      opacity: 1, scale: 1,
+      duration: 0.2,
+      ease: "back.out(3)"
+    }, '+=' + (i > 0 ? '0.15' : '0'))
+    .call(() => {
+      canvas.classList.add('shake');
+      setTimeout(() => canvas.classList.remove('shake'), 150);
+    });
+  });
+  tl.to({}, { duration: 0.5 })
+
+  // ===== SCENE 4: FEATURES (9s - 14s) =====
+    .call(() => showScene('scene4'));
+
+  const panels = document.querySelectorAll('.feature-panel');
+  panels.forEach((p, i) => {
+    tl.to(p, {
+      opacity: 1, x: 0,
+      duration: 0.35,
+      ease: "back.out(1.7)"
+    }, '+=' + (i > 0 ? '0.2' : '0.1'))
+    .call(() => {
+      canvas.classList.add('shake');
+      setTimeout(() => canvas.classList.remove('shake'), 120);
+    });
+  });
+
+  // Winrate counter animation
+  tl.call(() => {
+    const counter = document.getElementById('winrate-counter');
+    let val = 0;
+    const interval = setInterval(() => {
+      val += 3;
+      if (val >= 67) { val = 67; clearInterval(interval); }
+      counter.textContent = val + '%';
+    }, 30);
+  }, null, "-=0.5")
+    .to({}, { duration: 1.5 })
+
+  // ===== SCENE 5: CTA (14s - 18s) =====
+    .call(() => showScene('scene5'));
+
+  const logoContainer = document.querySelector('#scene5 .logo-container');
+  const ctaBtn = document.querySelector('#scene5 .cta-btn');
+  const freeTag = document.querySelector('#scene5 .free-tag');
+  const flash5 = document.getElementById('flash5');
+
+  tl.to(flash5, { opacity: 0.9, duration: 0.06 })
+    .to(flash5, { opacity: 0, duration: 0.2 })
+    .to(logoContainer, {
+      opacity: 1, scale: 1,
+      duration: 0.4,
+      ease: "back.out(2.5)"
+    }, "-=0.15")
+    .call(() => {
+      canvas.classList.add('shake');
+      setTimeout(() => canvas.classList.remove('shake'), 300);
+      createParticles(195, 350, 30, ['#D95D39', '#FFD54F', '#10B981', '#F4F4F0']);
+    })
+    .to(ctaBtn, {
+      opacity: 1, y: 0,
+      duration: 0.3,
+      ease: "back.out(2)"
+    }, "+=0.3")
+    .to(freeTag, { opacity: 1, duration: 0.2 }, "+=0.1")
+    // Pulse
+    .to(ctaBtn, { scale: 1.06, duration: 0.15, yoyo: true, repeat: 3, ease: "power1.inOut" }, "+=0.3")
+    .to({}, { duration: 0.5 })
+
+  // ===== SCENE 6: URGENCY (18s - 20s) =====
+    .call(() => showScene('scene6'));
+
+  const urgencyText = document.querySelector('#scene6 .urgency-text');
+  const urlText = document.querySelector('#scene6 .url-text');
+
+  tl.to(urgencyText, { opacity: 1, duration: 0.2 })
+    .to(urgencyText, {
+      opacity: 0.6, duration: 0.25,
+      yoyo: true, repeat: 5,
+      ease: "power1.inOut"
+    })
+    .to(urlText, { opacity: 1, duration: 0.3 }, "-=1")
+    .to({}, { duration: 0.5 })
+    // Fade to black
+    .to([urgencyText, urlText], { opacity: 0, duration: 0.5 });
+}
+
+document.getElementById('start-screen').addEventListener('click', startAnimation);
+</script>
+
+</body>
+</html>
