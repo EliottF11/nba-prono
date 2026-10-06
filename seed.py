@@ -67,9 +67,45 @@ def seed_all_teams_and_matches():
 
         print("-> Injection des VRAIES confrontations officielles de la saison NBA 2026/2027...")
 
-        # VRAI Calendrier Officiel NBA 2026/2027 (Opening Week)
+        # VRAI Calendrier Officiel NBA 2026/2027 (Opening Week) + Quelques matchs de présaison
         # Format : domicile (home) vs extérieur (away)
         matches_data = [
+            # =======================================================
+            # MATCHS DE PRESAISON (Mockés pour test Ligue Flash)
+            # =======================================================
+            {
+                "home": "Charlotte",
+                "away": "Brooklyn",
+                "home_odds": 1.85,
+                "away_odds": 1.95,
+                "deadline": datetime.now(timezone.utc) + timedelta(hours=2),
+                "season_stage": "preseason"
+            },
+            {
+                "home": "Oklahoma City",
+                "away": "New Orleans",
+                "home_odds": 1.60,
+                "away_odds": 2.30,
+                "deadline": datetime.now(timezone.utc) + timedelta(hours=3),
+                "season_stage": "preseason"
+            },
+            {
+                "home": "Utah",
+                "away": "Denver",
+                "home_odds": 2.10,
+                "away_odds": 1.70,
+                "deadline": datetime.now(timezone.utc) + timedelta(hours=4),
+                "season_stage": "preseason"
+            },
+            {
+                "home": "Golden State",
+                "away": "Los Angeles (LAC)",
+                "home_odds": 1.75,
+                "away_odds": 2.05,
+                "deadline": datetime.now(timezone.utc) + timedelta(hours=5),
+                "season_stage": "preseason"
+            },
+
             # =======================================================
             # MARDI 20 OCTOBRE 2026 (Opening Night Triple-Header)
             # =======================================================
@@ -258,6 +294,7 @@ def seed_all_teams_and_matches():
                     deadline=m["deadline"],
                     week_number=w_num,
                     status="upcoming",
+                    season_stage=m.get("season_stage", "regular")
                 )
                 db.add(match)
                 added_count += 1
