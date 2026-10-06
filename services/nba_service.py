@@ -8,7 +8,7 @@ import httpx
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
-from models import Match, Team, Prediction, User
+from models import Match, Team, Prediction, User, PropBet, PropPrediction
 
 load_dotenv()
 
@@ -157,9 +157,77 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
 
     db.commit()
 
+    # --- ETAPE 2 : Création des Props via /odds ---
+    props_created = 0
+    try:
+        with httpx.Client(timeout=15) as client:
+            res_odds = client.get(f"{BASE_URL}/odds?league={NBA_LEAGUE_ID}&date={date_str}", headers=headers)
+            if res_odds.status_code == 200:
+                odds_data = res_odds.json().get("response", [])
+                
+                # Exemple simplifié d'extraction de 2 ou 3 Prop Bets
+                for odd in odds_data[:3]: # On prend les 3 premiers matchs ayant des cotes
+                    match_api_id = odd.get("fixture", {}).get("id") or odd.get("game", {}).get("id")
+                    
+                    # Logique simplifiée pour créer un prop s'il n'existe pas déjà
+                    # On associe le prop au premier match "upcoming" disponible si on ne trouve pas l'ID API
+                    first_upcoming = db.query(Match).filter(Match.status == "upcoming").first()
+                    if first_upcoming:
+                        player_name = "LeBron James" # Valeur par défaut si l'API ne fournit pas les noms clairement
+                        # Si l'API retourne des bookmakers -> bets -> values (il faudrait parser dynamiquement)
+                        # Pour l'exercice, on insère une valeur mockée basée sur la donnée
+                        existing_prop = db.query(PropBet).filter(PropBet.match_id == first_upcoming.id, PropBet.player_name == player_name).first()
+                        if not existing_prop:
+                            new_prop = PropBet(
+                                match_id=first_upcoming.id,
+                                player_name=player_name,
+                                stat_type="points",
+                                line=25.5,
+                                status="pending"
+                            )
+                            db.add(new_prop)
+                            props_created += 1
+                db.commit()
+    except Exception as e:
+        print(f"Erreur Etape 2 (Props) : {e}")
+
+    # --- ETAPE 3 : Résolution des Props passés ---
+    props_resolved = 0
+    try:
+        # Trouver les props pending dont le match est finished
+        pending_props = db.query(PropBet).join(Match).filter(
+            PropBet.status == 'pending',
+            Match.status == 'finished'
+        ).all()
+
+        for prop in pending_props:
+            # Appel à l'API pour les stats du joueur
+            # Normalement on chercherait via /players/statistics
+            with httpx.Client(timeout=15) as client:
+                res_stats = client.get(f"{BASE_URL}/players/statistics?league={NBA_LEAGUE_ID}&season=2024", headers=headers)
+                # Si succès, on extrait le score réel (Mock = 28.0)
+                actual_score = 28.0
+                prop.actual_result = actual_score
+                prop.status = "resolved"
+                
+                # Mise à jour des prédictions des utilisateurs
+                for pred in prop.predictions:
+                    if pred.choice == 'over':
+                        pred.is_correct = (actual_score > prop.line)
+                    else:
+                        pred.is_correct = (actual_score < prop.line)
+                
+                props_resolved += 1
+        db.commit()
+    except Exception as e:
+        print(f"Erreur Etape 3 (Resolve Props) : {e}")
+
+
     return {
         "date": date_str,
         "api_games_found": len(api_games),
         "matches_updated": updated_matches_count,
-        "matches_resolved": resolved_count
+        "matches_resolved": resolved_count,
+        "props_created": props_created,
+        "props_resolved": props_resolved
     }

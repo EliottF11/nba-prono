@@ -219,3 +219,52 @@ class LeagueMessage(Base):
     def __repr__(self):
         return f"<LeagueMessage User {self.user_id} in League {self.league_id}: {self.content[:20]}>"
 
+
+class PropBet(Base):
+    """
+    Modèle d'un pari sur la performance individuelle d'un joueur (Prop Bet).
+    Ex: LeBron James, Over/Under 25.5 points.
+    """
+    __tablename__ = "prop_bets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"), nullable=False, index=True)
+    player_name = Column(String(100), nullable=False)
+    stat_type = Column(String(50), nullable=False)                 # ex: 'points', 'rebounds', 'assists'
+    line = Column(Float, nullable=False)                           # ex: 25.5
+    status = Column(String(20), default="pending", nullable=False) # 'pending', 'resolved', 'canceled'
+    actual_result = Column(Float, nullable=True)                   # Score réel obtenu (ex: 28)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    
+    # Relations
+    match = relationship("Match", backref="prop_bets")
+    predictions = relationship("PropPrediction", back_populates="prop_bet", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<PropBet {self.player_name} O/U {self.line} {self.stat_type}>"
+
+
+class PropPrediction(Base):
+    """
+    Choix d'un utilisateur sur un Prop Bet ('over' ou 'under').
+    """
+    __tablename__ = "prop_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    prop_id = Column(Integer, ForeignKey("prop_bets.id"), nullable=False, index=True)
+    choice = Column(String(10), nullable=False)                    # 'over' ou 'under'
+    is_correct = Column(Boolean, nullable=True)                    # True, False, ou Null (en attente)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+
+    # Relations
+    user = relationship("User", backref="prop_predictions")
+    prop_bet = relationship("PropBet", back_populates="predictions")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "prop_id", name="uq_user_prop_prediction"),
+    )
+
+    def __repr__(self):
+        return f"<PropPrediction User {self.user_id} Prop {self.prop_id} -> {self.choice}>"
+

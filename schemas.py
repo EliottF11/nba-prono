@@ -296,4 +296,35 @@ class LeagueMessageResponse(BaseModel):
     created_at: datetime
     is_me: bool = False
 
+# --- SCHEMAS PROP BETS ---
+
+class PropBetBase(BaseModel):
+    match_id: int
+    player_name: str
+    stat_type: str
+    line: float
+    status: str
+    actual_result: Optional[float] = None
+
+class PropBetResponse(PropBetBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class PropPredictionCreate(BaseModel):
+    choice: str = Field(..., description="Doit être 'over' ou 'under'")
+
+class PropPredictionResponse(BaseModel):
+    id: int
+    user_id: int
+    prop_id: int
+    choice: str
+    is_correct: Optional[bool]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 
