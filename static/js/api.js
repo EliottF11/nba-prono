@@ -237,6 +237,12 @@ const API = {
     return await this.request(`/api/predictions/${matchId}/apply-bonus`, {
       method: 'POST'
     });
+  },
+
+  async removeBonus(matchId) {
+    return await this.request(`/api/predictions/${matchId}/remove-bonus`, {
+      method: 'POST'
+    });
   }
 };
 

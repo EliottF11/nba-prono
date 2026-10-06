@@ -506,6 +506,30 @@ async function handleApplyBonus(matchId, event) {
 }
 window.handleApplyBonus = handleApplyBonus;
 
+async function handleRemoveBonus(matchId, event) {
+  if (event) event.stopPropagation();
+  
+  const btn = event ? event.currentTarget : null;
+  if (btn) btn.classList.add('opacity-50', 'pointer-events-none');
+  
+  try {
+    await API.removeBonus(matchId);
+    
+    if (state.currentBonus) {
+      state.currentBonus.is_used = false;
+    }
+    delete state.appliedBonuses[matchId];
+    
+    updateBonusUI();
+    renderMatchesList();
+    notify("Bonus retiré avec succès !", "success");
+  } catch (err) {
+    notify(err.message || "Impossible de retirer le bonus.", "error");
+    if (btn) btn.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+window.handleRemoveBonus = handleRemoveBonus;
+
 // --- Navigation ---
 function selectTab(tab) {
   state.activeTab = tab;
@@ -1979,11 +2003,25 @@ function renderMatchesListView(container, filtered) {
     
     if (appliedBonus) {
       const colorCls = getBonusColor(appliedBonus);
-      weeklyBonusHtml = `
-        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#1F1E26] text-${colorCls} border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000]">
-          ${appliedBonus}
-        </span>
-      `;
+      if (!isFinished) {
+        weeklyBonusHtml = `
+          <button 
+            type="button"
+            onclick="handleRemoveBonus(${match.id}, event)"
+            class="text-[10px] font-black uppercase pl-2 pr-1 py-0.5 rounded-[6px] bg-[#1F1E26] hover:bg-[#282733] text-${colorCls} border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000] cursor-pointer transition-colors active:scale-95"
+            title="Retirer ce bonus"
+          >
+            ${appliedBonus}
+            <svg class="w-3 h-3 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        `;
+      } else {
+        weeklyBonusHtml = `
+          <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#1F1E26] text-${colorCls} border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000]">
+            ${appliedBonus}
+          </span>
+        `;
+      }
     } else if (!isFinished && selectedTeamId && state.currentBonus && !state.currentBonus.is_used) {
       // Bonus utilisable !
       const colorCls = getBonusColor(state.currentBonus.bonus_type);

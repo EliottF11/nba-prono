@@ -134,3 +134,62 @@ def apply_bonus(
     db.refresh(bonus)
     
     return prediction
+
+@router.post("/api/predictions/{match_id}/remove-bonus", response_model=schemas.PredictionResponse)
+def remove_bonus(
+    match_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Retire le bonus appliqué sur un pronostic (s'il existe et que le match n'a pas commencé),
+    et rend le bonus à nouveau utilisable.
+    """
+    prediction = db.query(models.Prediction).filter(
+        models.Prediction.match_id == match_id,
+        models.Prediction.user_id == current_user.id
+    ).first()
+
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Tu n'as pas encore pronostiqué ce match.")
+    
+    if prediction.applied_bonus is None:
+        raise HTTPException(status_code=400, detail="Aucun bonus n'est appliqué sur ce pronostic.")
+
+    match = db.query(models.Match).filter(models.Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match introuvable.")
+    
+    # Empêcher le retrait si le match a commencé (deadline passée)
+    now = datetime.now(timezone.utc)
+    # Assumons que match.deadline est timezone-aware ou utc. Si pas le cas, adapter.
+    # Dans la db SQLite, c'est une string ISO 8601, SQLAlchemy le convertit souvent en datetime.
+    if match.deadline.tzinfo is None:
+        deadline = match.deadline.replace(tzinfo=timezone.utc)
+    else:
+        deadline = match.deadline
+        
+    if now > deadline:
+        raise HTTPException(status_code=400, detail="Le match a déjà commencé, tu ne peux plus retirer le bonus.")
+
+    iso_year, iso_week, _ = get_current_iso_week()
+    bonus = db.query(models.WeeklyUserBonus).filter(
+        models.WeeklyUserBonus.user_id == current_user.id,
+        models.WeeklyUserBonus.week_number == iso_week,
+        models.WeeklyUserBonus.year == iso_year,
+        models.WeeklyUserBonus.bonus_type == prediction.applied_bonus
+    ).first()
+
+    if not bonus:
+        # Cas théoriquement impossible si les données sont cohérentes, mais au cas où :
+        raise HTTPException(status_code=500, detail="Bonus introuvable dans ta semaine actuelle.")
+
+    prediction.applied_bonus = None
+    bonus.is_used = False
+    
+    db.commit()
+    db.refresh(prediction)
+    db.refresh(bonus)
+    
+    return prediction
+
