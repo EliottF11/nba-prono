@@ -79,7 +79,8 @@ def seed_all_teams_and_matches():
                 "home_odds": 1.85,
                 "away_odds": 1.95,
                 "deadline": datetime.now(timezone.utc) + timedelta(hours=2),
-                "season_stage": "preseason"
+                "season_stage": "preseason",
+                "week_number": 0
             },
             {
                 "home": "Oklahoma City",
@@ -87,7 +88,8 @@ def seed_all_teams_and_matches():
                 "home_odds": 1.60,
                 "away_odds": 2.30,
                 "deadline": datetime.now(timezone.utc) + timedelta(hours=3),
-                "season_stage": "preseason"
+                "season_stage": "preseason",
+                "week_number": 0
             },
             {
                 "home": "Utah",
@@ -95,7 +97,8 @@ def seed_all_teams_and_matches():
                 "home_odds": 2.10,
                 "away_odds": 1.70,
                 "deadline": datetime.now(timezone.utc) + timedelta(hours=4),
-                "season_stage": "preseason"
+                "season_stage": "preseason",
+                "week_number": 0
             },
             {
                 "home": "Golden State",
@@ -103,7 +106,8 @@ def seed_all_teams_and_matches():
                 "home_odds": 1.75,
                 "away_odds": 2.05,
                 "deadline": datetime.now(timezone.utc) + timedelta(hours=5),
-                "season_stage": "preseason"
+                "season_stage": "preseason",
+                "week_number": 0
             },
 
             # =======================================================
@@ -275,6 +279,11 @@ def seed_all_teams_and_matches():
                 "week_number": 2,
             },
         ]
+
+        # Update des matchs existants pour éviter les doublons avec semaine 1
+        from sqlalchemy import text
+        db.execute(text("UPDATE matches SET week_number = 0 WHERE season_stage = 'preseason'"))
+        db.commit()
 
         # Insertion des matchs si la base ne contient pas encore la semaine 2
         existing_matches = db.query(Match).all()

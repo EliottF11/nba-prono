@@ -959,7 +959,7 @@ function renderWeeksSelector() {
             : 'bg-[#141418] text-zinc-400 hover:text-white border border-[rgba(255,255,255,0.08)]'
         }"
       >
-        Week ${w.week}
+        ${w.week === 0 ? 'Pré-saison' : `Week ${w.week}`}
       </button>
     `;
   });
@@ -2293,7 +2293,8 @@ function renderLeaderboard() {
 
   if (selectEl && state.myLeagues && state.myLeagues.length > 0) {
     const currentVal = selectEl.value;
-    let optionsHtml = `<option value="general">🌍 Classement Général</option>`;
+    let optionsHtml = `<option value="general">🌍 Classement Général</option>
+                       <option value="flash">⚡ Ligue Flash Pré-saison</option>`;
     state.myLeagues.forEach(l => {
       optionsHtml += `<option value="${l.id}">🏆 ${l.name}</option>`;
     });
