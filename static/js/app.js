@@ -27,7 +27,9 @@ const state = {
   tinderDeckIndex: 0,
   swipeHistory: [], // { match, matchId, previousVote, chosenTeamId, direction }
   matchesViewMode: 'tinder', // 'tinder' (par défaut) ou 'list'
-  currentStreak: 0
+  currentStreak: 0,
+  currentBonus: null, // WeeklyUserBonus
+  appliedBonuses: {} // matchId -> bonusType
 };
 
 // Fonction utilitaire d'échappement HTML anti-XSS
@@ -304,8 +306,204 @@ function handleLogout() {
     renderLeaderboard();
     if (state.activeTab === 'profile') renderProfile();
     notify("Déconnexion réussie");
+    document.getElementById('bonus-btn-container').classList.add('hidden');
   }
 }
+
+// --- Gestion des Bonus Hebdomadaires ---
+async function fetchCurrentBonus() {
+  if (!state.currentUser) return;
+  try {
+    const bonus = await API.getCurrentBonus();
+    state.currentBonus = bonus;
+  } catch (err) {
+    // 404 si pas de bonus actif
+    state.currentBonus = null;
+  }
+  updateBonusUI();
+}
+
+function updateBonusUI() {
+  const container = document.getElementById('bonus-btn-container');
+  const textBtn = document.getElementById('bonus-btn-text');
+  
+  if (!state.currentUser) {
+    if (container) container.classList.add('hidden');
+    return;
+  }
+
+  if (container) container.classList.remove('hidden');
+
+  if (!state.currentBonus) {
+    if (textBtn) {
+      textBtn.textContent = 'BONUS';
+      textBtn.parentElement.classList.replace('bg-zinc-600', 'bg-[#6b21a8]');
+      textBtn.parentElement.classList.replace('hover:bg-zinc-500', 'hover:bg-[#9333ea]');
+    }
+  } else {
+    // Déjà tiré
+    if (state.currentBonus.is_used) {
+      if (textBtn) {
+        textBtn.textContent = 'UTILISÉ';
+        textBtn.parentElement.classList.replace('bg-[#6b21a8]', 'bg-zinc-600');
+        textBtn.parentElement.classList.replace('hover:bg-[#9333ea]', 'hover:bg-zinc-500');
+      }
+    } else {
+      if (textBtn) {
+        textBtn.textContent = state.currentBonus.bonus_type;
+        textBtn.parentElement.classList.replace('bg-zinc-600', 'bg-[#6b21a8]');
+        textBtn.parentElement.classList.replace('hover:bg-zinc-500', 'hover:bg-[#9333ea]');
+      }
+    }
+  }
+}
+
+function openBonusModal() {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    return;
+  }
+  
+  const modal = document.getElementById('bonus-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  
+  const wheel = document.getElementById('bonus-wheel');
+  const resultContainer = document.getElementById('bonus-result-container');
+  const resultBadge = document.getElementById('bonus-result-badge');
+  const btnSpin = document.getElementById('btn-spin-wheel');
+
+  // Reset rotation
+  wheel.style.transition = 'none';
+  wheel.style.transform = 'rotate(0deg)';
+  // Force reflow
+  void wheel.offsetWidth;
+  wheel.style.transition = 'transform 3000ms cubic-bezier(0.2, 0.8, 0.1, 1)';
+  
+  if (state.currentBonus) {
+    // Il a déjà un bonus
+    if (btnSpin) btnSpin.classList.add('hidden');
+    if (resultContainer) resultContainer.classList.remove('opacity-0');
+    if (resultBadge) {
+      resultBadge.textContent = state.currentBonus.bonus_type;
+      const colorCls = getBonusColor(state.currentBonus.bonus_type);
+      resultBadge.className = `inline-block px-3 py-1 bg-[#1F1E26] border-2 border-black rounded-lg text-lg font-blocky tracking-wide shadow-[2px_2px_0px_#000] text-${colorCls}`;
+    }
+    
+    // Rotation statique vers le bon bonus
+    const targetDeg = getBonusRotation(state.currentBonus.bonus_type);
+    wheel.style.transition = 'none';
+    wheel.style.transform = `rotate(-${targetDeg}deg)`;
+  } else {
+    // Prêt à tirer
+    if (btnSpin) btnSpin.classList.remove('hidden');
+    if (resultContainer) resultContainer.classList.add('opacity-0');
+  }
+}
+window.openBonusModal = openBonusModal;
+
+function closeBonusModal() {
+  const modal = document.getElementById('bonus-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+window.closeBonusModal = closeBonusModal;
+
+async function spinWheel() {
+  if (state.currentBonus) return; // Déjà un bonus
+  
+  const btnSpin = document.getElementById('btn-spin-wheel');
+  if (btnSpin) {
+    btnSpin.classList.add('opacity-50', 'pointer-events-none');
+    btnSpin.textContent = "Tirage en cours...";
+  }
+
+  try {
+    const bonus = await API.spinBonusWheel();
+    
+    const wheel = document.getElementById('bonus-wheel');
+    const targetDeg = getBonusRotation(bonus.bonus_type);
+    // 5 tours complets (1800deg) + angle du bonus, en négatif pour pointer vers le haut
+    const finalRot = 1800 + targetDeg; 
+    
+    if (wheel) {
+      wheel.style.transform = `rotate(-${finalRot}deg)`;
+    }
+    
+    setTimeout(() => {
+      state.currentBonus = bonus;
+      updateBonusUI();
+      
+      const resultContainer = document.getElementById('bonus-result-container');
+      const resultBadge = document.getElementById('bonus-result-badge');
+      
+      if (resultBadge) {
+        resultBadge.textContent = bonus.bonus_type;
+        const colorCls = getBonusColor(bonus.bonus_type);
+        resultBadge.className = `inline-block px-3 py-1 bg-[#1F1E26] border-2 border-black rounded-lg text-lg font-blocky tracking-wide shadow-[2px_2px_0px_#000] text-${colorCls}`;
+      }
+      
+      if (resultContainer) resultContainer.classList.remove('opacity-0');
+      if (btnSpin) btnSpin.classList.add('hidden');
+      
+      // On force un re-render complet pour afficher les boutons "Appliquer Bonus" sur les pronos existants
+      renderMatchesList();
+      
+    }, 3100); // 3000ms animation + 100ms padding
+  } catch (err) {
+    notify(err.message || "Erreur lors du tirage du bonus", "error");
+    if (btnSpin) {
+      btnSpin.classList.remove('opacity-50', 'pointer-events-none');
+      btnSpin.textContent = "Lancer la roue";
+    }
+  }
+}
+window.spinWheel = spinWheel;
+
+function getBonusRotation(type) {
+  if (type === 'DOUBLE') return 45;
+  if (type === 'SHIELD') return 135;
+  if (type === 'ALL_IN') return 225;
+  if (type === 'UPSET') return 315;
+  return 0;
+}
+
+function getBonusColor(type) {
+  if (type === 'DOUBLE') return 'emerald-400';
+  if (type === 'SHIELD') return 'blue-400';
+  if (type === 'ALL_IN') return 'amber-400';
+  if (type === 'UPSET') return 'orange-500';
+  return 'white';
+}
+
+async function handleApplyBonus(matchId, event) {
+  if (event) event.stopPropagation();
+  
+  if (!state.currentBonus || state.currentBonus.is_used) {
+    notify("Tu n'as pas de bonus disponible !", "error");
+    return;
+  }
+  
+  const btn = event ? event.currentTarget : null;
+  if (btn) btn.classList.add('opacity-50', 'pointer-events-none');
+  
+  try {
+    const updatedPrediction = await API.applyBonus(matchId);
+    state.currentBonus.is_used = true;
+    state.appliedBonuses[matchId] = updatedPrediction.applied_bonus;
+    
+    updateBonusUI();
+    renderMatchesList(); // Re-render pour cacher le bouton de bonus et afficher le badge
+    notify(`Bonus ${updatedPrediction.applied_bonus} appliqué avec succès !`, "success");
+  } catch (err) {
+    notify(err.message || "Impossible d'appliquer le bonus sur ce match.", "error");
+    if (btn) btn.classList.remove('opacity-50', 'pointer-events-none');
+  }
+}
+window.handleApplyBonus = handleApplyBonus;
 
 // --- Navigation ---
 function selectTab(tab) {
@@ -637,12 +835,21 @@ async function refreshData() {
 
     state.myPredictions = {};
     state.boostedPredictions = {};
+    state.appliedBonuses = {};
     preds.forEach(p => {
       state.myPredictions[p.match_id] = p.selected_team_id;
       if (p.is_boosted) {
         state.boostedPredictions[p.match_id] = true;
       }
+      if (p.applied_bonus) {
+        state.appliedBonuses[p.match_id] = p.applied_bonus;
+      }
     });
+
+    // On charge le bonus s'il y a un utilisateur
+    if (state.currentUser) {
+      fetchCurrentBonus();
+    }
 
     const openCount = matches.filter(m => m.status === 'upcoming').length;
     const countBadge = document.getElementById('open-matches-count');
@@ -1767,6 +1974,31 @@ function renderMatchesListView(container, filtered) {
       `;
     }
 
+    let weeklyBonusHtml = '';
+    const appliedBonus = state.appliedBonuses[match.id];
+    
+    if (appliedBonus) {
+      const colorCls = getBonusColor(appliedBonus);
+      weeklyBonusHtml = `
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#1F1E26] text-${colorCls} border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000]">
+          ${appliedBonus}
+        </span>
+      `;
+    } else if (!isFinished && selectedTeamId && state.currentBonus && !state.currentBonus.is_used) {
+      // Bonus utilisable !
+      const colorCls = getBonusColor(state.currentBonus.bonus_type);
+      weeklyBonusHtml = `
+        <button 
+          type="button"
+          onclick="handleApplyBonus(${match.id}, event)" 
+          class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#1F1E26] hover:bg-[#282733] text-${colorCls} border-2 border-black flex items-center gap-1 shadow-[2px_2px_0px_#000] cursor-pointer transition-colors active:scale-95"
+          title="Appliquer mon bonus ${state.currentBonus.bonus_type} sur ce match"
+        >
+          Appliquer ${state.currentBonus.bonus_type}
+        </button>
+      `;
+    }
+
     return `
       <div class="match-card rounded-[12px] p-3 sm:p-3.5 space-y-3 ${isBoosted ? 'match-card-boosted card-boosted' : ''}">
         
@@ -1777,7 +2009,8 @@ function renderMatchesListView(container, filtered) {
             <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : 'bg-white'} shrink-0"></span>
             <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : dateFormatted}</span>
           </div>
-          <div class="flex items-center space-x-1.5 shrink-0">
+          <div class="flex items-center space-x-1.5 shrink-0 flex-wrap justify-end gap-y-1">
+            ${weeklyBonusHtml}
             ${boostButton}
             <div>${statusPill}</div>
           </div>

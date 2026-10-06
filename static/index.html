@@ -133,6 +133,13 @@
           <span id="user-streak-val" class="font-condensed text-base font-black text-amber-400 leading-none">0</span>
         </div>
 
+        <!-- Bouton Bonus de la semaine -->
+        <div id="bonus-btn-container" class="hidden shrink-0">
+          <button onclick="openBonusModal()" title="Roue des Bonus" class="flex items-center space-x-1.5 bg-[#6b21a8] hover:bg-[#9333ea] border-2 border-black px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] text-white transition-colors cursor-pointer">
+            <span class="font-condensed text-base font-black leading-none" id="bonus-btn-text">BONUS</span>
+          </button>
+        </div>
+
         <div id="user-score-badge" class="hidden flex items-center space-x-1.5 bg-[#18181e] border-2 border-black px-2.5 py-1 rounded-[8px] shadow-[2px_2px_0px_#000000] shrink-0">
           <span id="user-points-val" class="font-condensed text-base font-black text-[#D95D39]">0.0</span>
           <span class="text-[10px] text-zinc-400 font-bold uppercase">pts</span>
@@ -951,6 +958,66 @@
 
         <div class="pt-2 space-y-2">
           <button onclick="closeMatchResultDetails()" class="btn-tactile w-full py-2.5 px-4 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 font-condensed font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer">
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Roue des Bonus Hebdomadaires -->
+    <div id="bonus-modal" class="fixed inset-0 bg-[#000000]/80 backdrop-blur-sm hidden z-50 flex-col items-center justify-center p-4 overflow-y-auto w-[100vw] sm:max-w-md mx-auto h-[100dvh]">
+      <div class="bg-[#121212] border-[3px] border-black rounded-[16px] p-5 w-full max-w-sm flex flex-col space-y-5 shadow-[8px_8px_0px_#000000] relative mt-10 mb-10 overflow-hidden transform transition-all">
+        <!-- Header / Titre -->
+        <div class="text-center">
+          <h2 class="font-blocky text-2xl tracking-wide uppercase text-white drop-shadow-[2px_2px_0px_#000000]">Roue des Bonus</h2>
+          <p class="text-xs font-condensed text-[#BDBDB6] uppercase mt-1">Tourne la roue une fois par semaine !</p>
+        </div>
+
+        <!-- Roue Container -->
+        <div class="relative w-full aspect-square flex items-center justify-center mx-auto overflow-visible select-none">
+          <!-- Indicateur (Flèche en haut) -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-10">
+            <div class="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[16px] border-transparent border-t-[#D95D39] filter drop-shadow-[0px_2px_0px_#000]"></div>
+          </div>
+          
+          <!-- Cercle de la Roue -->
+          <div id="bonus-wheel" class="w-full h-full rounded-full border-4 border-black relative overflow-hidden bg-white shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-transform duration-[3000ms] ease-[cubic-bezier(0.2,0.8,0.1,1)]">
+            <!-- Secteur 1 : DOUBLE -->
+            <div class="absolute w-1/2 h-1/2 bg-[#10B981] origin-bottom-right" style="transform: rotate(0deg) skew(0deg);">
+              <span class="absolute right-4 bottom-8 origin-center rotate-[45deg] font-condensed font-black text-xl text-black">DOUBLE (x2)</span>
+            </div>
+            <!-- Secteur 2 : SHIELD -->
+            <div class="absolute w-1/2 h-1/2 bg-[#3B82F6] origin-bottom-right" style="transform: rotate(90deg) skew(0deg);">
+              <span class="absolute right-4 bottom-8 origin-center rotate-[45deg] font-condensed font-black text-xl text-black">SHIELD (0 pt)</span>
+            </div>
+            <!-- Secteur 3 : ALL_IN -->
+            <div class="absolute w-1/2 h-1/2 bg-[#FFD54F] origin-bottom-right" style="transform: rotate(180deg) skew(0deg);">
+              <span class="absolute right-4 bottom-8 origin-center rotate-[45deg] font-condensed font-black text-xl text-black">ALL-IN (x3 / -x2)</span>
+            </div>
+            <!-- Secteur 4 : UPSET -->
+            <div class="absolute w-1/2 h-1/2 bg-[#D95D39] origin-bottom-right" style="transform: rotate(270deg) skew(0deg);">
+              <span class="absolute right-4 bottom-8 origin-center rotate-[45deg] font-condensed font-black text-xl text-white">UPSET (x4)</span>
+            </div>
+          </div>
+          <!-- Centre de la roue -->
+          <div class="absolute w-12 h-12 bg-[#121212] border-[3px] border-black rounded-full flex items-center justify-center shadow-inner z-10">
+            <img src="/static/icons/logo-secondaire.png" class="w-6 h-6" alt="Logo">
+          </div>
+        </div>
+
+        <!-- Resultat et Action -->
+        <div id="bonus-result-container" class="text-center opacity-0 transition-opacity duration-300">
+          <p class="text-sm font-bold text-white mb-1">Gagné :</p>
+          <div id="bonus-result-badge" class="inline-block px-3 py-1 bg-[#1F1E26] border-2 border-black rounded-lg text-lg font-blocky tracking-wide shadow-[2px_2px_0px_#000]">
+            DOUBLE (x2)
+          </div>
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <button id="btn-spin-wheel" onclick="spinWheel()" class="btn-tactile w-full py-3 px-4 rounded-[8px] bg-[#6b21a8] hover:bg-[#9333ea] text-white font-condensed font-black text-lg uppercase tracking-wider border-[3px] border-black shadow-[4px_4px_0px_#000000] cursor-pointer transition-all">
+            Lancer la roue
+          </button>
+          <button onclick="closeBonusModal()" class="btn-tactile w-full py-2.5 px-4 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 font-condensed font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer">
             Fermer
           </button>
         </div>

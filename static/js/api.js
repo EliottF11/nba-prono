@@ -219,6 +219,24 @@ const API = {
       method: 'PUT',
       body: JSON.stringify({ avatar_url: avatarUrl })
     });
+  },
+
+  // --- Bonus Hebdomadaires ---
+  async getCurrentBonus() {
+    if (!this.getToken()) return null;
+    return await this.request('/api/bonuses/current');
+  },
+
+  async spinBonusWheel() {
+    return await this.request('/api/bonuses/spin', {
+      method: 'POST'
+    });
+  },
+
+  async applyBonus(matchId) {
+    return await this.request(`/api/predictions/${matchId}/apply-bonus`, {
+      method: 'POST'
+    });
   }
 };
 
