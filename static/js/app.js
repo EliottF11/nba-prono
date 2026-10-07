@@ -1111,10 +1111,17 @@ function renderFlashBet(container) {
     return;
   }
 
-  // Chercher un prono flash pour aujourd'hui ou le premier non pronostiqué
-  const today = new Date();
-  // Pour simplifier, on prend le premier qui est 'upcoming' et non pronostiqué
-  const availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id]);
+  let availableFb = null;
+  let isPredicted = false;
+
+  if (state.predictionFilter === 'unpredicted') {
+    // Chercher le premier prono flash non pronostiqué
+    availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id]);
+  } else {
+    // Dans "Mes pronos", chercher le premier prono flash pronostiqué
+    availableFb = state.flashBets.find(fb => state.myFlashPredictions[fb.id]);
+    isPredicted = true;
+  }
 
   if (!availableFb) {
     container.classList.add('hidden');
@@ -1122,6 +1129,30 @@ function renderFlashBet(container) {
   }
 
   container.classList.remove('hidden');
+
+  let actionHtml = '';
+  if (isPredicted) {
+    const myChoice = state.myFlashPredictions[availableFb.id];
+    actionHtml = `
+      <div class="mt-1 flex items-center justify-center p-2 rounded-lg border-2 border-[#ffcc00] bg-[#ffcc00]/10 text-[#ffcc00] font-black font-condensed uppercase tracking-wider text-sm gap-2">
+        <svg class="lucide-inline lucide-sm" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+        PRONOSTIC VALIDÉ : ${myChoice === 'over' ? 'PLUS DE' : 'MOINS DE'}
+      </div>
+    `;
+  } else {
+    actionHtml = `
+      <div class="flex gap-2 w-full mt-1">
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'over')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="text-zinc-400 text-[10px]">PLUS DE</span>
+          <span>${availableFb.over_odds.toFixed(2)}</span>
+        </button>
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'under')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="text-zinc-400 text-[10px]">MOINS DE</span>
+          <span>${availableFb.under_odds.toFixed(2)}</span>
+        </button>
+      </div>
+    `;
+  }
 
   const html = `
     <div class="w-full bg-[#18181e] border-2 border-[#ffcc00] rounded-[12px] shadow-[4px_4px_0px_#ffcc00] p-4 relative overflow-hidden flex flex-col gap-3">
@@ -1145,16 +1176,7 @@ function renderFlashBet(container) {
         <div class="text-[#ffcc00] font-black text-2xl font-condensed">${availableFb.threshold}</div>
       </div>
 
-      <div class="flex gap-2 w-full mt-1">
-        <button onclick="handleFlashPrediction(${availableFb.id}, 'over')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
-          <span class="text-zinc-400 text-[10px]">PLUS DE</span>
-          <span>${availableFb.over_odds.toFixed(2)}</span>
-        </button>
-        <button onclick="handleFlashPrediction(${availableFb.id}, 'under')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
-          <span class="text-zinc-400 text-[10px]">MOINS DE</span>
-          <span>${availableFb.under_odds.toFixed(2)}</span>
-        </button>
-      </div>
+      ${actionHtml}
     </div>
   `;
 
@@ -1168,12 +1190,7 @@ function renderMatchesList() {
   if (!container) return;
 
   if (flashContainer) {
-    if (state.predictionFilter === 'unpredicted') {
-      renderFlashBet(flashContainer);
-    } else {
-      flashContainer.innerHTML = '';
-      flashContainer.classList.add('hidden');
-    }
+    renderFlashBet(flashContainer);
   }
 
   const filtered = getFilteredMatches();
