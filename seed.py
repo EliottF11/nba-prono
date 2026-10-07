@@ -661,11 +661,11 @@ def seed_all_teams_and_matches():
         existing_fb = db.query(FlashBet).first()
         if not existing_fb:
             print("-> Injection du Prono Flash (Prop Bet) par défaut...")
-            dal_team = db.query(Team).filter_by(code="DAL").first()
-            if dal_team:
+            hou_team = db.query(Team).filter_by(code="HOU").first()
+            if hou_team:
                 fb1 = FlashBet(
-                    team_id=dal_team.id,
-                    player_name="Luka Doncic (vs HOU)",
+                    team_id=hou_team.id,
+                    player_name="Jalen Green (vs DAL)",
                     stat_type="Points + Passes",
                     threshold=42.5,
                     over_odds=1.85,
@@ -677,11 +677,11 @@ def seed_all_teams_and_matches():
                 db.commit()
                 print("OK : Prono Flash Luka Doncic inséré.")
         else:
-            if "Wembanyama" in existing_fb.player_name or existing_fb.player_name == "Victor Wembanyama":
-                dal_team = db.query(Team).filter_by(code="DAL").first()
-                if dal_team:
-                    existing_fb.team_id = dal_team.id
-                    existing_fb.player_name = "Luka Doncic (vs HOU)"
+            if "Doncic" in existing_fb.player_name or "Wembanyama" in existing_fb.player_name:
+                hou_team = db.query(Team).filter_by(code="HOU").first()
+                if hou_team:
+                    existing_fb.team_id = hou_team.id
+                    existing_fb.player_name = "Jalen Green (vs DAL)"
                     existing_fb.stat_type = "Points + Passes"
                     existing_fb.threshold = 42.5
                     existing_fb.deadline = datetime(2026, 10, 9, 12, 0, tzinfo=timezone.utc)
