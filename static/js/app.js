@@ -2137,50 +2137,9 @@ function renderMatchesListView(container, filtered) {
           </div>
         </div>
 
-        <!-- Deux blocs équipes et cotes (Extérieur à gauche, Domicile à droite) -->
+        <!-- Deux blocs équipes et cotes (Domicile à gauche, Extérieur à droite) -->
         <div class="grid grid-cols-2 gap-2 sm:gap-2.5 items-stretch">
           
-          <!-- ÉQUIPE EXTÉRIEUR -->
-          <button
-            onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isFinished})"
-            class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
-              awaySelected ? 'odds-btn-selected' : ''
-            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
-          >
-            <div class="flex items-center space-x-2 w-full mb-1.5">
-              <div 
-                class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
-                style="background-color: ${match.away_team.color}; color: ${match.away_team.text_color};"
-              >
-                ${match.away_team.code}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
-                  ${match.away_team.city}
-                </div>
-                <div class="flex items-center justify-between gap-1 mt-0.5">
-                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Ext.</span>
-                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
-                    ${getTeamFormDotsHtml(match.away_team.recent_form)}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="w-full flex items-center justify-between pt-1.5 border-t border-black/40">
-              <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
-              <span class="font-condensed text-base font-black ${awaySelected ? 'text-white' : 'text-zinc-200'}">
-                ${match.away_odds.toFixed(2)}
-              </span>
-            </div>
-
-            ${awayWon ? `
-              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
-                Gagné (${match.away_score} pts)
-              </div>
-            ` : ''}
-          </button>
-
           <!-- ÉQUIPE DOMICILE -->
           <button
             onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isFinished})"
@@ -2218,6 +2177,47 @@ function renderMatchesListView(container, filtered) {
             ${homeWon ? `
               <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
                 Gagné (${match.home_score} pts)
+              </div>
+            ` : ''}
+          </button>
+
+          <!-- ÉQUIPE EXTÉRIEUR -->
+          <button
+            onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isFinished})"
+            class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
+              awaySelected ? 'odds-btn-selected' : ''
+            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
+          >
+            <div class="flex items-center space-x-2 w-full mb-1.5">
+              <div 
+                class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${match.away_team.color}; color: ${match.away_team.text_color};"
+              >
+                ${match.away_team.code}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-xs sm:text-sm uppercase tracking-wide text-white truncate leading-tight">
+                  ${match.away_team.city}
+                </div>
+                <div class="flex items-center justify-between gap-1 mt-0.5">
+                  <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">Ext.</span>
+                  <div class="flex items-center gap-0.5 shrink-0" title="Forme (5 derniers matchs)">
+                    ${getTeamFormDotsHtml(match.away_team.recent_form)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="w-full flex items-center justify-between pt-1.5 border-t border-black/40">
+              <span class="text-[10px] font-bold uppercase text-slate-400">Cote</span>
+              <span class="font-condensed text-base font-black ${awaySelected ? 'text-white' : 'text-zinc-200'}">
+                ${match.away_odds.toFixed(2)}
+              </span>
+            </div>
+
+            ${awayWon ? `
+              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
+                Gagné (${match.away_score} pts)
               </div>
             ` : ''}
           </button>

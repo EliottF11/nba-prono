@@ -6,7 +6,7 @@ Source officielle NBA.com (Saison 2026-2027).
 """
 from datetime import datetime, timezone, timedelta
 from database import engine, SessionLocal, Base
-from models import Team, Match, User, Prediction
+from models import Team, Match, User, Prediction, FlashBet
 
 def reset_and_init_db():
     print("-> Réinitialisation et création des tables dans SQLite...")
@@ -655,6 +655,27 @@ def seed_all_teams_and_matches():
             print(f"OK : {added_count} nouveaux matchs insérés (Semaines 1 et 2).")
         else:
             print("Les matchs des semaines 1 et 2 sont déjà présents en base.")
+
+        # ---- SEED FLASH BETS ----
+        existing_fb = db.query(FlashBet).first()
+        if not existing_fb:
+            print("-> Injection du Prono Flash (Prop Bet) par défaut...")
+            # On cherche l'équipe SAS (Spurs)
+            sas_team = db.query(Team).filter_by(code="SAS").first()
+            if sas_team:
+                fb1 = FlashBet(
+                    team_id=sas_team.id,
+                    player_name="Victor Wembanyama",
+                    stat_type="Points + Rebonds",
+                    threshold=35.5,
+                    over_odds=1.85,
+                    under_odds=1.85,
+                    deadline=datetime.now(timezone.utc) + timedelta(days=2),
+                    status="upcoming"
+                )
+                db.add(fb1)
+                db.commit()
+                print("OK : Prono Flash Wembanyama inséré.")
 
     except Exception as e:
         db.rollback()
