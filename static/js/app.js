@@ -1285,16 +1285,16 @@ function renderTinderDeck(container, filtered) {
       </div>
 
       <!-- Overlays dynamiques d'illumination au swipe -->
-      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
-      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
 
       <!-- Badges de validation avec icône lors du swipe -->
-      <div class="swipe-badge-left" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
+      <div class="swipe-badge-left" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        <span>${escapeHtml(match.away_team.code)}</span>
-      </div>
-      <div class="swipe-badge-right" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
         <span>${escapeHtml(match.home_team.code)}</span>
+      </div>
+      <div class="swipe-badge-right" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
+        <span>${escapeHtml(match.away_team.code)}</span>
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
       </div>
 
@@ -1326,57 +1326,10 @@ function renderTinderDeck(container, filtered) {
         </div>
       </div>
 
-      <!-- AFFICHE DU MATCH : ÉQUIPE EXTÉRIEUR (GAUCHE) vs ÉQUIPE DOMICILE (DROITE) -->
+      <!-- AFFICHE DU MATCH : ÉQUIPE DOMICILE (GAUCHE) vs ÉQUIPE EXTÉRIEUR (DROITE) -->
       <div class="grid grid-cols-2 gap-2.5 items-stretch my-auto py-1 relative z-20">
         
-        <!-- ÉQUIPE EXTÉRIEUR (GAUCHE) -->
-        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
-          awaySelected 
-            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
-            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
-        }">
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
-                Extérieur
-              </span>
-              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
-                ${getTeamFormDotsHtml(match.away_team.recent_form)}
-              </div>
-            </div>
-            <div class="flex items-center gap-2 mb-1">
-              <div 
-                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
-                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
-              >
-                ${escapeHtml(match.away_team.code)}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
-                  ${escapeHtml(match.away_team.city)}
-                </div>
-                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
-                  ${escapeHtml(match.away_team.name)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
-            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
-            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
-              ${match.away_odds.toFixed(2)}
-            </span>
-          </div>
-
-          ${awaySelected ? `
-            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-white bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
-              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- ÉQUIPE DOMICILE (DROITE) -->
+        <!-- ÉQUIPE DOMICILE (GAUCHE) -->
         <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
           homeSelected 
             ? 'border-[#0077FE] bg-[#0077FE]/20 shadow-[3px_3px_0px_#000000]' 
@@ -1423,6 +1376,53 @@ function renderTinderDeck(container, filtered) {
           ` : ''}
         </div>
 
+        <!-- ÉQUIPE EXTÉRIEUR (DROITE) -->
+        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
+          awaySelected 
+            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
+            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
+        }">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
+                Extérieur
+              </span>
+              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
+                ${getTeamFormDotsHtml(match.away_team.recent_form)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+              <div 
+                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
+              >
+                ${escapeHtml(match.away_team.code)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
+                  ${escapeHtml(match.away_team.city)}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
+                  ${escapeHtml(match.away_team.name)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
+            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
+              ${match.away_odds.toFixed(2)}
+            </span>
+          </div>
+
+          ${awaySelected ? `
+            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
+              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
+            </div>
+          ` : ''}
+        </div>
+
         </div>
 
       <!-- GROS BOUTON BONUS x2 ARCADE (Aspect physique néo-brutaliste enfonçable) -->
@@ -1447,14 +1447,14 @@ function renderTinderDeck(container, filtered) {
 
       <!-- Indicateur VS central & Guidage swipe -->
       <div class="flex items-center justify-between px-3 py-1.5 rounded-[8px] bg-black/60 border-2 border-black/80 text-[10px] text-zinc-400 font-bold uppercase tracking-wider relative z-20">
-        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${awayColor};">
-          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='m12 19-7-7 7-7'/><path d='M19 12H5'/></svg> ${escapeHtml(match.away_team.code)}
+        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${homeColor};">
+          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='m12 19-7-7 7-7'/><path d='M19 12H5'/></svg> Domicile
         </span>
         <span class="px-2 py-0.5 rounded-[4px] bg-[#121216] border border-white/20 text-[#F4F4F0] font-condensed font-black text-xs shadow-[1px_1px_0px_#000000]">
           VS
         </span>
-        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${homeColor};">
-          ${escapeHtml(match.home_team.code)} <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M5 12h14'/><path d='m12 5 7 7-7 7'/></svg>
+        <span class="flex items-center gap-1 font-condensed font-black" style="color: ${awayColor};">
+          Extérieur <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M5 12h14'/><path d='m12 5 7 7-7 7'/></svg>
         </span>
       </div>
 
@@ -1723,7 +1723,7 @@ async function triggerSwipeAction(match, direction) {
     return;
   }
 
-  const chosenTeam = direction === 'left' ? match.away_team : match.home_team;
+  const chosenTeam = direction === 'left' ? match.home_team : match.away_team;
   const isFinished = match.status === 'finished';
 
   // Haptic feedback Arcade sur validation de swipe
