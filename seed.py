@@ -71,14 +71,14 @@ def seed_all_teams_and_matches():
         # Format : domicile (home) vs extérieur (away)
         matches_data = [
             # =======================================================
-            # MATCHS DE PRESAISON (Mockés pour test Ligue Flash)
+            # MATCHS DE PRESAISON (Mockés pour test Ligue Flash - Vendredi Soir)
             # =======================================================
             {
                 "home": "Charlotte",
                 "away": "Brooklyn",
                 "home_odds": 1.85,
                 "away_odds": 1.95,
-                "deadline": datetime.now(timezone.utc) + timedelta(hours=2),
+                "deadline": datetime(2026, 10, 9, 23, 0, tzinfo=timezone.utc), # Vendredi 23h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
@@ -87,7 +87,7 @@ def seed_all_teams_and_matches():
                 "away": "New Orleans",
                 "home_odds": 1.60,
                 "away_odds": 2.30,
-                "deadline": datetime.now(timezone.utc) + timedelta(hours=3),
+                "deadline": datetime(2026, 10, 10, 0, 0, tzinfo=timezone.utc), # Samedi 00h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
@@ -96,7 +96,7 @@ def seed_all_teams_and_matches():
                 "away": "Denver",
                 "home_odds": 2.10,
                 "away_odds": 1.70,
-                "deadline": datetime.now(timezone.utc) + timedelta(hours=4),
+                "deadline": datetime(2026, 10, 10, 1, 0, tzinfo=timezone.utc), # Samedi 01h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
@@ -105,7 +105,7 @@ def seed_all_teams_and_matches():
                 "away": "Los Angeles (LAC)",
                 "home_odds": 1.75,
                 "away_odds": 2.05,
-                "deadline": datetime.now(timezone.utc) + timedelta(hours=5),
+                "deadline": datetime(2026, 10, 10, 2, 30, tzinfo=timezone.utc), # Samedi 02h30 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
@@ -280,9 +280,9 @@ def seed_all_teams_and_matches():
             },
         ]
 
-        # Update des matchs existants pour éviter les doublons avec semaine 1
+        # Nettoyage des anciens matchs de présaison
         from sqlalchemy import text
-        db.execute(text("UPDATE matches SET week_number = 0 WHERE season_stage = 'preseason'"))
+        db.execute(text("DELETE FROM matches WHERE season_stage = 'preseason'"))
         db.commit()
 
         # Insertion des matchs si la base ne contient pas encore la semaine 2
