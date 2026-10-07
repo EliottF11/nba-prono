@@ -71,40 +71,49 @@ def seed_all_teams_and_matches():
         # Format : domicile (home) vs extérieur (away)
         matches_data = [
             # =======================================================
-            # MATCHS DE PRESAISON (Mockés pour test Ligue Flash - Vendredi Soir)
+            # MATCHS DE PRESAISON (Vrais matchs du Vendredi Soir)
             # =======================================================
             {
-                "home": "Charlotte",
-                "away": "Brooklyn",
-                "home_odds": 1.85,
-                "away_odds": 1.95,
+                "home": "Minnesota",
+                "away": "Philadelphia",
+                "home_odds": 1.70,
+                "away_odds": 2.15,
                 "deadline": datetime(2026, 10, 9, 23, 0, tzinfo=timezone.utc), # Vendredi 23h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
             {
-                "home": "Oklahoma City",
-                "away": "New Orleans",
-                "home_odds": 1.60,
-                "away_odds": 2.30,
+                "home": "Washington",
+                "away": "Toronto",
+                "home_odds": 2.10,
+                "away_odds": 1.75,
                 "deadline": datetime(2026, 10, 10, 0, 0, tzinfo=timezone.utc), # Samedi 00h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
             {
-                "home": "Utah",
-                "away": "Denver",
-                "home_odds": 2.10,
-                "away_odds": 1.70,
+                "home": "Detroit",
+                "away": "Phoenix",
+                "home_odds": 2.40,
+                "away_odds": 1.55,
                 "deadline": datetime(2026, 10, 10, 1, 0, tzinfo=timezone.utc), # Samedi 01h00 UTC
                 "season_stage": "preseason",
                 "week_number": 0
             },
             {
                 "home": "Golden State",
-                "away": "Los Angeles (LAC)",
-                "home_odds": 1.75,
-                "away_odds": 2.05,
+                "away": "Sacramento",
+                "home_odds": 1.85,
+                "away_odds": 1.95,
+                "deadline": datetime(2026, 10, 10, 2, 0, tzinfo=timezone.utc), # Samedi 02h00 UTC
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Los Angeles (LAC)",
+                "away": "Portland",
+                "home_odds": 1.65,
+                "away_odds": 2.25,
                 "deadline": datetime(2026, 10, 10, 2, 30, tzinfo=timezone.utc), # Samedi 02h30 UTC
                 "season_stage": "preseason",
                 "week_number": 0
