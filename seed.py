@@ -660,12 +660,11 @@ def seed_all_teams_and_matches():
         existing_fb = db.query(FlashBet).first()
         if not existing_fb:
             print("-> Injection du Prono Flash (Prop Bet) par défaut...")
-            # On cherche l'équipe SAS (Spurs)
             sas_team = db.query(Team).filter_by(code="SAS").first()
             if sas_team:
                 fb1 = FlashBet(
                     team_id=sas_team.id,
-                    player_name="Victor Wembanyama",
+                    player_name="Victor Wembanyama (vs PHX)",
                     stat_type="Points + Rebonds",
                     threshold=35.5,
                     over_odds=1.85,
@@ -676,6 +675,11 @@ def seed_all_teams_and_matches():
                 db.add(fb1)
                 db.commit()
                 print("OK : Prono Flash Wembanyama inséré.")
+        else:
+            if existing_fb.player_name == "Victor Wembanyama":
+                existing_fb.player_name = "Victor Wembanyama (vs PHX)"
+                db.commit()
+                print("OK : Prono Flash Wembanyama mis à jour avec l'adversaire.")
 
     except Exception as e:
         db.rollback()
