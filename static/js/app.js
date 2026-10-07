@@ -1285,16 +1285,16 @@ function renderTinderDeck(container, filtered) {
       </div>
 
       <!-- Overlays dynamiques d'illumination au swipe -->
-      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
-      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-left" style="background: linear-gradient(90deg, ${hexToRgba(awayColor, 0.55)} 0%, transparent 80%);"></div>
+      <div class="swipe-overlay-right" style="background: linear-gradient(270deg, ${hexToRgba(homeColor, 0.55)} 0%, transparent 80%);"></div>
 
       <!-- Badges de validation avec icône lors du swipe -->
-      <div class="swipe-badge-left" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
+      <div class="swipe-badge-left" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        <span>${escapeHtml(match.home_team.code)}</span>
-      </div>
-      <div class="swipe-badge-right" style="background: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};">
         <span>${escapeHtml(match.away_team.code)}</span>
+      </div>
+      <div class="swipe-badge-right" style="background: ${homeColor}; color: ${match.home_team.text_color || '#FFFFFF'};">
+        <span>${escapeHtml(match.home_team.code)}</span>
         <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
       </div>
 
@@ -1302,7 +1302,7 @@ function renderTinderDeck(container, filtered) {
       <div class="flex items-center justify-between pb-2 border-b-2 border-black/80 relative z-20">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 rounded-[6px] bg-[#101014] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[11px] shadow-[1px_1px_0px_#000000]">
-            W${match.week_number || 1}
+            ${match.season_stage === 'preseason' ? 'PRÉ-SAISON' : 'W' + (match.week_number || 1)}
           </span>
           <span class="text-[11px] font-bold text-zinc-300 font-condensed uppercase tracking-wider">
             ${isFinished ? 'Terminé' : dateFormatted}
@@ -1329,7 +1329,54 @@ function renderTinderDeck(container, filtered) {
       <!-- AFFICHE DU MATCH : ÉQUIPE EXTÉRIEUR (GAUCHE) vs ÉQUIPE DOMICILE (DROITE) -->
       <div class="grid grid-cols-2 gap-2.5 items-stretch my-auto py-1 relative z-20">
         
-        <!-- ÉQUIPE DOMICILE (GAUCHE) -->
+        <!-- ÉQUIPE EXTÉRIEUR (GAUCHE) -->
+        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
+          awaySelected 
+            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
+            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
+        }">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
+                Extérieur
+              </span>
+              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
+                ${getTeamFormDotsHtml(match.away_team.recent_form)}
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mb-1">
+              <div 
+                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
+                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
+              >
+                ${escapeHtml(match.away_team.code)}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
+                  ${escapeHtml(match.away_team.city)}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
+                  ${escapeHtml(match.away_team.name)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
+            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
+              ${match.away_odds.toFixed(2)}
+            </span>
+          </div>
+
+          ${awaySelected ? `
+            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-white bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
+              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- ÉQUIPE DOMICILE (DROITE) -->
         <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
           homeSelected 
             ? 'border-[#0077FE] bg-[#0077FE]/20 shadow-[3px_3px_0px_#000000]' 
@@ -1371,53 +1418,6 @@ function renderTinderDeck(container, filtered) {
 
           ${homeSelected ? `
             <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-white bg-[#0077FE] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
-              <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
-            </div>
-          ` : ''}
-        </div>
-
-      <!-- ÉQUIPE EXTÉRIEUR (DROITE) -->
-        <div class="team-panel rounded-[10px] p-2.5 flex flex-col justify-between border-2 ${
-          awaySelected 
-            ? 'border-[#D95D39] bg-[#D95D39]/20 shadow-[3px_3px_0px_#000000]' 
-            : 'border-black bg-[#16151c] shadow-[2px_2px_0px_#000000]'
-        }">
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-black/70 text-zinc-300 border border-black">
-                Extérieur
-              </span>
-              <div class="flex items-center gap-0.5" title="Forme (5 derniers matchs)">
-                ${getTeamFormDotsHtml(match.away_team.recent_form)}
-              </div>
-            </div>
-            <div class="flex items-center gap-2 mb-1">
-              <div 
-                class="w-8 h-8 rounded-[8px] flex items-center justify-center font-condensed font-black text-sm border-2 border-black shadow-[2px_2px_0px_#000000] shrink-0"
-                style="background-color: ${awayColor}; color: ${match.away_team.text_color || '#FFFFFF'};"
-              >
-                ${escapeHtml(match.away_team.code)}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="font-condensed font-black text-sm leading-tight text-white uppercase truncate">
-                  ${escapeHtml(match.away_team.city)}
-                </div>
-                <div class="text-[10px] text-zinc-400 font-semibold truncate leading-none">
-                  ${escapeHtml(match.away_team.name)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-2 pt-1.5 border-t border-black/50 flex items-center justify-between">
-            <span class="text-[10px] font-black uppercase text-zinc-400 font-condensed">Cote</span>
-            <span class="font-condensed text-lg font-black ${awaySelected ? 'text-[#D95D39]' : 'text-white'}">
-              ${match.away_odds.toFixed(2)}
-            </span>
-          </div>
-
-          ${awaySelected ? `
-            <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-black bg-[#D95D39] py-0.5 rounded-[6px] border border-black shadow-[1px_1px_0px_#000000]">
               <svg class='lucide-inline lucide-xs lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> Ton choix
             </div>
           ` : ''}
@@ -1723,7 +1723,7 @@ async function triggerSwipeAction(match, direction) {
     return;
   }
 
-  const chosenTeam = direction === 'left' ? match.home_team : match.away_team;
+  const chosenTeam = direction === 'left' ? match.away_team : match.home_team;
   const isFinished = match.status === 'finished';
 
   // Haptic feedback Arcade sur validation de swipe
@@ -2043,7 +2043,7 @@ function renderMatchesListView(container, filtered) {
         <!-- En-tête : Semaine, Date, Bonus x2 & État -->
         <div class="flex items-center justify-between text-xs pb-2 border-b-2 border-black/80 gap-1.5">
           <div class="flex items-center space-x-1.5 text-zinc-400 font-medium text-[11px] min-w-0 truncate">
-            <span class="px-2 py-0.5 rounded-[6px] bg-[#121216] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[10px] shadow-[1px_1px_0px_#000000] shrink-0">W${match.week_number || 1}</span>
+            <span class="px-2 py-0.5 rounded-[6px] bg-[#121216] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[10px] shadow-[1px_1px_0px_#000000] shrink-0">${match.season_stage === 'preseason' ? 'PRÉ-SAISON' : 'W' + (match.week_number || 1)}</span>
             <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : 'bg-white'} shrink-0"></span>
             <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : dateFormatted}</span>
           </div>
@@ -4522,7 +4522,7 @@ function openMatchResultDetails(matchId) {
             <span class="tv-logo-pro">PRO</span>
           </div>
           <span class="text-[9px] font-condensed font-black text-zinc-400 uppercase">FINAL</span>
-          <span class="text-[8px] text-zinc-500 font-mono mt-0.5">W${match.week_number || 1}</span>
+          <span class="text-[8px] text-zinc-500 font-mono mt-0.5">${match.season_stage === 'preseason' ? 'PRÉ' : 'W' + (match.week_number || 1)}</span>
         </div>
 
         <!-- Équipe Domicile -->
