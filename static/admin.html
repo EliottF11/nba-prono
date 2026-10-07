@@ -104,6 +104,7 @@
       const isoString = localDate.toISOString();
 
       const payload = {
+        admin_password: document.getElementById('admin_password').value,
         player_name: document.getElementById('player_name').value,
         team_id: parseInt(document.getElementById('team_id').value),
         stat_type: document.getElementById('stat_type').value,

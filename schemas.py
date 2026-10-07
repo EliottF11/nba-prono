@@ -64,6 +64,7 @@ class MatchResponse(BaseModel):
 # --- Schémas Pronostics ---
 
 class FlashBetCreate(BaseModel):
+    admin_password: str
     team_id: int
     player_name: str
     stat_type: str
