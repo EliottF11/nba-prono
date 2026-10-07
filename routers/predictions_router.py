@@ -275,7 +275,7 @@ def create_flash_bet(
 ):
     """Création d'un nouveau prono flash (Admin)."""
     import os
-    admin_user = os.getenv("ADMIN_USERNAME", "eliott").lower()
+    admin_user = os.getenv("ADMIN_USERNAME", "akirah444").lower()
     if current_user.username.lower() != admin_user:
         raise HTTPException(status_code=403, detail="Réservé à l'administrateur.")
 
