@@ -281,8 +281,9 @@ def seed_all_teams_and_matches():
         ]
 
         # Nettoyage des anciens matchs de présaison
-        from sqlalchemy import text
-        db.execute(text("DELETE FROM matches WHERE season_stage = 'preseason'"))
+        preseason_matches = db.query(Match).filter(Match.season_stage == "preseason").all()
+        for m in preseason_matches:
+            db.delete(m)
         db.commit()
 
         # Insertion des matchs si la base ne contient pas encore la semaine 2
