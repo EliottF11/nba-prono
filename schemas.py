@@ -63,6 +63,15 @@ class MatchResponse(BaseModel):
 
 # --- Schémas Pronostics ---
 
+class FlashBetCreate(BaseModel):
+    team_id: int
+    player_name: str
+    stat_type: str
+    threshold: float
+    over_odds: float
+    under_odds: float
+    deadline: datetime
+
 class FlashBetResponse(BaseModel):
     id: int
     player_name: str

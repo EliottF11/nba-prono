@@ -15,7 +15,7 @@ from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, Season
 from schemas import (
     MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
     UserStatsResponse, BadgeResponse, BoostResponse, WrappedResponse,
-    FlashBetResponse, FlashPredictionCreate, FlashPredictionResponse
+    FlashBetResponse, FlashBetCreate, FlashPredictionCreate, FlashPredictionResponse
 )
 from auth import get_current_user
 
@@ -256,11 +256,43 @@ def toggle_prediction_boost(
         }
 
 
+@router.get("/teams")
+def get_teams(db: Session = Depends(get_db)):
+    """Récupère la liste de toutes les équipes NBA."""
+    return db.query(Team).all()
+
 @router.get("/flash-bets", response_model=List[FlashBetResponse])
 def get_flash_bets(db: Session = Depends(get_db)):
     """Récupère les paris flash disponibles."""
     # On retourne tous les flash bets, le frontend s'occupera d'afficher ceux du jour
     return db.query(FlashBet).order_by(FlashBet.deadline.asc()).all()
+
+@router.post("/flash-bets", response_model=FlashBetResponse)
+def create_flash_bet(
+    data: FlashBetCreate,
+    current_user: User = Depends(get_current_user), # Simple protection for now
+    db: Session = Depends(get_db)
+):
+    """Création d'un nouveau prono flash (Admin)."""
+    # Verify the team exists
+    team = db.query(Team).filter(Team.id == data.team_id).first()
+    if not team:
+        raise HTTPException(status_code=404, detail="Equipe introuvable.")
+        
+    new_fb = FlashBet(
+        team_id=data.team_id,
+        player_name=data.player_name,
+        stat_type=data.stat_type,
+        threshold=data.threshold,
+        over_odds=data.over_odds,
+        under_odds=data.under_odds,
+        deadline=data.deadline,
+        status="upcoming"
+    )
+    db.add(new_fb)
+    db.commit()
+    db.refresh(new_fb)
+    return new_fb
 
 @router.post("/flash-predictions", response_model=FlashPredictionResponse)
 def make_flash_prediction(
