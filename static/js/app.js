@@ -1154,11 +1154,14 @@ function renderFlashBet(container) {
     `;
   }
 
+  const deadlineDate = new Date(availableFb.deadline);
+  const formattedDate = formatMatchTime(deadlineDate);
+
   const html = `
     <div class="w-full bg-[#18181e] border-2 border-[#ffcc00] rounded-[12px] shadow-[4px_4px_0px_#ffcc00] p-4 relative overflow-hidden flex flex-col gap-3">
       <!-- Badge Flash -->
       <div class="absolute top-0 right-0 bg-[#ffcc00] text-black font-black font-condensed text-[10px] px-2 py-1 uppercase tracking-wider rounded-bl-lg">
-        ⚡ Flash du Jour
+        ⚡ Flash - ${formattedDate}
       </div>
       
       <div class="flex items-center gap-3">

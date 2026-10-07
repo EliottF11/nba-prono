@@ -657,29 +657,36 @@ def seed_all_teams_and_matches():
             print("Les matchs des semaines 1 et 2 sont déjà présents en base.")
 
         # ---- SEED FLASH BETS ----
+        # ---- SEED FLASH BETS ----
         existing_fb = db.query(FlashBet).first()
         if not existing_fb:
             print("-> Injection du Prono Flash (Prop Bet) par défaut...")
-            sas_team = db.query(Team).filter_by(code="SAS").first()
-            if sas_team:
+            dal_team = db.query(Team).filter_by(code="DAL").first()
+            if dal_team:
                 fb1 = FlashBet(
-                    team_id=sas_team.id,
-                    player_name="Victor Wembanyama (vs PHX)",
-                    stat_type="Points + Rebonds",
-                    threshold=35.5,
+                    team_id=dal_team.id,
+                    player_name="Luka Doncic (vs HOU)",
+                    stat_type="Points + Passes",
+                    threshold=42.5,
                     over_odds=1.85,
                     under_odds=1.85,
-                    deadline=datetime.now(timezone.utc) + timedelta(days=2),
+                    deadline=datetime(2026, 10, 9, 12, 0, tzinfo=timezone.utc),
                     status="upcoming"
                 )
                 db.add(fb1)
                 db.commit()
-                print("OK : Prono Flash Wembanyama inséré.")
+                print("OK : Prono Flash Luka Doncic inséré.")
         else:
-            if existing_fb.player_name == "Victor Wembanyama":
-                existing_fb.player_name = "Victor Wembanyama (vs PHX)"
-                db.commit()
-                print("OK : Prono Flash Wembanyama mis à jour avec l'adversaire.")
+            if "Wembanyama" in existing_fb.player_name or existing_fb.player_name == "Victor Wembanyama":
+                dal_team = db.query(Team).filter_by(code="DAL").first()
+                if dal_team:
+                    existing_fb.team_id = dal_team.id
+                    existing_fb.player_name = "Luka Doncic (vs HOU)"
+                    existing_fb.stat_type = "Points + Passes"
+                    existing_fb.threshold = 42.5
+                    existing_fb.deadline = datetime(2026, 10, 9, 12, 0, tzinfo=timezone.utc)
+                    db.commit()
+                    print("OK : Prono Flash mis à jour pour Luka Doncic.")
 
     except Exception as e:
         db.rollback()
