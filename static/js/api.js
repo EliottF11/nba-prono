@@ -117,6 +117,22 @@ const API = {
     });
   },
 
+  async getFlashBets() {
+    return await this.request('/api/flash-bets');
+  },
+
+  async makeFlashPrediction(flashBetId, choice) {
+    return await this.request('/api/flash-predictions', {
+      method: 'POST',
+      body: JSON.stringify({ flash_bet_id: flashBetId, choice })
+    });
+  },
+
+  async getMyFlashPredictions() {
+    if (!this.getToken()) return [];
+    return await this.request('/api/flash-predictions/me');
+  },
+
   // --- Classement ---
   async getLeaderboard() {
     return await this.request('/api/leaderboard');

@@ -23,6 +23,8 @@ const state = {
   leagueMessages: {},
   chatPollingInterval: null,
   authMode: 'login',
+  flashBets: [],
+  myFlashPredictions: {},
   // État de la pile de cartes Tinder
   tinderDeckIndex: 0,
   swipeHistory: [], // { match, matchId, previousVote, chosenTeamId, direction }
@@ -841,10 +843,12 @@ async function refreshData() {
       API.getMatches(state.matchesFilter, state.selectedWeek),
       API.getMyPredictions(),
       API.getLeaderboard(),
-      API.getWeeks()
+      API.getWeeks(),
+      API.getFlashBets()
     ];
     if (state.currentUser) {
       promises.push(API.getSeasonPrediction());
+      promises.push(API.getMyFlashPredictions());
     }
 
     const results = await Promise.all(promises);
@@ -852,11 +856,13 @@ async function refreshData() {
     const preds = results[1];
     const leaderboard = results[2];
     const weeks = results[3];
+    const flashBets = results[4];
 
     state.matches = matches;
     state.leaderboard = leaderboard;
     state.availableWeeks = weeks;
-    state.seasonPrediction = state.currentUser ? results[4] : null;
+    state.flashBets = flashBets;
+    state.seasonPrediction = state.currentUser ? results[5] : null;
 
     state.myPredictions = {};
     state.boostedPredictions = {};
@@ -870,6 +876,13 @@ async function refreshData() {
         state.appliedBonuses[p.match_id] = p.applied_bonus;
       }
     });
+
+    state.myFlashPredictions = {};
+    if (state.currentUser && results[6]) {
+      results[6].forEach(fp => {
+        state.myFlashPredictions[fp.flash_bet_id] = fp.choice;
+      });
+    }
 
     // On charge le bonus s'il y a un utilisateur
     if (state.currentUser) {
@@ -1050,7 +1063,8 @@ function setPredictionFilter(filter) {
     if (filter === 'unpredicted') {
       tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
       tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
-      // Optionnel : on peut remettre en Tinder si on veut, mais on garde le dernier choix
+      // Force le mode Tinder pour "À pronostiquer"
+      state.matchesViewMode = 'tinder';
     } else {
       tabPred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 bg-[#D95D39] text-white border-2 border-transparent';
       tabUnpred.className = 'flex-1 text-center py-2 text-xs font-condensed font-black uppercase tracking-wider rounded-lg transition-all duration-200 text-zinc-400 hover:text-white border-2 border-transparent';
@@ -1073,10 +1087,94 @@ function resetTinderDeck() {
 }
 window.resetTinderDeck = resetTinderDeck;
 
+// --- Rendu Flash Bet (Prop Bet) ---
+async function handleFlashPrediction(flashBetId, choice) {
+  if (!state.currentUser) {
+    showLoginModal();
+    return;
+  }
+  try {
+    const res = await API.makeFlashPrediction(flashBetId, choice);
+    state.myFlashPredictions[flashBetId] = choice;
+    notify("Prono Flash enregistré ⚡", "success");
+    renderMatchesList();
+  } catch (err) {
+    notify(err.message, "error");
+  }
+}
+window.handleFlashPrediction = handleFlashPrediction;
+
+function renderFlashBet(container) {
+  container.innerHTML = '';
+  if (!state.flashBets || state.flashBets.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+
+  // Chercher un prono flash pour aujourd'hui ou le premier non pronostiqué
+  const today = new Date();
+  // Pour simplifier, on prend le premier qui est 'upcoming' et non pronostiqué
+  const availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id]);
+
+  if (!availableFb) {
+    container.classList.add('hidden');
+    return;
+  }
+
+  container.classList.remove('hidden');
+
+  const html = `
+    <div class="w-full bg-[#18181e] border-2 border-[#ffcc00] rounded-[12px] shadow-[4px_4px_0px_#ffcc00] p-4 relative overflow-hidden flex flex-col gap-3">
+      <!-- Badge Flash -->
+      <div class="absolute top-0 right-0 bg-[#ffcc00] text-black font-black font-condensed text-[10px] px-2 py-1 uppercase tracking-wider rounded-bl-lg">
+        ⚡ Flash du Jour
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full border-2 border-[#ffcc00] bg-black flex items-center justify-center text-xl font-bold" style="color: ${availableFb.team.color};">
+          ${availableFb.team.code}
+        </div>
+        <div class="flex-1">
+          <h4 class="text-white font-condensed font-black text-lg leading-tight">${escapeHtml(availableFb.player_name)}</h4>
+          <p class="text-zinc-400 font-bold text-xs uppercase tracking-wider">${escapeHtml(availableFb.stat_type)}</p>
+        </div>
+      </div>
+
+      <div class="bg-black/50 border border-zinc-700 rounded-lg p-3 text-center">
+        <span class="text-zinc-300 font-bold text-sm">Ligne fixée à</span>
+        <div class="text-[#ffcc00] font-black text-2xl font-condensed">${availableFb.threshold}</div>
+      </div>
+
+      <div class="flex gap-2 w-full mt-1">
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'over')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="text-zinc-400 text-[10px]">PLUS DE</span>
+          <span>${availableFb.over_odds.toFixed(2)}</span>
+        </button>
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'under')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="text-zinc-400 text-[10px]">MOINS DE</span>
+          <span>${availableFb.under_odds.toFixed(2)}</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
 // --- Rendu Principal des Matchs ---
 function renderMatchesList() {
   const container = document.getElementById('matches-list');
+  const flashContainer = document.getElementById('flash-bet-container');
   if (!container) return;
+
+  if (flashContainer) {
+    if (state.predictionFilter === 'unpredicted') {
+      renderFlashBet(flashContainer);
+    } else {
+      flashContainer.innerHTML = '';
+      flashContainer.classList.add('hidden');
+    }
+  }
 
   const filtered = getFilteredMatches();
 
@@ -1895,22 +1993,7 @@ window.undoLastSwipe = undoLastSwipe;
 function renderMatchesListView(container, filtered) {
   const toolbarHtml = `
     <div class="flex items-center justify-between gap-2 mb-2 px-1">
-      ${state.predictionFilter === 'unpredicted' ? `
-      <div class="flex items-center gap-1.5">
-        <button 
-          onclick="setMatchesViewMode('tinder')" 
-          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer bg-[#18181e] text-zinc-400 hover:text-white shadow-none flex items-center gap-1.5"
-        >
-          <svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><path d='m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'/><path d='m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'/><path d='m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'/></svg> Mode Swipe
-        </button>
-        <button 
-          onclick="setMatchesViewMode('list')" 
-          class="btn-tactile px-3 py-1 rounded-[8px] text-xs font-condensed font-black uppercase tracking-wider border-2 border-black transition cursor-pointer bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]"
-        >
-          <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><line x1='8' x2='21' y1='6' y2='6'/><line x1='8' x2='21' y1='12' y2='12'/><line x1='8' x2='21' y1='18' y2='18'/><line x1='3' x2='3.01' y1='6' y2='6'/><line x1='3' x2='3.01' y1='12' y2='12'/><line x1='3' x2='3.01' y1='18' y2='18'/></svg> Liste
-        </button>
-      </div>
-      ` : '<div></div>'}
+      <div></div>
 
       <div class="inline-flex items-center gap-1.5 bg-[#18181e] border-2 border-black px-2.5 py-0.5 rounded-[8px] shadow-[2px_2px_0px_#000000]">
         <span class="font-condensed font-black text-xs uppercase text-[#F4F4F0] tracking-wider">

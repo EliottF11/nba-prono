@@ -296,3 +296,38 @@ class WeeklyUserBonus(Base):
     def __repr__(self):
         return f"<WeeklyUserBonus User {self.user_id} W{self.week_number}/{self.year} -> {self.bonus_type}>"
 
+class FlashBet(Base):
+    """
+    Modèle de pronostic flash sur un joueur (Prop Bet). Ex: 'LeBron James + de 25.5 points'.
+    """
+    __tablename__ = "flash_bets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    player_name = Column(String(100), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    stat_type = Column(String(50), nullable=False)              # Ex: "Points", "Rebonds", "Passes"
+    threshold = Column(Float, nullable=False)                   # Ex: 25.5
+    over_odds = Column(Float, nullable=False)                   # Ex: 1.85
+    under_odds = Column(Float, nullable=False)                  # Ex: 1.85
+    deadline = Column(DateTime, nullable=False)
+    status = Column(String(20), default="upcoming", nullable=False) # "upcoming", "finished"
+    result_stat = Column(Float, nullable=True)                  # Stat réelle
+    
+    team = relationship("Team")
+
+class FlashPrediction(Base):
+    __tablename__ = "flash_predictions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    flash_bet_id = Column(Integer, ForeignKey("flash_bets.id"), nullable=False)
+    choice = Column(String(10), nullable=False) # "over" ou "under"
+    points_won = Column(Float, default=0.0, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    
+    user = relationship("User")
+    flash_bet = relationship("FlashBet")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "flash_bet_id", name="uq_user_flash_prediction"),
+    )

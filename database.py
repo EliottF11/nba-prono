@@ -53,6 +53,9 @@ def run_migrations():
             "CREATE TABLE IF NOT EXISTS league_messages (id SERIAL PRIMARY KEY, league_id INTEGER NOT NULL REFERENCES leagues(id) ON DELETE CASCADE, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE, content VARCHAR(280) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
             "CREATE INDEX IF NOT EXISTS ix_league_messages_league_id ON league_messages (league_id)",
             "CREATE INDEX IF NOT EXISTS ix_league_messages_user_id ON league_messages (user_id)",
+
+            "CREATE TABLE IF NOT EXISTS flash_bets (id SERIAL PRIMARY KEY, player_name VARCHAR(100) NOT NULL, team_id INTEGER NOT NULL REFERENCES teams(id), stat_type VARCHAR(50) NOT NULL, threshold FLOAT NOT NULL, over_odds FLOAT NOT NULL, under_odds FLOAT NOT NULL, deadline TIMESTAMP NOT NULL, status VARCHAR(20) DEFAULT 'upcoming' NOT NULL, result_stat FLOAT)",
+            "CREATE TABLE IF NOT EXISTS flash_predictions (id SERIAL PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), flash_bet_id INTEGER NOT NULL REFERENCES flash_bets(id), choice VARCHAR(10) NOT NULL, points_won FLOAT DEFAULT 0.0 NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, UNIQUE(user_id, flash_bet_id))",
         ]
         for stmt in statements:
             try:
@@ -97,7 +100,32 @@ def run_migrations():
                         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
                     )
                 """))
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS flash_bets (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        player_name VARCHAR(100) NOT NULL,
+                        team_id INTEGER NOT NULL REFERENCES teams(id),
+                        stat_type VARCHAR(50) NOT NULL,
+                        threshold FLOAT NOT NULL,
+                        over_odds FLOAT NOT NULL,
+                        under_odds FLOAT NOT NULL,
+                        deadline DATETIME NOT NULL,
+                        status VARCHAR(20) DEFAULT 'upcoming' NOT NULL,
+                        result_stat FLOAT
+                    )
+                """))
+                conn.execute(text("""
+                    CREATE TABLE IF NOT EXISTS flash_predictions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL REFERENCES users(id),
+                        flash_bet_id INTEGER NOT NULL REFERENCES flash_bets(id),
+                        choice VARCHAR(10) NOT NULL,
+                        points_won FLOAT DEFAULT 0.0 NOT NULL,
+                        created_at DATETIME NOT NULL,
+                        UNIQUE(user_id, flash_bet_id)
+                    )
+                """))
                 conn.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[MIGRATION SQLITE NOTICE] {e}")
 

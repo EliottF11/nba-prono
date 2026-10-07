@@ -11,10 +11,11 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, SeasonPrediction, LeagueMember
+from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, SeasonPrediction, LeagueMember, FlashBet, FlashPrediction
 from schemas import (
     MatchResponse, PredictionCreate, PredictionResponse, LeaderboardEntry,
-    UserStatsResponse, BadgeResponse, BoostResponse, WrappedResponse
+    UserStatsResponse, BadgeResponse, BoostResponse, WrappedResponse,
+    FlashBetResponse, FlashPredictionCreate, FlashPredictionResponse
 )
 from auth import get_current_user
 
@@ -253,6 +254,66 @@ def toggle_prediction_boost(
             "week_number": target_week,
             "message": f"Bonus x2 activé pour la Semaine {target_week} ! Les points seront doublés en cas de victoire."
         }
+
+
+@router.get("/flash-bets", response_model=List[FlashBetResponse])
+def get_flash_bets(db: Session = Depends(get_db)):
+    """Récupère les paris flash disponibles."""
+    # On retourne tous les flash bets, le frontend s'occupera d'afficher ceux du jour
+    return db.query(FlashBet).order_by(FlashBet.deadline.asc()).all()
+
+@router.post("/flash-predictions", response_model=FlashPredictionResponse)
+def make_flash_prediction(
+    data: FlashPredictionCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Enregistre un prono flash (1 par jour)."""
+    fb = db.query(FlashBet).filter(FlashBet.id == data.flash_bet_id).first()
+    if not fb:
+        raise HTTPException(status_code=404, detail="Flash bet introuvable.")
+    
+    if fb.status != "upcoming":
+        raise HTTPException(status_code=400, detail="Ce prono flash est terminé.")
+        
+    now = datetime.now(timezone.utc)
+    fb_deadline = fb.deadline
+    if fb_deadline.tzinfo is None:
+        fb_deadline = fb_deadline.replace(tzinfo=timezone.utc)
+        
+    if now >= fb_deadline:
+        raise HTTPException(status_code=400, detail="Trop tard pour ce prono flash.")
+        
+    if data.choice not in ["over", "under"]:
+        raise HTTPException(status_code=400, detail="Choix invalide.")
+        
+    existing = db.query(FlashPrediction).filter(
+        FlashPrediction.user_id == current_user.id,
+        FlashPrediction.flash_bet_id == fb.id
+    ).first()
+    
+    if existing:
+        existing.choice = data.choice
+        db.commit()
+        db.refresh(existing)
+        return existing
+        
+    new_pred = FlashPrediction(
+        user_id=current_user.id,
+        flash_bet_id=fb.id,
+        choice=data.choice
+    )
+    db.add(new_pred)
+    db.commit()
+    db.refresh(new_pred)
+    return new_pred
+
+@router.get("/flash-predictions/me", response_model=List[FlashPredictionResponse])
+def get_my_flash_predictions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return db.query(FlashPrediction).filter(FlashPrediction.user_id == current_user.id).all()
 
 
 @router.get("/leaderboard", response_model=List[LeaderboardEntry])

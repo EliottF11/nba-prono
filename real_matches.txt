@@ -1,0 +1,378 @@
+            {
+                "home": "Houston",
+                "away": "Dallas",
+                "home_odds": 1.42,
+                "away_odds": 1.83,
+                "deadline": datetime(2026, 10, 9, 12, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Memphis",
+                "away": "Chicago",
+                "home_odds": 1.41,
+                "away_odds": 2.4,
+                "deadline": datetime(2026, 10, 10, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Los Angeles (LAC)",
+                "away": "Toronto",
+                "home_odds": 1.94,
+                "away_odds": 1.46,
+                "deadline": datetime(2026, 10, 10, 22, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Atlanta",
+                "away": "Indiana",
+                "home_odds": 1.52,
+                "away_odds": 1.5,
+                "deadline": datetime(2026, 10, 10, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Detroit",
+                "away": "Washington",
+                "home_odds": 1.29,
+                "away_odds": 1.4,
+                "deadline": datetime(2026, 10, 10, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Minnesota",
+                "away": "Miami",
+                "home_odds": 2.02,
+                "away_odds": 1.64,
+                "deadline": datetime(2026, 10, 11, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Philadelphia",
+                "away": "Boston",
+                "home_odds": 2.15,
+                "away_odds": 2.11,
+                "deadline": datetime(2026, 10, 11, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Sacramento",
+                "away": "Golden State",
+                "home_odds": 2.49,
+                "away_odds": 2.31,
+                "deadline": datetime(2026, 10, 11, 0, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "San Antonio",
+                "away": "Phoenix",
+                "home_odds": 1.69,
+                "away_odds": 1.94,
+                "deadline": datetime(2026, 10, 11, 2, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Dallas",
+                "away": "Houston",
+                "home_odds": 1.25,
+                "away_odds": 1.21,
+                "deadline": datetime(2026, 10, 11, 10, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Orlando",
+                "away": "Cleveland",
+                "home_odds": 1.49,
+                "away_odds": 2.01,
+                "deadline": datetime(2026, 10, 11, 22, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Milwaukee",
+                "away": "Charlotte",
+                "home_odds": 1.99,
+                "away_odds": 1.85,
+                "deadline": datetime(2026, 10, 11, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Chicago",
+                "away": "Denver",
+                "home_odds": 1.71,
+                "away_odds": 1.42,
+                "deadline": datetime(2026, 10, 12, 1, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Brooklyn",
+                "away": "Washington",
+                "home_odds": 1.82,
+                "away_odds": 1.75,
+                "deadline": datetime(2026, 10, 12, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Minnesota",
+                "away": "New York",
+                "home_odds": 1.63,
+                "away_odds": 1.79,
+                "deadline": datetime(2026, 10, 12, 23, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "San Antonio",
+                "away": "Utah",
+                "home_odds": 1.92,
+                "away_odds": 1.43,
+                "deadline": datetime(2026, 10, 13, 1, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Cleveland",
+                "away": "Orlando",
+                "home_odds": 2.13,
+                "away_odds": 2.19,
+                "deadline": datetime(2026, 10, 13, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "New York",
+                "away": "Toronto",
+                "home_odds": 2.26,
+                "away_odds": 1.21,
+                "deadline": datetime(2026, 10, 13, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Indiana",
+                "away": "Oklahoma City",
+                "home_odds": 1.67,
+                "away_odds": 2.24,
+                "deadline": datetime(2026, 10, 14, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Golden State",
+                "away": "Los Angeles (LAL)",
+                "home_odds": 2.01,
+                "away_odds": 1.96,
+                "deadline": datetime(2026, 10, 14, 2, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Portland",
+                "away": "Sacramento",
+                "home_odds": 2.21,
+                "away_odds": 1.36,
+                "deadline": datetime(2026, 10, 14, 2, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Brooklyn",
+                "away": "Miami",
+                "home_odds": 1.76,
+                "away_odds": 1.99,
+                "deadline": datetime(2026, 10, 14, 23, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Charlotte",
+                "away": "Boston",
+                "home_odds": 1.84,
+                "away_odds": 1.58,
+                "deadline": datetime(2026, 10, 14, 23, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "New Orleans",
+                "away": "Dallas",
+                "home_odds": 1.67,
+                "away_odds": 1.79,
+                "deadline": datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Chicago",
+                "away": "Milwaukee",
+                "home_odds": 1.27,
+                "away_odds": 2.42,
+                "deadline": datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Detroit",
+                "away": "Minnesota",
+                "home_odds": 1.63,
+                "away_odds": 1.71,
+                "deadline": datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Phoenix",
+                "away": "San Antonio",
+                "home_odds": 1.3,
+                "away_odds": 1.84,
+                "deadline": datetime(2026, 10, 15, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Denver",
+                "away": "Los Angeles (LAC)",
+                "home_odds": 1.31,
+                "away_odds": 2.08,
+                "deadline": datetime(2026, 10, 15, 2, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Toronto",
+                "away": "New York",
+                "home_odds": 1.84,
+                "away_odds": 2.32,
+                "deadline": datetime(2026, 10, 15, 23, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Oklahoma City",
+                "away": "Houston",
+                "home_odds": 2.4,
+                "away_odds": 2.09,
+                "deadline": datetime(2026, 10, 16, 0, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Boston",
+                "away": "Philadelphia",
+                "home_odds": 2.16,
+                "away_odds": 1.9,
+                "deadline": datetime(2026, 10, 16, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Miami",
+                "away": "Orlando",
+                "home_odds": 1.79,
+                "away_odds": 1.31,
+                "deadline": datetime(2026, 10, 16, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Toronto",
+                "away": "Detroit",
+                "home_odds": 2.06,
+                "away_odds": 2.41,
+                "deadline": datetime(2026, 10, 16, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Milwaukee",
+                "away": "Indiana",
+                "home_odds": 1.37,
+                "away_odds": 2.44,
+                "deadline": datetime(2026, 10, 16, 23, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Atlanta",
+                "away": "Dallas",
+                "home_odds": 1.5,
+                "away_odds": 1.58,
+                "deadline": datetime(2026, 10, 17, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Minnesota",
+                "away": "Chicago",
+                "home_odds": 2.32,
+                "away_odds": 2.32,
+                "deadline": datetime(2026, 10, 17, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Charlotte",
+                "away": "Memphis",
+                "home_odds": 2.24,
+                "away_odds": 2.22,
+                "deadline": datetime(2026, 10, 17, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Washington",
+                "away": "New Orleans",
+                "home_odds": 2.21,
+                "away_odds": 1.98,
+                "deadline": datetime(2026, 10, 17, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Sacramento",
+                "away": "San Antonio",
+                "home_odds": 1.46,
+                "away_odds": 1.29,
+                "deadline": datetime(2026, 10, 17, 0, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Portland",
+                "away": "Golden State",
+                "home_odds": 1.37,
+                "away_odds": 2.34,
+                "deadline": datetime(2026, 10, 17, 2, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Utah",
+                "away": "Phoenix",
+                "home_odds": 1.62,
+                "away_odds": 2.37,
+                "deadline": datetime(2026, 10, 17, 2, 0, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
+            {
+                "home": "Denver",
+                "away": "Los Angeles (LAL)",
+                "home_odds": 1.49,
+                "away_odds": 1.8,
+                "deadline": datetime(2026, 10, 17, 2, 30, tzinfo=timezone.utc),
+                "season_stage": "preseason",
+                "week_number": 0
+            },
