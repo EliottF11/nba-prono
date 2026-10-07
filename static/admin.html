@@ -15,10 +15,9 @@
 
     <form id="flash-bet-form" class="flex flex-col gap-4">
       
-      <div>
-        <label class="block text-sm text-zinc-400 mb-1">Mot de passe Admin</label>
-        <input type="password" id="admin_password" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" placeholder="Saisir le mot de passe du compte" required>
-        <p class="text-xs text-zinc-500 mt-1">Connecte-toi d'abord sur l'app classique avec ton compte.</p>
+      <!-- Password input removed -->
+      <div class="mb-2">
+        <p class="text-sm text-zinc-400">Connecte-toi d'abord sur l'app classique avec ton compte 'Eliott'.</p>
       </div>
 
       <hr class="border-zinc-700 my-2">
@@ -104,7 +103,6 @@
       const isoString = localDate.toISOString();
 
       const payload = {
-        admin_password: document.getElementById('admin_password').value,
         player_name: document.getElementById('player_name').value,
         team_id: parseInt(document.getElementById('team_id').value),
         stat_type: document.getElementById('stat_type').value,

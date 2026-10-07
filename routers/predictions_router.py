@@ -275,9 +275,9 @@ def create_flash_bet(
 ):
     """Création d'un nouveau prono flash (Admin)."""
     import os
-    admin_pwd = os.getenv("ADMIN_PASSWORD", "picknswipenba2026")
-    if data.admin_password != admin_pwd:
-        raise HTTPException(status_code=403, detail="Mot de passe Administrateur incorrect.")
+    admin_user = os.getenv("ADMIN_USERNAME", "eliott").lower()
+    if current_user.username.lower() != admin_user:
+        raise HTTPException(status_code=403, detail="Réservé à l'administrateur.")
 
     # Verify the team exists
     team = db.query(Team).filter(Team.id == data.team_id).first()
