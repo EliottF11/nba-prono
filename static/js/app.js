@@ -242,8 +242,10 @@ function updateHeaderUser() {
   const container = document.getElementById('auth-btn-container');
   const scoreBadge = document.getElementById('user-score-badge');
   const scoreVal = document.getElementById('user-points-val');
+  const seoContent = document.getElementById('seo-content');
 
   if (state.currentUser) {
+    if (seoContent) seoContent.classList.add('hidden');
     scoreBadge.classList.remove('hidden');
     scoreVal.textContent = state.currentUser.total_points.toFixed(1);
 
@@ -255,6 +257,7 @@ function updateHeaderUser() {
     `;
     updateStreakUI(state.currentStreak || 0);
   } else {
+    if (seoContent) seoContent.classList.remove('hidden');
     scoreBadge.classList.add('hidden');
     container.innerHTML = `
       <button onclick="openAuthModal('login')" class="btn-tactile bg-white hover:bg-zinc-200 text-black font-condensed font-black text-xs uppercase px-2.5 sm:px-3.5 py-1.5 rounded-lg transition cursor-pointer shadow-md shrink-0">
