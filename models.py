@@ -23,6 +23,22 @@ class Team(Base):
     def __repr__(self):
         return f"<Team {self.city} ({self.code})>"
 
+class Player(Base):
+    """
+    Modèle de joueur NBA pour les effectifs (synchronisé via API).
+    """
+    __tablename__ = "players"
+
+    id = Column(Integer, primary_key=True, index=True)
+    api_id = Column(Integer, unique=True, index=True, nullable=True) # ID API-Sports
+    name = Column(String(100), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id"))
+    
+    team = relationship("Team")
+
+    def __repr__(self):
+        return f"<Player {self.name}>"
+
 
 class User(Base):
     """

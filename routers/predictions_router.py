@@ -261,6 +261,25 @@ def get_teams(db: Session = Depends(get_db)):
     """Récupère la liste de toutes les équipes NBA."""
     return db.query(Team).all()
 
+@router.get("/teams/{team_id}/players")
+def get_team_players(team_id: int, db: Session = Depends(get_db)):
+    """Récupère les joueurs d'une équipe pour l'autocomplétion."""
+    from models import Player
+    return db.query(Player).filter(Player.team_id == team_id).all()
+
+@router.post("/sync-players")
+def force_sync_players(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    import os
+    admin_user = os.getenv("ADMIN_USERNAME", "akirah444").lower()
+    if current_user.username.lower() != admin_user:
+        raise HTTPException(status_code=403, detail="Réservé à l'administrateur.")
+    
+    from services.nba_service import sync_players
+    return sync_players(db)
+
 @router.get("/flash-bets", response_model=List[FlashBetResponse])
 def get_flash_bets(db: Session = Depends(get_db)):
     """Récupère les paris flash disponibles."""

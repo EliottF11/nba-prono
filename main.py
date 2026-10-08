@@ -33,9 +33,11 @@ def daily_morning_sync():
     """Tâche automatique quotidienne exécutée chaque matin à 07:00."""
     db = SessionLocal()
     try:
-        from services.nba_service import sync_scores_for_date
+        from services.nba_service import sync_scores_for_date, sync_players
         today_str = datetime.now().strftime("%Y-%m-%d")
         result = sync_scores_for_date(db, today_str)
+        # 1 requête par jour pour les joueurs (~31 requêtes au total, API limit 100/jour)
+        sync_players(db)
     except Exception as e:
         pass
     finally:

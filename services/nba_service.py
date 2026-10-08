@@ -259,3 +259,69 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
         "props_created": props_created,
         "props_resolved": props_resolved
     }
+
+
+def sync_players(db: Session) -> dict:
+    """
+    Récupère tous les joueurs actuels de la NBA pour mettre à jour les effectifs locaux.
+    Effectue 1 requête pour lister les équipes, puis 1 requête par équipe.
+    """
+    from models import Player
+    headers = get_headers()
+    season_param = "2024"
+
+    url_teams = f"{BASE_URL}/teams?league={NBA_LEAGUE_ID}&season={season_param}"
+    try:
+        with httpx.Client(timeout=15) as client:
+            res = client.get(url_teams, headers=headers)
+            res.raise_for_status()
+            teams_data = res.json().get("response", [])
+    except Exception as e:
+        return {"status": "error", "message": f"Erreur fetch teams: {e}"}
+
+    api_team_to_local = {}
+    for t_api in teams_data:
+        api_id = t_api.get("id")
+        name = t_api.get("name", "")
+        local_id = match_team_id(db, name)
+        if local_id and api_id:
+            api_team_to_local[api_id] = local_id
+
+    players_added = 0
+    players_updated = 0
+
+    with httpx.Client(timeout=20) as client:
+        for api_team_id, local_team_id in api_team_to_local.items():
+            url_players = f"{BASE_URL}/players?team={api_team_id}&season={season_param}"
+            try:
+                res = client.get(url_players, headers=headers)
+                res.raise_for_status()
+                players_data = res.json().get("response", [])
+                
+                for p_data in players_data:
+                    # Depending on API structure
+                    p_id = p_data.get("id")
+                    p_name = p_data.get("name")
+                    if not p_id or not p_name:
+                        continue
+                        
+                    existing = db.query(Player).filter(Player.api_id == p_id).first()
+                    if existing:
+                        if existing.team_id != local_team_id or existing.name != p_name:
+                            existing.team_id = local_team_id
+                            existing.name = p_name
+                            players_updated += 1
+                    else:
+                        new_player = Player(api_id=p_id, name=p_name, team_id=local_team_id)
+                        db.add(new_player)
+                        players_added += 1
+                db.commit()
+            except Exception as e:
+                print(f"[SYNC ERROR] Joueurs pour team API {api_team_id}: {e}")
+                continue
+
+    return {
+        "status": "success",
+        "added": players_added,
+        "updated": players_updated
+    }

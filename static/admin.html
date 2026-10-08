@@ -23,15 +23,16 @@
       <hr class="border-zinc-700 my-2">
 
       <div>
-        <label class="block text-sm text-zinc-400 mb-1">Joueur (ex: Jalen Green (vs DAL))</label>
-        <input type="text" id="player_name" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
+        <label class="block text-sm text-zinc-400 mb-1">Équipe du joueur</label>
+        <select id="team_id" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required onchange="loadPlayers(this.value)">
+          <option value="">Chargement des équipes...</option>
+        </select>
       </div>
 
       <div>
-        <label class="block text-sm text-zinc-400 mb-1">Équipe du joueur (ex: HOU pour Houston)</label>
-        <select id="team_id" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
-          <option value="">Chargement des équipes...</option>
-        </select>
+        <label class="block text-sm text-zinc-400 mb-1">Joueur (ex: Jalen Green)</label>
+        <input type="text" id="player_name" list="players_list" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" autocomplete="off" required>
+        <datalist id="players_list"></datalist>
       </div>
 
       <div>
@@ -64,10 +65,30 @@
         CRÉER LE PRONO FLASH
       </button>
 
+      <hr class="border-zinc-700 my-4">
+
+      <button type="button" id="btn-sync-players" class="bg-zinc-800 text-white py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm font-medium flex items-center justify-center gap-2">
+        Mettre à jour les effectifs (API)
+      </button>
+
     </form>
   </div>
 
   <script>
+    async function loadPlayers(teamId) {
+      if (!teamId) return;
+      const datalist = document.getElementById('players_list');
+      datalist.innerHTML = '';
+      try {
+        const res = await fetch(`/api/teams/${teamId}/players`);
+        const players = await res.json();
+        players.forEach(p => {
+          datalist.innerHTML += `<option value="${p.name}"></option>`;
+        });
+      } catch (e) {
+        console.error("Erreur chargement joueurs", e);
+      }
+    }
     // Charger les équipes
     async function loadTeams() {
       try {
@@ -139,6 +160,36 @@
         msg.classList.add('bg-red-900', 'text-red-200');
       }
     });
+    document.getElementById('btn-sync-players').addEventListener('click', async () => {
+      const token = localStorage.getItem('token');
+      const msg = document.getElementById('message');
+      if (!token) return alert("Tu dois être connecté !");
+
+      const btn = document.getElementById('btn-sync-players');
+      btn.innerText = "Synchronisation en cours... (~15s)";
+      btn.disabled = true;
+
+      try {
+        const response = await fetch('/api/sync-players', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const res = await response.json();
+          msg.innerHTML = `Synchro terminée : ${res.added} ajoutés, ${res.updated} mis à jour.`;
+          msg.className = "mb-4 p-4 rounded-lg bg-green-900 text-green-200";
+        } else {
+          msg.innerHTML = "Erreur de droits ou API.";
+          msg.className = "mb-4 p-4 rounded-lg bg-red-900 text-red-200";
+        }
+      } catch (e) {
+        msg.innerHTML = "Erreur réseau.";
+        msg.className = "mb-4 p-4 rounded-lg bg-red-900 text-red-200";
+      }
+      btn.innerText = "Mettre à jour les effectifs (API)";
+      btn.disabled = false;
+    });
+
   </script>
 </body>
 </html>
