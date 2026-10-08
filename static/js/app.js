@@ -582,6 +582,12 @@ function selectTab(tab) {
     profileView.style.display = tab === 'profile' ? '' : 'none';
   }
 
+  if (tab === 'matches' && state.matchesViewMode === 'swipe') {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+
   // Mise en retrait du footer mentions légales : masqué sur swipe matches, visible tout en bas sur les autres vues
   const appLegalFooter = document.getElementById('app-legal-footer') || document.querySelector('footer');
   if (appLegalFooter) {
@@ -1199,8 +1205,10 @@ function renderMatchesList() {
   const filtered = getFilteredMatches();
 
   if (state.matchesViewMode === 'list') {
+    document.body.style.overflow = '';
     renderMatchesListView(container, filtered);
   } else {
+    document.body.style.overflow = 'hidden';
     renderTinderDeck(container, filtered);
   }
 }

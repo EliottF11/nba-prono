@@ -96,6 +96,11 @@ def serve_ads_txt():
     """Sert le fichier ads.txt pour Google AdSense."""
     return FileResponse("static/ads.txt")
 
+@app.get("/admin.html", include_in_schema=False)
+def serve_admin():
+    """Sert la page d'administration des pronos flash."""
+    return FileResponse("static/admin.html")
+
 @app.get("/preview", include_in_schema=False)
 def serve_preview():
     """Sert le simulateur iPhone officiel avec rechargement automatique en direct."""
