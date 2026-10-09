@@ -1030,11 +1030,12 @@ function getTeamFormDotsHtml(formArray) {
 
 // Récupération des matchs filtrés
 function getFilteredMatches() {
+  const now = new Date();
   // Toujours filtrer sur 'upcoming' dans la vue principale
   let filtered = state.matches.filter(m => m.status === 'upcoming');
   
   if (state.predictionFilter === 'unpredicted') {
-    filtered = filtered.filter(m => !state.myPredictions[m.id]);
+    filtered = filtered.filter(m => !state.myPredictions[m.id] && new Date(m.deadline) > now);
   } else if (state.predictionFilter === 'predicted') {
     filtered = filtered.filter(m => state.myPredictions[m.id]);
   }
@@ -1120,8 +1121,9 @@ function renderFlashBet(container) {
   let isPredicted = false;
 
   if (state.predictionFilter === 'unpredicted') {
-    // Chercher le premier prono flash non pronostiqué
-    availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id]);
+    const now = new Date();
+    // Chercher le premier prono flash non pronostiqué et dont la date n'est pas passée
+    availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id] && new Date(fb.deadline) > now);
   } else {
     // Dans "Mes pronos", chercher le premier prono flash pronostiqué
     availableFb = state.flashBets.find(fb => state.myFlashPredictions[fb.id]);
