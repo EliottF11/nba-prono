@@ -24,20 +24,39 @@
 
       <div>
         <label class="block text-sm text-zinc-400 mb-1">Équipe du joueur</label>
-        <select id="team_id" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required onchange="loadPlayers(this.value)">
+        <select id="team_id" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required onchange="loadTeamData(this.value)">
           <option value="">Chargement des équipes...</option>
         </select>
       </div>
 
       <div>
-        <label class="block text-sm text-zinc-400 mb-1">Joueur (ex: Jalen Green)</label>
-        <input type="text" id="player_name" list="players_list" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" autocomplete="off" required>
-        <datalist id="players_list"></datalist>
+        <label class="block text-sm text-zinc-400 mb-1">Joueur</label>
+        <select id="player_name" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
+          <option value="">Sélectionner d'abord une équipe</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm text-zinc-400 mb-1">Match concerné</label>
+        <select id="match_select" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
+          <option value="">Sélectionner d'abord une équipe</option>
+        </select>
       </div>
 
       <div>
         <label class="block text-sm text-zinc-400 mb-1">Type de statistique</label>
-        <input type="text" id="stat_type" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" value="Points + Passes" required>
+        <select id="stat_type" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
+          <option value="Points">Points</option>
+          <option value="Passes">Passes Décisives</option>
+          <option value="Rebonds">Rebonds</option>
+          <option value="Points + Passes">Points + Passes</option>
+          <option value="Points + Rebonds">Points + Rebonds</option>
+          <option value="Passes + Rebonds">Passes + Rebonds</option>
+          <option value="Points + Passes + Rebonds">Points + Passes + Rebonds</option>
+          <option value="3 Points Marqués">3 Points Marqués</option>
+          <option value="Interceptions">Interceptions</option>
+          <option value="Contres">Contres</option>
+        </select>
       </div>
 
       <div>
@@ -56,11 +75,6 @@
         </div>
       </div>
 
-      <div>
-        <label class="block text-sm text-zinc-400 mb-1">Date limite (Heure du match UTC)</label>
-        <input type="datetime-local" id="deadline" class="w-full p-2 bg-zinc-900 border border-zinc-700 rounded-lg text-white" required>
-      </div>
-
       <button type="submit" class="mt-4 bg-[#ffcc00] text-black font-black py-3 rounded-lg hover:bg-yellow-500 transition-colors">
         CRÉER LE PRONO FLASH
       </button>
@@ -75,18 +89,43 @@
   </div>
 
   <script>
-    async function loadPlayers(teamId) {
-      if (!teamId) return;
-      const datalist = document.getElementById('players_list');
-      datalist.innerHTML = '';
+    async function loadTeamData(teamId) {
+      if (!teamId) {
+        document.getElementById('player_name').innerHTML = '<option value="">Sélectionner d'abord une équipe</option>';
+        document.getElementById('match_select').innerHTML = '<option value="">Sélectionner d'abord une équipe</option>';
+        return;
+      }
+      
+      const playerSelect = document.getElementById('player_name');
+      const matchSelect = document.getElementById('match_select');
+      
+      playerSelect.innerHTML = '<option value="">Chargement...</option>';
+      matchSelect.innerHTML = '<option value="">Chargement...</option>';
+      
       try {
-        const res = await fetch(`/api/teams/${teamId}/players`);
-        const players = await res.json();
-        players.forEach(p => {
-          datalist.innerHTML += `<option value="${p.name}"></option>`;
+        const [resPlayers, resMatches] = await Promise.all([
+          fetch(`/api/teams/${teamId}/players`),
+          fetch(`/api/teams/${teamId}/matches`)
+        ]);
+        
+        const players = await resPlayers.json();
+        const matches = await resMatches.json();
+        
+        playerSelect.innerHTML = '';
+        players.sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+          playerSelect.innerHTML += `<option value="${p.name}">${p.name}</option>`;
         });
+        
+        matchSelect.innerHTML = '';
+        if (matches.length === 0) {
+          matchSelect.innerHTML = '<option value="">Aucun match prévu pour cette équipe</option>';
+        } else {
+          matches.forEach(m => {
+            matchSelect.innerHTML += `<option value="${m.deadline}">${m.desc}</option>`;
+          });
+        }
       } catch (e) {
-        console.error("Erreur chargement joueurs", e);
+        console.error("Erreur chargement données équipe", e);
       }
     }
     // Charger les équipes
@@ -120,8 +159,13 @@
       }
 
       // Convert datetime-local to ISO UTC
-      const localDate = new Date(document.getElementById('deadline').value);
-      const isoString = localDate.toISOString();
+      const matchDeadline = document.getElementById('match_select').value;
+      if (!matchDeadline) {
+        msg.innerHTML = "Veuillez sélectionner un match !";
+        msg.classList.remove('hidden');
+        msg.classList.add('bg-red-900', 'text-red-200');
+        return;
+      }
 
       const payload = {
         player_name: document.getElementById('player_name').value,
@@ -130,7 +174,7 @@
         threshold: parseFloat(document.getElementById('threshold').value),
         over_odds: parseFloat(document.getElementById('over_odds').value),
         under_odds: parseFloat(document.getElementById('under_odds').value),
-        deadline: isoString
+        deadline: matchDeadline
       };
 
       try {

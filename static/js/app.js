@@ -1115,10 +1115,9 @@ window.handleFlashPrediction = handleFlashPrediction;
 
 function renderFlashBet(container) {
   container.innerHTML = '';
-  if (!state.flashBets || state.flashBets.length === 0) {
-    container.classList.add('hidden');
-    return;
-  }
+  // Flash bets disabled temporarily per user request
+  container.classList.add('hidden');
+  return;
 
   let availableFb = null;
   let isPredicted = false;

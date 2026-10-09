@@ -267,6 +267,30 @@ def get_team_players(team_id: int, db: Session = Depends(get_db)):
     from models import Player
     return db.query(Player).filter(Player.team_id == team_id).all()
 
+@router.get("/teams/{team_id}/matches")
+def get_team_upcoming_matches(team_id: int, db: Session = Depends(get_db)):
+    """Récupère les matchs à venir d'une équipe."""
+    from sqlalchemy import or_
+    now = datetime.now(timezone.utc)
+    matches = (
+        db.query(Match)
+        .filter(Match.status == "upcoming")
+        .filter(Match.deadline > now)
+        .filter(or_(Match.home_team_id == team_id, Match.away_team_id == team_id))
+        .order_by(Match.deadline.asc())
+        .limit(10)
+        .all()
+    )
+    # Renvoyer une structure simple avec infos équipe
+    res = []
+    for m in matches:
+        res.append({
+            "id": m.id,
+            "deadline": m.deadline.isoformat(),
+            "desc": f"{m.away_team.code} @ {m.home_team.code} - {m.deadline.strftime('%d/%m à %H:%M')}"
+        })
+    return res
+
 @router.post("/sync-players")
 def force_sync_players(
     current_user: User = Depends(get_current_user),
