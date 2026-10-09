@@ -62,7 +62,7 @@ def match_team_id(db: Session, api_team_name: str) -> int | None:
             
     return None
 
-def sync_scores_for_date(db: Session, date_str: str) -> dict:
+def sync_scores_for_date(db: Session, date_str: str, skip_props: bool = False) -> dict:
     """
     Interroge l'API pour une date donnée (YYYY-MM-DD),
     met à jour les scores des matchs et calcule les gains des pronostics terminés.
@@ -184,6 +184,14 @@ def sync_scores_for_date(db: Session, date_str: str) -> dict:
                         user.total_points = round(sum(p.points_won for p in user.predictions), 2)
 
     db.commit()
+
+    if skip_props:
+        return {
+            "updated_matches": updated_matches_count,
+            "resolved_matches": resolved_count,
+            "props_created": 0,
+            "props_resolved": 0
+        }
 
     # --- ETAPE 2 : Création des Props via /odds ---
     props_created = 0

@@ -43,6 +43,23 @@ def daily_morning_sync():
     finally:
         db.close()
 
+def half_hourly_sync():
+    """Tâche automatique exécutée toutes les 30 minutes pour mettre à jour les scores."""
+    db = SessionLocal()
+    try:
+        from services.nba_service import sync_scores_for_date
+        # On synchronise les matchs de la date actuelle
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        sync_scores_for_date(db, today_str, skip_props=True)
+        # On synchronise aussi la veille pour être sûr d'avoir les fins de matchs de la nuit
+        from datetime import timedelta
+        yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        sync_scores_for_date(db, yesterday_str, skip_props=True)
+    except Exception as e:
+        pass
+    finally:
+        db.close()
+
 scheduler = BackgroundScheduler(daemon=True)
 
 @asynccontextmanager
@@ -54,8 +71,10 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         pass
 
-    # Enregistrement de la tâche quotidienne à 07h00
+    # Enregistrement de la tâche quotidienne à 07h00 (pour les stats des joueurs notamment)
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
+    # Enregistrement de la tâche toutes les 30 minutes (pour les scores en direct)
+    scheduler.add_job(half_hourly_sync, CronTrigger(minute="*/30"))
     scheduler.start()
     yield
     scheduler.shutdown()

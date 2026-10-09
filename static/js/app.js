@@ -876,7 +876,9 @@ async function refreshData() {
     state.myPredictions = {};
     state.boostedPredictions = {};
     state.appliedBonuses = {};
+    state.myPredictionPoints = {};
     preds.forEach(p => {
+      state.myPredictionPoints[p.match_id] = p.points_won || 0;
       state.myPredictions[p.match_id] = p.selected_team_id;
       if (p.is_boosted) {
         state.boostedPredictions[p.match_id] = true;
@@ -2102,7 +2104,16 @@ function renderMatchesListView(container, filtered) {
 
     let statusPill = '';
     if (isFinished) {
-      statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-zinc-800 text-zinc-300 border-2 border-black">Terminé</span>`;
+      if (selectedTeamId) {
+        const pts = state.myPredictionPoints[match.id] || 0;
+        if (pts > 0) {
+          statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#10B981] text-black border-2 border-black">+${pts.toFixed(1)} PTS</span>`;
+        } else {
+          statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#EF4444] text-white border-2 border-black">PERDU</span>`;
+        }
+      } else {
+        statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-zinc-800 text-zinc-300 border-2 border-black">Terminé</span>`;
+      }
     } else if (selectedTeamId) {
       statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-white text-black border-2 border-black">Prono validé</span>`;
     } else {
