@@ -135,9 +135,9 @@
         const teams = await res.json();
         const select = document.getElementById('team_id');
         select.innerHTML = '<option value="">Sélectionner une équipe...</option>';
-        // Trier par code
-        teams.sort((a,b) => a.code.localeCompare(b.code)).forEach(t => {
-          select.innerHTML += `<option value="${t.id}">${t.city} (${t.code})</option>`;
+        // Trier par code avec fallback si null
+        teams.sort((a,b) => (a.code || "").localeCompare(b.code || "")).forEach(t => {
+          select.innerHTML += `<option value="${t.id}">${t.city || "Ville Inconnue"} (${t.code || "N/A"})</option>`;
         });
       } catch (e) {
         console.error("Erreur chargement équipes", e);
