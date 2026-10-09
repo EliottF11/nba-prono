@@ -1115,9 +1115,6 @@ window.handleFlashPrediction = handleFlashPrediction;
 
 function renderFlashBet(container) {
   container.innerHTML = '';
-  // Flash bets disabled temporarily per user request
-  container.classList.add('hidden');
-  return;
 
   let availableFb = null;
   let isPredicted = false;
@@ -1139,26 +1136,36 @@ function renderFlashBet(container) {
   container.classList.remove('hidden');
 
   let actionHtml = '';
-  if (isPredicted) {
-    const myChoice = state.myFlashPredictions[availableFb.id];
-    actionHtml = `
-      <div class="mt-1 flex items-center justify-center p-2 rounded-lg border-2 border-[#ffcc00] bg-[#ffcc00]/10 text-[#ffcc00] font-black font-condensed uppercase tracking-wider text-sm gap-2">
-        <svg class="lucide-inline lucide-sm" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-        PRONOSTIC VALIDÉ : ${myChoice === 'over' ? 'PLUS DE' : 'MOINS DE'}
-      </div>
-    `;
+  const myChoice = state.myFlashPredictions[availableFb.id];
+  const isFinished = availableFb.status === 'finished' || (new Date() >= new Date(availableFb.deadline));
+
+  if (isFinished) {
+    if (myChoice) {
+      actionHtml = `
+        <div class="mt-1 flex items-center justify-center p-2 rounded-lg border-2 border-zinc-600 bg-zinc-800 text-zinc-400 font-black font-condensed uppercase tracking-wider text-sm gap-2">
+          Terminé - Ton prono : ${myChoice === 'over' ? 'PLUS DE' : 'MOINS DE'}
+        </div>
+      `;
+    } else {
+      actionHtml = `
+        <div class="mt-1 flex items-center justify-center p-2 rounded-lg border-2 border-zinc-600 bg-zinc-800 text-zinc-400 font-black font-condensed uppercase tracking-wider text-sm gap-2">
+          Prono Flash Terminé
+        </div>
+      `;
+    }
   } else {
     actionHtml = `
       <div class="flex gap-2 w-full mt-1">
-        <button onclick="handleFlashPrediction(${availableFb.id}, 'over')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
-          <span class="text-zinc-400 text-[10px]">PLUS DE</span>
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'over')" class="flex-1 btn-tactile ${myChoice === 'over' ? 'bg-[#ffcc00] text-black border-[#ffcc00] shadow-[0_0_15px_rgba(255,204,0,0.5)]' : 'bg-zinc-800 text-white border-transparent'} font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="${myChoice === 'over' ? 'text-black/70' : 'text-zinc-400'} text-[10px] font-bold">PLUS DE</span>
           <span>${availableFb.over_odds.toFixed(2)}</span>
         </button>
-        <button onclick="handleFlashPrediction(${availableFb.id}, 'under')" class="flex-1 btn-tactile bg-zinc-800 text-white font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 border-transparent hover:border-[#ffcc00] transition-all flex flex-col items-center">
-          <span class="text-zinc-400 text-[10px]">MOINS DE</span>
+        <button onclick="handleFlashPrediction(${availableFb.id}, 'under')" class="flex-1 btn-tactile ${myChoice === 'under' ? 'bg-[#ffcc00] text-black border-[#ffcc00] shadow-[0_0_15px_rgba(255,204,0,0.5)]' : 'bg-zinc-800 text-white border-transparent'} font-condensed font-black uppercase text-sm py-2 rounded-lg border-2 hover:border-[#ffcc00] transition-all flex flex-col items-center">
+          <span class="${myChoice === 'under' ? 'text-black/70' : 'text-zinc-400'} text-[10px] font-bold">MOINS DE</span>
           <span>${availableFb.under_odds.toFixed(2)}</span>
         </button>
       </div>
+      ${myChoice ? '<div class="text-center text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-wider">Tu peux modifier ton choix jusqu\'au début du match</div>' : ''}
     `;
   }
 
@@ -1437,6 +1444,21 @@ function renderTinderDeck(container, filtered) {
           </span>
         </div>
         <div class="flex items-center gap-1.5">
+          ${state.appliedBonuses && state.appliedBonuses[match.id] && !isFinished ? `
+            <button 
+              type="button"
+              onclick="handleRemoveBonus(${match.id}, event)"
+              class="text-[10px] font-black uppercase pl-2 pr-1 py-0.5 rounded-[6px] bg-[#1F1E26] hover:bg-[#282733] text-${getBonusColor(state.appliedBonuses[match.id])} border-2 border-black flex items-center gap-1 shadow-[1px_1px_0px_#000] cursor-pointer transition-colors"
+              title="Retirer ce bonus"
+            >
+              ${state.appliedBonuses[match.id]}
+              <svg class="w-3 h-3 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          ` : state.appliedBonuses && state.appliedBonuses[match.id] ? `
+            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#1F1E26] text-${getBonusColor(state.appliedBonuses[match.id])} border-2 border-black shadow-[1px_1px_0px_#000]">
+              ${state.appliedBonuses[match.id]}
+            </span>
+          ` : ''}
           ${isBoosted ? `
             <span class="px-2 py-0.5 rounded-[6px] bg-[#FF5722] text-white border-2 border-black font-condensed font-black text-[10px] shadow-[1px_1px_0px_#000000] flex items-center gap-1">
               <svg class='lucide-inline lucide-md lucide-orange-fill' viewBox='0 0 24 24'><path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/></svg> x2 ACTIF
