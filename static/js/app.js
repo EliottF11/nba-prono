@@ -1035,7 +1035,7 @@ function getFilteredMatches() {
   let filtered = state.matches.filter(m => m.status === 'upcoming');
   
   if (state.predictionFilter === 'unpredicted') {
-    filtered = filtered.filter(m => !state.myPredictions[m.id] && new Date(m.deadline) > now);
+    filtered = filtered.filter(m => !state.myPredictions[m.id] && parseDeadline(m.deadline) > now);
   } else if (state.predictionFilter === 'predicted') {
     filtered = filtered.filter(m => state.myPredictions[m.id]);
   }
@@ -1123,7 +1123,7 @@ function renderFlashBet(container) {
   if (state.predictionFilter === 'unpredicted') {
     const now = new Date();
     // Chercher le premier prono flash non pronostiqué et dont la date n'est pas passée
-    availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id] && new Date(fb.deadline) > now);
+    availableFb = state.flashBets.find(fb => fb.status === 'upcoming' && !state.myFlashPredictions[fb.id] && parseDeadline(fb.deadline) > now);
   } else {
     // Dans "Mes pronos", chercher le premier prono flash pronostiqué
     availableFb = state.flashBets.find(fb => state.myFlashPredictions[fb.id]);
@@ -1139,7 +1139,7 @@ function renderFlashBet(container) {
 
   let actionHtml = '';
   const myChoice = state.myFlashPredictions[availableFb.id];
-  const isFinished = availableFb.status === 'finished' || (new Date() >= new Date(availableFb.deadline));
+  const isFinished = availableFb.status === 'finished' || (parseDeadline(availableFb.deadline) <= new Date());
 
   if (isFinished) {
     if (myChoice) {
@@ -1376,8 +1376,8 @@ function renderTinderDeck(container, filtered) {
       `;
     }
 
-    const isFinished = match.status === 'finished';
-    const deadline = new Date(match.deadline);
+    const isFinished = match.status === 'finished' || parseDeadline(match.deadline) <= new Date();
+    const deadline = parseDeadline(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
     const selectedTeamId = state.myPredictions[match.id];
     const isBoosted = !!state.boostedPredictions[match.id];
@@ -1663,7 +1663,7 @@ function renderTinderDeck(container, filtered) {
   const topCardEl = document.getElementById('tinder-top-card');
   if (topCardEl) {
     // Permettre le swipe même si c'est une pub (considérée comme "finished" pour ne pas déclencher de pronostic)
-    const isFinishedOrAd = (topMatch && (topMatch.status === 'finished' || topMatch.isAd));
+    const isFinishedOrAd = (topMatch && (topMatch.status === 'finished' || topMatch.isAd || parseDeadline(topMatch.deadline) <= new Date()));
     attachSwipeListeners(topCardEl, topMatch, isFinishedOrAd);
   }
 
@@ -2088,8 +2088,8 @@ function renderMatchesListView(container, filtered) {
       `;
     }
 
-    const isFinished = match.status === 'finished';
-    const deadline = new Date(match.deadline);
+    const isFinished = match.status === 'finished' || parseDeadline(match.deadline) <= new Date();
+    const deadline = parseDeadline(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
     const selectedTeamId = state.myPredictions[match.id];
     const isBoosted = !!state.boostedPredictions[match.id];
@@ -3083,6 +3083,14 @@ async function renderProfile() {
 }
 
 // --- Utilitaires ---
+function parseDeadline(deadlineStr) {
+  if (!deadlineStr) return new Date();
+  if (typeof deadlineStr === 'string' && !deadlineStr.endsWith('Z') && !deadlineStr.includes('+')) {
+    return new Date(deadlineStr + 'Z');
+  }
+  return new Date(deadlineStr);
+}
+
 function formatMatchTime(d) {
   const day = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
