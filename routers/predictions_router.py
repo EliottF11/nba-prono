@@ -943,7 +943,7 @@ def cleanup_test_data(
     if not secret_key or secret_key not in [k for k in allowed_keys if k]:
         raise HTTPException(status_code=403, detail="Clé secrète invalide.")
 
-    from models import User, Prediction, League, LeagueMember, WeeklyBonusUsage
+    from models import User, Prediction, League, LeagueMember, WeeklyUserBonus
     test_users = db.query(User).filter(User.username.like("audit_%")).all()
     user_ids = [u.id for u in test_users]
     if not user_ids:
@@ -951,7 +951,7 @@ def cleanup_test_data(
 
     # Nettoyage des prédictions, bonus, ligues des utilisateurs de test
     db.query(Prediction).filter(Prediction.user_id.in_(user_ids)).delete(synchronize_session=False)
-    db.query(WeeklyBonusUsage).filter(WeeklyBonusUsage.user_id.in_(user_ids)).delete(synchronize_session=False)
+    db.query(WeeklyUserBonus).filter(WeeklyUserBonus.user_id.in_(user_ids)).delete(synchronize_session=False)
 
     # Nettoyage des ligues créées par ces utilisateurs
     test_leagues = db.query(League).filter(League.creator_id.in_(user_ids)).all()
