@@ -171,7 +171,7 @@ def sync_scores_for_date(db: Session, date_str: str, skip_props: bool = False) -
                 for pred in predictions:
                     if pred.selected_team_id == winner_id:
                         multiplier = 2.0 if pred.is_boosted else 1.0
-                        pred.points_won = round(winning_odds * multiplier, 2)
+                        pred.points_won = round((winning_odds * 10) * multiplier, 2)
                     else:
                         pred.points_won = 0.0
                     affected_users.add(pred.user_id)

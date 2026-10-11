@@ -4440,18 +4440,28 @@ async function renderResultsView() {
     const finishedMatches = await API.getMatches('finished');
     state.finishedMatchesCache = finishedMatches;
 
-    // Récupération des semaines disponibles
-    const weeksSet = new Set(finishedMatches.map(m => m.week_number || 1));
-    const availableWeeks = Array.from(weeksSet).sort((a, b) => a - b);
+    // 1. Tri par date : Les matchs les plus récents en premier (décroissant)
+    finishedMatches.sort((a, b) => parseDeadline(b.deadline) - parseDeadline(a.deadline));
 
-    // Rendu du sélecteur de semaines
+    state.resultsWeekFilter = state.resultsWeekFilter || 'all';
+    state.resultsDateFilter = state.resultsDateFilter || 'all';
+
+    // 2. Détection Présaison et Semaines disponibles
+    const hasPreseason = finishedMatches.some(m => m.season_stage === 'preseason' || m.week_number === 0);
+    const regularWeeks = Array.from(new Set(
+      finishedMatches
+        .filter(m => m.season_stage !== 'preseason' && (m.week_number || 0) > 0)
+        .map(m => m.week_number)
+    )).sort((a, b) => a - b);
+
+    // Rendu du sélecteur de Semaines & Présaison
     if (weeksContainer) {
-      const isAll = state.resultsWeekFilter === 'all';
       let weeksHtml = `
         <button 
+          type="button"
           onclick="setResultsWeekFilter('all')" 
           class="px-2.5 py-1 rounded-[6px] font-condensed font-black text-xs uppercase tracking-wider border-2 border-black transition cursor-pointer shrink-0 ${
-            isAll 
+            state.resultsWeekFilter === 'all' 
               ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
               : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
           }"
@@ -4459,11 +4469,29 @@ async function renderResultsView() {
           Toutes
         </button>
       `;
-      availableWeeks.forEach(wk => {
+
+      if (hasPreseason) {
+        weeksHtml += `
+          <button 
+            type="button"
+            onclick="setResultsWeekFilter('preseason')" 
+            class="px-2.5 py-1 rounded-[6px] font-condensed font-black text-xs uppercase tracking-wider border-2 border-black transition cursor-pointer shrink-0 ${
+              state.resultsWeekFilter === 'preseason' 
+                ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
+                : 'bg-[#18181e] text-zinc-400 hover:text-white shadow-none'
+            }"
+          >
+            Présaison
+          </button>
+        `;
+      }
+
+      regularWeeks.forEach(wk => {
         const isSelected = String(state.resultsWeekFilter) === String(wk);
         weeksHtml += `
           <button 
-            onclick="setResultsWeekFilter(${wk})" 
+            type="button"
+            onclick="setResultsWeekFilter('${wk}')" 
             class="px-2.5 py-1 rounded-[6px] font-condensed font-black text-xs uppercase tracking-wider border-2 border-black transition cursor-pointer shrink-0 ${
               isSelected 
                 ? 'bg-[#D95D39] text-white shadow-[2px_2px_0px_#000000]' 
@@ -4477,10 +4505,106 @@ async function renderResultsView() {
       weeksContainer.innerHTML = weeksHtml;
     }
 
-    // Filtrer selon la semaine
-    const displayed = (state.resultsWeekFilter === 'all')
-      ? finishedMatches
-      : finishedMatches.filter(m => String(m.week_number) === String(state.resultsWeekFilter));
+    // 3. Filtrer par Semaine ou Présaison
+    let matchesForWeek = finishedMatches;
+    if (state.resultsWeekFilter === 'preseason') {
+      matchesForWeek = finishedMatches.filter(m => m.season_stage === 'preseason' || m.week_number === 0);
+    } else if (state.resultsWeekFilter !== 'all') {
+      matchesForWeek = finishedMatches.filter(m => String(m.week_number) === String(state.resultsWeekFilter) && m.season_stage !== 'preseason');
+    }
+
+    // 4. Extraction des dates uniques pour la navigation par jour (◄ Jour ►)
+    const getMatchDateKey = (m) => {
+      const d = parseDeadline(m.deadline);
+      const y = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      return `${y}-${mo}-${da}`;
+    };
+
+    const uniqueDates = Array.from(new Set(matchesForWeek.map(getMatchDateKey))).sort(); // chronologique (ancien -> récent)
+
+    if (state.resultsDateFilter !== 'all' && !uniqueDates.includes(state.resultsDateFilter)) {
+      state.resultsDateFilter = 'all';
+    }
+
+    // Rendu du navigateur par date avec flèches et menu déroulant
+    const dateNavContainer = document.getElementById('results-date-navigator');
+    if (dateNavContainer) {
+      if (uniqueDates.length <= 1 && state.resultsDateFilter === 'all') {
+        dateNavContainer.classList.add('hidden');
+      } else {
+        dateNavContainer.classList.remove('hidden');
+        const isAll = state.resultsDateFilter === 'all';
+        const currentIdx = isAll ? -1 : uniqueDates.indexOf(state.resultsDateFilter);
+
+        // Flèches précédent / suivant
+        const canPrev = isAll ? true : currentIdx > 0;
+        const canNext = !isAll;
+
+        // Options triées du plus récent au plus ancien
+        const descDates = [...uniqueDates].reverse();
+        const dateOptionsHtml = descDates.map(dStr => {
+          const parts = dStr.split('-');
+          const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          const label = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+          const dayMatchesCount = matchesForWeek.filter(m => getMatchDateKey(m) === dStr).length;
+          const isSelected = state.resultsDateFilter === dStr;
+          return `<option value="${dStr}" ${isSelected ? 'selected' : ''} class="bg-[#18181e] text-white">${label} (${dayMatchesCount} match${dayMatchesCount > 1 ? 's' : ''})</option>`;
+        }).join('');
+
+        dateNavContainer.innerHTML = `
+          <div class="flex items-center justify-between gap-2 w-full">
+            <button 
+              type="button"
+              onclick="navigateResultsDate(-1)" 
+              class="px-2.5 py-1.5 rounded-[6px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 border-2 border-black font-condensed font-black text-xs uppercase flex items-center gap-1 cursor-pointer transition active:scale-95 disabled:opacity-20 disabled:pointer-events-none shrink-0"
+              ${!canPrev ? 'disabled' : ''}
+              title="Jour précédent"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              <span class="hidden sm:inline">Préc.</span>
+            </button>
+
+            <div class="flex-1 flex items-center justify-center min-w-0">
+              <div class="relative w-full max-w-[280px]">
+                <select 
+                  onchange="setResultsDateFilter(this.value)"
+                  class="w-full bg-[#100F15] text-[#FFCC00] font-condensed font-black text-xs uppercase py-1.5 pl-3 pr-8 rounded-[6px] border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer appearance-none truncate focus:outline-none focus:border-[#FFCC00]"
+                  title="Sélectionner un jour précis"
+                >
+                  <option value="all" ${isAll ? 'selected' : ''}>📅 TOUS LES JOURS (${matchesForWeek.length} MATCHS)</option>
+                  ${dateOptionsHtml}
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-[#FFCC00]">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              type="button"
+              onclick="navigateResultsDate(1)" 
+              class="px-2.5 py-1.5 rounded-[6px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-300 border-2 border-black font-condensed font-black text-xs uppercase flex items-center gap-1 cursor-pointer transition active:scale-95 disabled:opacity-20 disabled:pointer-events-none shrink-0"
+              ${!canNext ? 'disabled' : ''}
+              title="Jour suivant"
+            >
+              <span class="hidden sm:inline">Suiv.</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // 5. Filtrer par date sélectionnée
+    let displayed = matchesForWeek;
+    if (state.resultsDateFilter && state.resultsDateFilter !== 'all') {
+      displayed = displayed.filter(m => getMatchDateKey(m) === state.resultsDateFilter);
+    }
+
+    // Assurer le tri décroissant (plus récents en premier)
+    displayed.sort((a, b) => parseDeadline(b.deadline) - parseDeadline(a.deadline));
 
     if (countBadge) {
       countBadge.innerHTML = `
@@ -4576,8 +4700,52 @@ async function renderResultsView() {
   }
 }
 
-function setResultsWeekFilter(week) {
-  state.resultsWeekFilter = week;
+function setResultsWeekFilter(filter) {
+  state.resultsWeekFilter = filter;
+  state.resultsDateFilter = 'all';
+  renderResultsView();
+}
+
+function setResultsDateFilter(dateStr) {
+  state.resultsDateFilter = dateStr;
+  renderResultsView();
+}
+
+function navigateResultsDate(dir) {
+  const matchesPool = (state.finishedMatchesCache || []);
+  let matchesForWeek = matchesPool;
+  if (state.resultsWeekFilter === 'preseason') {
+    matchesForWeek = matchesPool.filter(m => m.season_stage === 'preseason' || m.week_number === 0);
+  } else if (state.resultsWeekFilter !== 'all') {
+    matchesForWeek = matchesPool.filter(m => String(m.week_number) === String(state.resultsWeekFilter) && m.season_stage !== 'preseason');
+  }
+
+  const getMatchDateKey = (m) => {
+    const d = parseDeadline(m.deadline);
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const da = String(d.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${da}`;
+  };
+  const uniqueDates = Array.from(new Set(matchesForWeek.map(getMatchDateKey))).sort(); // chronologique (ancien -> récent)
+
+  if (uniqueDates.length === 0) return;
+
+  if (state.resultsDateFilter === 'all') {
+    if (dir === -1) {
+      state.resultsDateFilter = uniqueDates[uniqueDates.length - 1]; // jour le plus récent
+    } else {
+      state.resultsDateFilter = uniqueDates[0]; // jour le plus ancien
+    }
+  } else {
+    const currentIdx = uniqueDates.indexOf(state.resultsDateFilter);
+    const newIdx = currentIdx + dir;
+    if (newIdx >= 0 && newIdx < uniqueDates.length) {
+      state.resultsDateFilter = uniqueDates[newIdx];
+    } else {
+      state.resultsDateFilter = 'all';
+    }
+  }
   renderResultsView();
 }
 
@@ -4620,7 +4788,7 @@ function openMatchResultDetails(matchId) {
     const pickedOdds = isPickHome ? match.home_odds : match.away_odds;
     const isWon = userPickId === match.winner_team_id;
     const multiplier = isBoosted ? 2 : 1;
-    const pointsWon = isWon ? (pickedOdds * multiplier) : 0.0;
+    const pointsWon = isWon ? ((pickedOdds * 10) * multiplier) : 0.0;
 
     userPronoCard = `
       <div class="p-3 rounded-[10px] border-2 border-black ${isWon ? 'bg-[#00E676]/10 border-[#00E676]' : 'bg-red-500/10 border-red-500'} shadow-[3px_3px_0px_#000000] space-y-1.5">
@@ -4646,7 +4814,7 @@ function openMatchResultDetails(matchId) {
           <div class="text-right">
             <div class="text-[9px] font-condensed font-bold uppercase text-zinc-400">Points</div>
             <div class="font-condensed font-black text-lg ${isWon ? 'text-[#00E676]' : 'text-zinc-500'} font-mono">
-              +${pointsWon.toFixed(2)} pts
+              +${pointsWon.toFixed(1)} pts
             </div>
           </div>
         </div>
@@ -4680,10 +4848,10 @@ function openMatchResultDetails(matchId) {
         </div>
 
         <!-- Centre TV Bug -->
-        <div class="w-16 bg-[#0B0A10] border-l-[3px] border-r-[3px] border-black flex flex-col items-center justify-center p-1 text-center shrink-0">
-          <div class="tv-logo-badge mb-1">
-            <span class="tv-logo-nba">NBA</span>
-            <span class="tv-logo-pro">PRO</span>
+        <div class="w-20 bg-[#0B0A10] border-l-[3px] border-r-[3px] border-black flex flex-col items-center justify-center p-1 text-center shrink-0">
+          <div class="flex flex-col items-center justify-center mb-1">
+            <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="w-4 h-4 object-contain select-none" />
+            <span class="font-blocky text-[8px] tracking-tight uppercase text-[#FFCC00] leading-none mt-0.5">PICK 'N' SWIPE</span>
           </div>
           <span class="text-[9px] font-condensed font-black text-zinc-400 uppercase">FINAL</span>
           <span class="text-[8px] text-zinc-500 font-mono mt-0.5">${match.season_stage === 'preseason' ? 'PRÉ' : 'W' + (match.week_number || 1)}</span>
@@ -4738,6 +4906,8 @@ function closeMatchResultDetails() {
 
 window.renderResultsView = renderResultsView;
 window.setResultsWeekFilter = setResultsWeekFilter;
+window.setResultsDateFilter = setResultsDateFilter;
+window.navigateResultsDate = navigateResultsDate;
 window.handleScoreboardClick = handleScoreboardClick;
 window.openMatchResultDetails = openMatchResultDetails;
 window.closeMatchResultDetails = closeMatchResultDetails;

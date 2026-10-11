@@ -121,9 +121,9 @@ def test_chantier2_weeks_and_boost():
     # Vérification des points du joueur (doivent être exactement doublés : base_odds * 2)
     res_me = client.get("/api/auth/me", headers=headers)
     user_points = res_me.json()["total_points"]
-    expected_points = round(base_odds * 2.0, 2)
-    assert user_points == expected_points, f"Attendu {expected_points} pts (cote {base_odds} x 2), reçu {user_points}"
-    print(f"-> [OK] Points doublés validés en base : cote {base_odds} x 2 = {user_points} points !")
+    expected_points = round((base_odds * 10) * 2.0, 2)
+    assert user_points == expected_points, f"Attendu {expected_points} pts (cote {base_odds} x 10 x 2), reçu {user_points}"
+    print(f"-> [OK] Points doublés validés en base : cote {base_odds} x 10 x 2 = {user_points} points !")
 
     # 9. Vérification UI dans index.html
     res_ui = client.get("/")
