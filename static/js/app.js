@@ -2090,7 +2090,9 @@ function renderMatchesListView(container, filtered) {
       `;
     }
 
-    const isFinished = match.status === 'finished' || parseDeadline(match.deadline) <= new Date();
+    const isPastDeadline = parseDeadline(match.deadline) <= new Date();
+    const isFinished = match.status === 'finished';
+    const isLocked = isFinished || isPastDeadline;
     const deadline = parseDeadline(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
     const selectedTeamId = state.myPredictions[match.id];
@@ -2114,6 +2116,12 @@ function renderMatchesListView(container, filtered) {
       } else {
         statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-zinc-800 text-zinc-300 border-2 border-black">Terminé</span>`;
       }
+    } else if (isPastDeadline) {
+      if (selectedTeamId) {
+        statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-[#F59E0B] text-black border-2 border-black">En cours</span>`;
+      } else {
+        statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-zinc-800 text-zinc-300 border-2 border-black">En cours</span>`;
+      }
     } else if (selectedTeamId) {
       statusPill = `<span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-[6px] bg-white text-black border-2 border-black">Prono validé</span>`;
     } else {
@@ -2121,7 +2129,7 @@ function renderMatchesListView(container, filtered) {
     }
 
     let boostButton = '';
-    if (!isFinished) {
+    if (!isLocked) {
       boostButton = `
         <button 
           type="button"
@@ -2151,7 +2159,7 @@ function renderMatchesListView(container, filtered) {
     
     if (appliedBonus) {
       const colorCls = getBonusColor(appliedBonus);
-      if (!isFinished) {
+      if (!isLocked) {
         weeklyBonusHtml = `
           <button 
             type="button"
@@ -2170,7 +2178,7 @@ function renderMatchesListView(container, filtered) {
           </span>
         `;
       }
-    } else if (!isFinished && selectedTeamId && state.currentBonus && !state.currentBonus.is_used) {
+    } else if (!isLocked && selectedTeamId && state.currentBonus && !state.currentBonus.is_used) {
       // Bonus utilisable !
       const colorCls = getBonusColor(state.currentBonus.bonus_type);
       weeklyBonusHtml = `
@@ -2192,8 +2200,8 @@ function renderMatchesListView(container, filtered) {
         <div class="flex items-center justify-between text-xs pb-2 border-b-2 border-black/80 gap-1.5">
           <div class="flex items-center space-x-1.5 text-zinc-400 font-medium text-[11px] min-w-0 truncate">
             <span class="px-2 py-0.5 rounded-[6px] bg-[#121216] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[10px] shadow-[1px_1px_0px_#000000] shrink-0">${match.season_stage === 'preseason' ? 'PRÉ-SAISON' : 'W' + (match.week_number || 1)}</span>
-            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : 'bg-white'} shrink-0"></span>
-            <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : dateFormatted}</span>
+            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : isPastDeadline ? 'bg-amber-400 animate-pulse' : 'bg-white'} shrink-0"></span>
+            <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : isPastDeadline ? 'En cours' : dateFormatted}</span>
           </div>
           <div class="flex items-center space-x-1.5 shrink-0 flex-wrap justify-end gap-y-1">
             ${weeklyBonusHtml}
@@ -2207,10 +2215,10 @@ function renderMatchesListView(container, filtered) {
           
           <!-- ÉQUIPE DOMICILE -->
           <button
-            onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isFinished})"
+            onclick="voteForTeam(${match.id}, ${match.home_team.id}, ${isLocked})"
             class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
               homeSelected ? 'odds-btn-selected' : ''
-            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
+            } ${isLocked ? 'cursor-default' : 'cursor-pointer'}"
           >
             <div class="flex items-center space-x-2 w-full mb-1.5">
               <div 
@@ -2248,10 +2256,10 @@ function renderMatchesListView(container, filtered) {
 
           <!-- ÉQUIPE EXTÉRIEUR -->
           <button
-            onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isFinished})"
+            onclick="voteForTeam(${match.id}, ${match.away_team.id}, ${isLocked})"
             class="odds-btn h-full rounded-[10px] p-2.5 sm:p-3 flex flex-col justify-between text-left relative ${
               awaySelected ? 'odds-btn-selected' : ''
-            } ${isFinished ? 'cursor-default' : 'cursor-pointer'}"
+            } ${isLocked ? 'cursor-default' : 'cursor-pointer'}"
           >
             <div class="flex items-center space-x-2 w-full mb-1.5">
               <div 

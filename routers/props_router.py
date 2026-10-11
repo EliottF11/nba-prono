@@ -34,7 +34,16 @@ def predict_prop(
         raise HTTPException(status_code=404, detail="Prop Bet introuvable")
     
     if prop_bet.status != "pending":
-        raise HTTPException(status_code=400, detail="Ce Prop Bet est déjà résolu ou annulé")
+        raise HTTPException(status_code=400, detail="Ce Prono Flash est déjà résolu ou annulé")
+
+    # Vérification stricte de la deadline du match associé
+    if prop_bet.match:
+        now = datetime.now(timezone.utc)
+        match_deadline = prop_bet.match.deadline
+        if match_deadline.tzinfo is None:
+            match_deadline = match_deadline.replace(tzinfo=timezone.utc)
+        if now >= match_deadline:
+            raise HTTPException(status_code=400, detail="La date limite pour ce match est dépassée, tu ne peux plus modifier ton Prono Flash.")
 
     # Vérifier si l'utilisateur a déjà voté
     existing_pred = db.query(models.PropPrediction).filter(
