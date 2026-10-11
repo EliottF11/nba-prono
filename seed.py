@@ -621,13 +621,7 @@ def seed_all_teams_and_matches():
             },
         ]
 
-        # Nettoyage des anciens matchs de présaison
-        preseason_matches = db.query(Match).filter(Match.season_stage == "preseason").all()
-        for m in preseason_matches:
-            db.delete(m)
-        db.commit()
-
-        # Insertion des matchs si la base ne contient pas encore la semaine 2
+        # Insertion des matchs si la base ne contient pas encore tous les matchs
         existing_matches = db.query(Match).all()
         existing_keys = {(m.home_team_id, m.away_team_id, m.week_number) for m in existing_matches}
 
