@@ -6,6 +6,7 @@ Routeur FastAPI pour les matchs, pronostics et classement en direct :
 - GET /api/leaderboard : Classement général trié par points
 - POST /api/matches/{match_id}/resolve : Résolution d'un match (score et calcul des points)
 """
+import os
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Header
