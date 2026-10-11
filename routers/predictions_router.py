@@ -943,25 +943,35 @@ def cleanup_test_data(
     if not secret_key or secret_key not in [k for k in allowed_keys if k]:
         raise HTTPException(status_code=403, detail="Clé secrète invalide.")
 
-    from models import User, Prediction, League, LeagueMember, WeeklyUserBonus
-    test_users = db.query(User).filter(User.username.like("audit_%")).all()
-    user_ids = [u.id for u in test_users]
-    if not user_ids:
-        return {"message": "Aucun utilisateur de test à nettoyer.", "deleted": 0}
+    try:
+        from models import (
+            User, Prediction, League, LeagueMember, WeeklyUserBonus,
+            SeasonPrediction, WeeklyPlayerPrediction, PropPrediction, FlashPrediction
+        )
+        test_users = db.query(User).filter(User.username.like("audit_%")).all()
+        user_ids = [u.id for u in test_users]
+        if not user_ids:
+            return {"message": "Aucun utilisateur de test à nettoyer.", "deleted": 0}
 
-    # Nettoyage des prédictions, bonus, ligues des utilisateurs de test
-    db.query(Prediction).filter(Prediction.user_id.in_(user_ids)).delete(synchronize_session=False)
-    db.query(WeeklyUserBonus).filter(WeeklyUserBonus.user_id.in_(user_ids)).delete(synchronize_session=False)
+        # Nettoyage de toutes les tables dépendantes
+        db.query(Prediction).filter(Prediction.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(WeeklyUserBonus).filter(WeeklyUserBonus.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(SeasonPrediction).filter(SeasonPrediction.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(WeeklyPlayerPrediction).filter(WeeklyPlayerPrediction.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(PropPrediction).filter(PropPrediction.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(FlashPrediction).filter(FlashPrediction.user_id.in_(user_ids)).delete(synchronize_session=False)
 
-    # Nettoyage des ligues créées par ces utilisateurs
-    test_leagues = db.query(League).filter(League.creator_id.in_(user_ids)).all()
-    league_ids = [l.id for l in test_leagues]
-    if league_ids:
-        db.query(LeagueMember).filter(LeagueMember.league_id.in_(league_ids)).delete(synchronize_session=False)
-        db.query(League).filter(League.id.in_(league_ids)).delete(synchronize_session=False)
+        test_leagues = db.query(League).filter(League.creator_id.in_(user_ids)).all()
+        league_ids = [l.id for l in test_leagues]
+        if league_ids:
+            db.query(LeagueMember).filter(LeagueMember.league_id.in_(league_ids)).delete(synchronize_session=False)
+            db.query(League).filter(League.id.in_(league_ids)).delete(synchronize_session=False)
 
-    db.query(LeagueMember).filter(LeagueMember.user_id.in_(user_ids)).delete(synchronize_session=False)
-    db.query(User).filter(User.id.in_(user_ids)).delete(synchronize_session=False)
-    db.commit()
+        db.query(LeagueMember).filter(LeagueMember.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(User).filter(User.id.in_(user_ids)).delete(synchronize_session=False)
+        db.commit()
 
-    return {"message": f"{len(user_ids)} utilisateurs de test nettoyés avec succès.", "deleted": len(user_ids)}
+        return {"message": f"{len(user_ids)} utilisateurs de test nettoyés avec succès.", "deleted": len(user_ids)}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
