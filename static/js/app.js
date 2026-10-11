@@ -3272,27 +3272,40 @@ function renderLeaguesList() {
 
   listContainer.innerHTML = leagues.map(l => {
     const isCreator = state.currentUser && state.currentUser.id === l.creator_id;
+    const isLinkedIn = (l.name && l.name.toLowerCase().includes('linkedin')) || l.code === 'LINKED';
     const rankLabel = l.user_rank ? (l.user_rank === 1 ? `<img src="/static/icons/badges/badge_trophy.png" class="w-4 h-4 object-contain inline-block drop-shadow-[1px_1px_0px_#000]" alt="trophy"/> #1` : `#${l.user_rank}`) : "-";
+
+    const cardClasses = isLinkedIn
+      ? 'bg-[#0f192b] hover:bg-[#132238] border-2 border-[#0A66C2] rounded-2xl p-4 transition-all duration-150 shadow-[0_0_15px_rgba(10,102,194,0.3)] cursor-pointer group active:scale-[0.99] flex items-center justify-between gap-3'
+      : 'bg-[#12141a] hover:bg-[#161924] border border-[#1f222d] hover:border-amber-400/50 rounded-2xl p-4 transition-all duration-150 shadow-lg cursor-pointer group active:scale-[0.99] flex items-center justify-between gap-3';
+
+    const titleClasses = isLinkedIn
+      ? 'font-condensed font-black text-lg text-white group-hover:text-[#70b5f9] uppercase tracking-tight transition truncate'
+      : 'font-condensed font-black text-lg text-white group-hover:text-amber-300 uppercase tracking-tight transition truncate';
+
+    const badgeHtml = isLinkedIn
+      ? '<span class="text-[9px] bg-[#0A66C2] text-white px-2 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-1 shrink-0 shadow"><svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg> OFFICIEL LINKEDIN</span>'
+      : (isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Créateur</span>' : '');
 
     return `
       <div 
         onclick="viewLeague(${l.id})" 
-        class="bg-[#12141a] hover:bg-[#161924] border border-[#1f222d] hover:border-amber-400/50 rounded-2xl p-4 transition-all duration-150 shadow-lg cursor-pointer group active:scale-[0.99] flex items-center justify-between gap-3"
+        class="${cardClasses}"
       >
         <div class="space-y-1.5 flex-1 min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="font-condensed font-black text-lg text-white group-hover:text-amber-300 uppercase tracking-tight transition truncate">${escapeHtml(l.name)}</h3>
-            ${isCreator ? '<span class="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/30 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">Créateur</span>' : ''}
+            <h3 class="${titleClasses}">${escapeHtml(l.name)}</h3>
+            ${badgeHtml}
           </div>
           <div class="flex items-center gap-3 text-xs text-slate-400">
             <span class="flex items-center gap-1"><svg class='lucide-inline lucide-sm lucide-muted' viewBox='0 0 24 24'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg> ${l.members_count} membre${l.members_count > 1 ? 's' : ''}</span>
             <span>•</span>
-            <span class="text-amber-400 font-bold flex items-center gap-1">Mon rang : ${rankLabel}</span>
+            <span class="${isLinkedIn ? 'text-[#70b5f9]' : 'text-amber-400'} font-bold flex items-center gap-1">Mon rang : ${rankLabel}</span>
           </div>
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
-          <div class="w-8 h-8 rounded-xl bg-white/5 group-hover:bg-amber-400/20 group-hover:text-amber-300 text-slate-400 flex items-center justify-center transition text-sm font-black">
+          <div class="w-8 h-8 rounded-xl ${isLinkedIn ? 'bg-[#0A66C2]/20 text-[#70b5f9]' : 'bg-white/5 text-slate-400'} group-hover:bg-amber-400/20 group-hover:text-amber-300 flex items-center justify-center transition text-sm font-black">
             →
           </div>
         </div>
@@ -3346,6 +3359,20 @@ function renderLeagueDetail(league) {
   const top2 = members[1];
   const top3 = members[2];
 
+  const isLinkedIn = (league.name && league.name.toLowerCase().includes('linkedin')) || league.code === 'LINKED';
+
+  const bannerContainerCls = isLinkedIn
+    ? 'p-4 bg-gradient-to-r from-[#0A66C2]/20 via-[#111927] to-[#0A66C2]/20 border-2 border-[#0A66C2] rounded-2xl space-y-3 shadow-[0_0_20px_rgba(10,102,194,0.3)]'
+    : 'p-4 bg-gradient-to-r from-amber-500/10 via-[#161822] to-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3 shadow-lg';
+
+  const codeBoxCls = isLinkedIn
+    ? 'font-mono text-xl sm:text-2xl font-black tracking-widest text-white bg-[#0A66C2] border-2 border-black px-4 py-1 rounded-xl shadow-[3px_3px_0px_#000000] select-all'
+    : 'font-mono text-xl sm:text-2xl font-black tracking-widest text-amber-300 bg-[#12141c] border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner select-all';
+
+  const shareBtnCls = isLinkedIn
+    ? 'px-3 py-2 rounded-xl bg-[#0A66C2] hover:bg-[#004182] text-white text-xs font-black uppercase font-condensed tracking-wider transition shadow-md shadow-[#0A66C2]/30 flex items-center justify-center gap-1.5 cursor-pointer'
+    : 'px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-md shadow-amber-400/20 flex items-center justify-center gap-1.5 cursor-pointer';
+
   detailContainer.innerHTML = `
     <!-- Barre de retour et En-tête -->
     <div class="flex items-center justify-between pb-2 border-b border-[#1b1e28]">
@@ -3359,8 +3386,9 @@ function renderLeagueDetail(league) {
 
     <!-- Titre et infos ligue -->
     <div class="space-y-1">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <h2 class="font-condensed font-black text-2xl uppercase tracking-tight text-white">${escapeHtml(league.name)}</h2>
+        ${isLinkedIn ? '<span class="text-[9px] bg-[#0A66C2] text-white px-2 py-0.5 rounded font-black uppercase tracking-wider flex items-center gap-1 shrink-0"><svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg> OFFICIEL LINKEDIN</span>' : ''}
         <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
           ${league.members_count} membre${league.members_count > 1 ? 's' : ''}
         </span>
@@ -3369,16 +3397,16 @@ function renderLeagueDetail(league) {
     </div>
 
     <!-- Bloc d'invitation et de partage au sein de la ligue -->
-    <div class="p-4 bg-gradient-to-r from-amber-500/10 via-[#161822] to-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3 shadow-lg">
+    <div class="${bannerContainerCls}">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <div class="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <svg class='lucide-inline lucide-md lucide-amber' viewBox='0 0 24 24'><path d='M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z'/><path d='M13 5v2'/><path d='M13 17v2'/><path d='M13 11v2'/></svg> Inviter des amis dans la ligue
+          <div class="text-[10px] font-black uppercase tracking-wider ${isLinkedIn ? 'text-[#70b5f9]' : 'text-amber-400'} flex items-center gap-1.5">
+            ${isLinkedIn ? '<svg class="w-3.5 h-3.5 fill-[#70b5f9]" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg> Rejoins le réseau NBA LinkedIn' : '<svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg> Inviter des amis dans la ligue'}
           </div>
-          <div class="text-xs text-slate-300">Transmets ce code ou le lien direct pour qu'ils rejoignent ta ligue :</div>
+          <div class="text-xs text-slate-300">${isLinkedIn ? "Transmets ce code exclusif à ton réseau LinkedIn pour qu'ils rejoignent la ligue :" : "Transmets ce code ou le lien direct pour qu'ils rejoignent ta ligue :"}</div>
         </div>
         <div class="flex items-center gap-2">
-          <div class="font-mono text-xl sm:text-2xl font-black tracking-widest text-amber-300 bg-[#12141c] border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner select-all">
+          <div class="${codeBoxCls}">
             ${league.code}
           </div>
         </div>
@@ -3388,7 +3416,7 @@ function renderLeagueDetail(league) {
         <button onclick="copyLeagueCode('${league.code}')" class="px-3 py-2 rounded-xl bg-[#1e2230] hover:bg-[#282e42] border border-[#2e354c] text-slate-200 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
           <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><rect width='8' height='4' x='8' y='2' rx='1' ry='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/></svg> Copier le code
         </button>
-        <button onclick="shareLeague('${league.code}', '${escapeHtml(league.name).replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black text-xs font-black uppercase font-condensed tracking-wider transition shadow-md shadow-amber-400/20 flex items-center justify-center gap-1.5 cursor-pointer">
+        <button onclick="shareLeague('${league.code}', '${escapeHtml(league.name).replace(/'/g, "\\'")}')" class="${shareBtnCls}">
           <svg class='lucide-inline lucide-sm lucide-white' viewBox='0 0 24 24'><path d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'/><polyline points='16 6 12 2 8 6'/><line x1='12' x2='12' y1='2' y2='15'/></svg> Partager l'invit
         </button>
       </div>

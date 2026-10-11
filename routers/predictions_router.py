@@ -975,3 +975,58 @@ def cleanup_test_data(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/admin/setup-linkedin-league")
+def setup_linkedin_league(
+    secret_key: Optional[str] = Header(None, alias="X-Admin-Secret"),
+    db: Session = Depends(get_db)
+):
+    allowed_keys = [os.getenv("SECRET_KEY"), "nba-prono-super-secret-key-prod-2026", "nba-audit-clean-2026"]
+    if not secret_key or secret_key not in [k for k in allowed_keys if k]:
+        raise HTTPException(status_code=403, detail="Clé secrète invalide.")
+
+    try:
+        from models import League, LeagueMember, LeagueMessage, User
+
+        # 1. Nettoyer toutes les anciennes ligues et messages
+        db.query(LeagueMessage).delete(synchronize_session=False)
+        db.query(LeagueMember).delete(synchronize_session=False)
+        db.query(League).delete(synchronize_session=False)
+
+        # 2. Identifier AkiraH444
+        admin_user = db.query(User).filter(User.username.ilike("akirah444")).first()
+        if not admin_user:
+            admin_user = db.query(User).first()
+        if not admin_user:
+            raise HTTPException(status_code=404, detail="Aucun utilisateur trouvé pour créer la ligue.")
+
+        # 3. Créer la ligue officielle LinkedIn exclusive
+        linkedin_league = League(
+            name="💼 Ligue Officielle LinkedIn",
+            code="LINKED",
+            creator_id=admin_user.id
+        )
+        db.add(linkedin_league)
+        db.flush()
+
+        # 4. Inscrire le créateur comme 1er membre
+        membership = LeagueMember(
+            league_id=linkedin_league.id,
+            user_id=admin_user.id
+        )
+        db.add(membership)
+        db.commit()
+
+        return {
+            "message": "Ligues nettoyées et Ligue Officielle LinkedIn créée avec succès !",
+            "league": {
+                "id": linkedin_league.id,
+                "name": linkedin_league.name,
+                "code": linkedin_league.code,
+                "creator": admin_user.username
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
