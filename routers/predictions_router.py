@@ -988,29 +988,47 @@ def setup_linkedin_league(
 
     try:
         from models import League, LeagueMember, LeagueMessage, User
+        import traceback
 
-        # 1. Nettoyer toutes les anciennes ligues et messages
-        db.query(LeagueMessage).delete(synchronize_session=False)
-        db.query(LeagueMember).delete(synchronize_session=False)
-        db.query(League).delete(synchronize_session=False)
+        # 1. Nettoyer les messages
+        try:
+            db.query(LeagueMessage).delete(synchronize_session=False)
+            db.commit()
+        except Exception:
+            db.rollback()
 
-        # 2. Identifier AkiraH444
+        # 2. Nettoyer les membres
+        try:
+            db.query(LeagueMember).delete(synchronize_session=False)
+            db.commit()
+        except Exception:
+            db.rollback()
+
+        # 3. Nettoyer les ligues existantes
+        try:
+            db.query(League).delete(synchronize_session=False)
+            db.commit()
+        except Exception:
+            db.rollback()
+
+        # 4. Identifier AkiraH444
         admin_user = db.query(User).filter(User.username.ilike("akirah444")).first()
         if not admin_user:
             admin_user = db.query(User).first()
         if not admin_user:
-            raise HTTPException(status_code=404, detail="Aucun utilisateur trouvé pour créer la ligue.")
+            return {"success": False, "error": "Aucun utilisateur trouvé pour créer la ligue."}
 
-        # 3. Créer la ligue officielle LinkedIn exclusive
+        # 5. Créer la ligue officielle LinkedIn
         linkedin_league = League(
             name="💼 Ligue Officielle LinkedIn",
             code="LINKED",
             creator_id=admin_user.id
         )
         db.add(linkedin_league)
-        db.flush()
+        db.commit()
+        db.refresh(linkedin_league)
 
-        # 4. Inscrire le créateur comme 1er membre
+        # 6. Inscrire le créateur
         membership = LeagueMember(
             league_id=linkedin_league.id,
             user_id=admin_user.id
@@ -1019,6 +1037,7 @@ def setup_linkedin_league(
         db.commit()
 
         return {
+            "success": True,
             "message": "Ligues nettoyées et Ligue Officielle LinkedIn créée avec succès !",
             "league": {
                 "id": linkedin_league.id,
@@ -1028,5 +1047,6 @@ def setup_linkedin_league(
             }
         }
     except Exception as e:
+        import traceback
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"success": False, "error": str(e), "trace": traceback.format_exc()}
