@@ -8,7 +8,7 @@ Routeur FastAPI pour les matchs, pronostics et classement en direct :
 """
 from datetime import datetime, timezone
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Match, Prediction, User, Team, WeeklyPlayerPrediction, SeasonPrediction, LeagueMember, FlashBet, FlashPrediction
@@ -931,3 +931,37 @@ def reset_all_flash_bets(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     return {"message": "Tous les pronos flash ont été supprimés de la BDD."}
+
+
+@router.post("/admin/cleanup-test-data")
+def cleanup_test_data(
+    secret_key: Optional[str] = Header(None, alias="X-Admin-Secret"),
+    db: Session = Depends(get_db)
+):
+    import os
+    expected = os.getenv("SECRET_KEY", "nba-prono-super-secret-key-prod-2026")
+    if secret_key != expected:
+        raise HTTPException(status_code=403, detail="Clé secrète invalide.")
+
+    from models import User, Prediction, League, LeagueMember, WeeklyBonusUsage
+    test_users = db.query(User).filter(User.username.like("audit_%")).all()
+    user_ids = [u.id for u in test_users]
+    if not user_ids:
+        return {"message": "Aucun utilisateur de test à nettoyer.", "deleted": 0}
+
+    # Nettoyage des prédictions, bonus, ligues des utilisateurs de test
+    db.query(Prediction).filter(Prediction.user_id.in_(user_ids)).delete(synchronize_session=False)
+    db.query(WeeklyBonusUsage).filter(WeeklyBonusUsage.user_id.in_(user_ids)).delete(synchronize_session=False)
+
+    # Nettoyage des ligues créées par ces utilisateurs
+    test_leagues = db.query(League).filter(League.creator_id.in_(user_ids)).all()
+    league_ids = [l.id for l in test_leagues]
+    if league_ids:
+        db.query(LeagueMember).filter(LeagueMember.league_id.in_(league_ids)).delete(synchronize_session=False)
+        db.query(League).filter(League.id.in_(league_ids)).delete(synchronize_session=False)
+
+    db.query(LeagueMember).filter(LeagueMember.user_id.in_(user_ids)).delete(synchronize_session=False)
+    db.query(User).filter(User.id.in_(user_ids)).delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": f"{len(user_ids)} utilisateurs de test nettoyés avec succès.", "deleted": len(user_ids)}
