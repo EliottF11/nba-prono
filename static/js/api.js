@@ -5,6 +5,15 @@
 const API = {
   baseUrl: '',
 
+  getDeviceId() {
+    let devId = localStorage.getItem('nba_device_id');
+    if (!devId) {
+      devId = 'dev_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now().toString(36);
+      localStorage.setItem('nba_device_id', devId);
+    }
+    return devId;
+  },
+
   getToken() {
     return localStorage.getItem('nba_prono_token');
   },
@@ -22,6 +31,10 @@ const API = {
     const token = this.getToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+    const devId = this.getDeviceId();
+    if (devId) {
+      headers['X-Device-Id'] = devId;
     }
     return headers;
   },
@@ -50,7 +63,13 @@ const API = {
 
   // --- Authentification ---
   async register(username, email, password, avatar_url = null) {
-    const payload = { username, email, password };
+    localStorage.removeItem('nba_manual_logout');
+    const payload = {
+      username,
+      email,
+      password,
+      device_id: this.getDeviceId()
+    };
     if (avatar_url) payload.avatar_url = avatar_url;
     const data = await this.request('/api/auth/register', {
       method: 'POST',
@@ -61,17 +80,55 @@ const API = {
   },
 
   async login(username, password) {
+    localStorage.removeItem('nba_manual_logout');
     const data = await this.request('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({
+        username,
+        password,
+        device_id: this.getDeviceId()
+      })
     });
     this.setToken(data.access_token);
     return data;
   },
 
   async getMe() {
-    if (!this.getToken()) return null;
-    return await this.request('/api/auth/me');
+    const devId = this.getDeviceId();
+    const token = this.getToken();
+
+    // 1. Si un jeton est déjà stocké sur l'appareil, vérification immédiate
+    if (token) {
+      try {
+        const qs = devId ? `?device_id=${encodeURIComponent(devId)}` : '';
+        const user = await this.request(`/api/auth/me${qs}`);
+        if (user) return user;
+      } catch (err) {
+        console.warn("[AUTH] Jeton local expiré ou invalide, tentative de reconnexion appareil...", err);
+      }
+    }
+
+    // Si l'utilisateur s'est déconnecté manuellement récemment, ne pas forcer la reconnexion auto
+    if (localStorage.getItem('nba_manual_logout') === 'true') {
+      return null;
+    }
+
+    // 2. Si pas de jeton ou jeton révoqué, tentative de reconnexion automatique par appareil ou IP
+    try {
+      const res = await this.request('/api/auth/device-login', {
+        method: 'POST',
+        body: JSON.stringify({ device_id: devId })
+      });
+      if (res && res.access_token) {
+        this.setToken(res.access_token);
+        console.log("[AUTH] Reconnexion automatique par appareil réussie pour :", res.user.username);
+        return res.user;
+      }
+    } catch (e) {
+      // Aucun compte mémorisé pour cet appareil
+    }
+
+    return null;
   },
 
   async getMyStats() {
@@ -80,6 +137,7 @@ const API = {
   },
 
   logout() {
+    localStorage.setItem('nba_manual_logout', 'true');
     this.setToken(null);
   },
 

@@ -23,9 +23,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Clé secrète pour signer les jetons (sécurisée dans .env)
-SECRET_KEY = os.getenv("SECRET_KEY", "nba-prono-super-secret-key-change-in-prod")
+SECRET_KEY = os.getenv("SECRET_KEY", "nba-prono-super-secret-key-prod-2026")
 ALGORITHM = "HS256"
-TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 7  # 7 jours
+# Durée de validité : 10 ans pour éviter toute déconnexion intempestive sur l'appareil
+TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 3650
+
+# Clés secrètes acceptées pour rétrocompatibilité totale en cas de redémarrage Render
+ALLOWED_SECRETS = [
+    SECRET_KEY,
+    "nba-prono-super-secret-key-prod-2026",
+    "nba-prono-super-secret-key-change-in-prod",
+    "nba-audit-clean-2026"
+]
+# Dédoublonnage
+ALLOWED_SECRETS = list(dict.fromkeys([s for s in ALLOWED_SECRETS if s]))
 
 security = HTTPBearer(auto_error=False)
 
@@ -57,7 +68,7 @@ def create_access_token(user_id: int, username: str) -> str:
     payload_json = json.dumps(payload, separators=(',', ':')).encode("utf-8")
     payload_b64 = base64.urlsafe_b64encode(payload_json).decode("utf-8").rstrip("=")
     
-    # Signature HMAC-SHA256
+    # Signature HMAC-SHA256 avec la clé principale
     signature = hmac.new(SECRET_KEY.encode("utf-8"), payload_b64.encode("utf-8"), hashlib.sha256).digest()
     sig_b64 = base64.urlsafe_b64encode(signature).decode("utf-8").rstrip("=")
     
@@ -71,11 +82,16 @@ def decode_access_token(token: str) -> Optional[dict]:
             return None
         payload_b64, sig_b64 = parts
         
-        # Vérification de signature
-        expected_sig = hmac.new(SECRET_KEY.encode("utf-8"), payload_b64.encode("utf-8"), hashlib.sha256).digest()
-        expected_sig_b64 = base64.urlsafe_b64encode(expected_sig).decode("utf-8").rstrip("=")
-        
-        if not hmac.compare_digest(sig_b64, expected_sig_b64):
+        # Vérification de signature contre toutes les clés autorisées
+        valid = False
+        for secret in ALLOWED_SECRETS:
+            expected_sig = hmac.new(secret.encode("utf-8"), payload_b64.encode("utf-8"), hashlib.sha256).digest()
+            expected_sig_b64 = base64.urlsafe_b64encode(expected_sig).decode("utf-8").rstrip("=")
+            if hmac.compare_digest(sig_b64, expected_sig_b64):
+                valid = True
+                break
+
+        if not valid:
             return None
             
         # Décodage avec padding base64

@@ -4,11 +4,12 @@ Routeur FastAPI pour l'authentification :
 - Connexion (génération du token de session)
 - Profil de l'utilisateur connecté (/me)
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
-from schemas import UserRegister, UserLogin, UserResponse, TokenResponse, AvatarUpdateRequest
+from schemas import UserRegister, UserLogin, UserResponse, TokenResponse, AvatarUpdateRequest, DeviceLoginRequest
 from auth import hash_password, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Authentification"])
@@ -167,12 +168,13 @@ AVAILABLE_AVATARS = [
 ]
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(user_data: UserRegister, db: Session = Depends(get_db)):
+def register(user_data: UserRegister, request: Request, db: Session = Depends(get_db)):
     """
     Inscription d'un nouveau joueur :
     - Vérifie l'unicité du pseudo
     - Hache le mot de passe de façon sécurisée
-    - Crée le compte et renvoie un jeton d'accès immédiat
+    - Associe l'appareil (device_id) et l'adresse IP pour éviter de redemander les identifiants
+    - Crée le compte et renvoie un jeton d'accès immédiat (valable 10 ans)
     """
     clean_username = user_data.username.strip()
     clean_email = user_data.email.strip().lower()
@@ -212,18 +214,22 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         if chosen_avatar not in valid_urls:
             chosen_avatar = valid_urls[0] if valid_urls else None
 
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else None)
+
     new_user = User(
         username=clean_username,
         email=clean_email,
         hashed_password=hash_password(user_data.password),
         avatar_url=chosen_avatar,
-        total_points=0.0
+        total_points=0.0,
+        device_id=user_data.device_id.strip() if user_data.device_id else None,
+        last_ip=client_ip
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
 
-    # Génération du token
+    # Génération du token (10 ans)
     token = create_access_token(user_id=new_user.id, username=new_user.username)
     return {
         "access_token": token,
@@ -232,12 +238,12 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     }
 
 @router.post("/login", response_model=TokenResponse)
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
+def login(credentials: UserLogin, request: Request, db: Session = Depends(get_db)):
     """
     Connexion d'un joueur existant :
     - Accepte soit son pseudo, soit son adresse email
-    - Valide les identifiants
-    - Renvoie le jeton d'accès et les infos du joueur
+    - Mémorise l'appareil (device_id) et l'IP pour reconnexion automatique future
+    - Renvoie le jeton d'accès (10 ans) et les infos du joueur
     """
     clean_identifier = credentials.username.strip()
     # Recherche par pseudo OU par email
@@ -251,6 +257,66 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
             detail="Identifiant ou mot de passe incorrect."
         )
 
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else None)
+    if credentials.device_id:
+        user.device_id = credentials.device_id.strip()
+    if client_ip:
+        user.last_ip = client_ip
+    db.commit()
+
+    token = create_access_token(user_id=user.id, username=user.username)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user
+    }
+
+@router.post("/device-login", response_model=TokenResponse)
+def device_login(
+    request: Request,
+    payload: Optional[DeviceLoginRequest] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Reconnexion automatique transparente et sans mot de passe :
+    - Priorité 1 : Vérifie le device_id stocké sur l'appareil du joueur
+    - Priorité 2 : Si même IP enregistrée (1 seul compte sur cette IP)
+    - Priorité 3 : S'il n'y a qu'un compte actif sur la plateforme (ex: AkiraH444), lier l'appareil
+    """
+    device_id = payload.device_id.strip() if (payload and payload.device_id) else None
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else None)
+    
+    user = None
+
+    # 1. Correspondance exacte par device_id (identifiant unique d'appareil)
+    if device_id:
+        user = db.query(User).filter(User.device_id == device_id).first()
+
+    # 2. Si non trouvé par device_id, tester par IP (si IP unique)
+    if not user and client_ip and client_ip not in ["127.0.0.1", "localhost", ""]:
+        ip_users = db.query(User).filter(User.last_ip == client_ip).order_by(User.id.desc()).all()
+        if len(ip_users) == 1:
+            user = ip_users[0]
+
+    # 3. Cas administrateur / compte unique au lancement
+    if not user:
+        all_users = db.query(User).all()
+        if len(all_users) == 1:
+            user = all_users[0]
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aucun compte mémorisé pour cet appareil."
+        )
+
+    # Liaison permanente de l'appareil
+    if device_id:
+        user.device_id = device_id
+    if client_ip:
+        user.last_ip = client_ip
+    db.commit()
+
     token = create_access_token(user_id=user.id, username=user.username)
     return {
         "access_token": token,
@@ -259,10 +325,27 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
     }
 
 @router.get("/me", response_model=UserResponse)
-def get_me(current_user: User = Depends(get_current_user)):
+def get_me(
+    request: Request,
+    device_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Récupère les informations du joueur actuellement connecté via son jeton Bearer.
+    Récupère les informations du joueur actuellement connecté via son jeton Bearer
+    et synchronise discrètement son appareil et son IP pour les prochaines visites.
     """
+    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or (request.client.host if request.client else None)
+    updated = False
+    if device_id and current_user.device_id != device_id.strip():
+        current_user.device_id = device_id.strip()
+        updated = True
+    if client_ip and current_user.last_ip != client_ip:
+        current_user.last_ip = client_ip
+        updated = True
+    if updated:
+        db.commit()
+
     return current_user
 
 @router.get("/avatars")

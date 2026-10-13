@@ -41,6 +41,8 @@ def run_migrations():
         statements = [
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS device_id VARCHAR(100)",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_ip VARCHAR(50)",
             "ALTER TABLE matches ADD COLUMN IF NOT EXISTS week_number INTEGER DEFAULT 1",
             "ALTER TABLE matches ADD COLUMN IF NOT EXISTS season_stage VARCHAR(50) DEFAULT 'regular'",
             "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS is_boosted BOOLEAN DEFAULT FALSE",
@@ -69,6 +71,8 @@ def run_migrations():
         migrations = [
             ("users", "email", "ALTER TABLE users ADD COLUMN email VARCHAR(120)"),
             ("users", "avatar_url", "ALTER TABLE users ADD COLUMN avatar_url VARCHAR(255)"),
+            ("users", "device_id", "ALTER TABLE users ADD COLUMN device_id VARCHAR(100)"),
+            ("users", "last_ip", "ALTER TABLE users ADD COLUMN last_ip VARCHAR(50)"),
             ("matches", "week_number", "ALTER TABLE matches ADD COLUMN week_number INTEGER DEFAULT 1"),
             ("matches", "season_stage", "ALTER TABLE matches ADD COLUMN season_stage VARCHAR(50) DEFAULT 'regular'"),
             ("predictions", "is_boosted", "ALTER TABLE predictions ADD COLUMN is_boosted BOOLEAN DEFAULT 0"),

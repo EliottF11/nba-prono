@@ -93,12 +93,6 @@ function dismissSplashScreen() {
       splash.classList.remove('flex');
       splash.classList.add('hidden');
       splash.style.display = 'none';
-
-      // Si l'utilisateur n'est pas connecté et première visite, ouvrir le portail d'accueil
-      if (!state.currentUser && !sessionStorage.getItem('hoops_welcome_shown')) {
-        sessionStorage.setItem('hoops_welcome_shown', 'true');
-        openAuthModal('welcome');
-      }
     }, 380);
   }
 }

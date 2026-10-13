@@ -53,6 +53,8 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     total_points = Column(Float, default=0.0, nullable=False)
     avatar_url = Column(String(255), nullable=True)
+    device_id = Column(String(100), index=True, nullable=True)
+    last_ip = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     predictions = relationship("Prediction", back_populates="user", cascade="all, delete-orphan")

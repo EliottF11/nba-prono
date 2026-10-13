@@ -10,10 +10,15 @@ class UserRegister(BaseModel):
     email: str = Field(..., min_length=5, max_length=120, description="Adresse e-mail")
     password: str = Field(..., min_length=4, max_length=100, description="Mot de passe (min 4 caractères)")
     avatar_url: Optional[str] = Field(None, description="URL de l'avatar choisi lors de l'inscription")
+    device_id: Optional[str] = Field(None, description="Identifiant unique d'appareil pour auto-reconnexion")
 
 class UserLogin(BaseModel):
     username: str = Field(..., description="Pseudo ou adresse e-mail")
     password: str = Field(..., min_length=1)
+    device_id: Optional[str] = Field(None, description="Identifiant unique d'appareil pour auto-reconnexion")
+
+class DeviceLoginRequest(BaseModel):
+    device_id: Optional[str] = Field(None, description="Identifiant unique d'appareil stocké localement")
 
 class UserResponse(BaseModel):
     id: int
