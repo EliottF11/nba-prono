@@ -606,27 +606,28 @@ def trigger_sync_espn(
 @router.post("/matches/{match_id}/simulate-live", tags=["Pronostics & Matchs"])
 def simulate_match_live(
     match_id: int,
-    away_score: int = 74,
-    home_score: int = 78,
-    live_clock: str = "Q3 04:12",
+    away_score: Optional[int] = 74,
+    home_score: Optional[int] = 78,
+    live_clock: Optional[str] = "Q3 04:12",
+    status: str = "live",
     db: Session = Depends(get_db)
 ):
     """
-    Mode Démo Admin : passe un match en mode 'live' avec score et chrono
+    Mode Démo Admin : bascule un match en mode 'live' ou 'upcoming' avec score et chrono
     pour tester et visualiser le badge en direct sur le site en plein jour.
     """
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match introuvable")
 
-    match.status = "live"
-    match.home_score = home_score
-    match.away_score = away_score
-    match.live_clock = live_clock
+    match.status = status
+    match.home_score = home_score if status != "upcoming" else None
+    match.away_score = away_score if status != "upcoming" else None
+    match.live_clock = live_clock if status == "live" else None
     db.commit()
     db.refresh(match)
     return {
-        "message": f"Match #{match.id} basculé en direct (LIVE)",
+        "message": f"Match #{match.id} basculé en statut '{match.status}'",
         "status": match.status,
         "score": f"{match.away_score} - {match.home_score}",
         "clock": match.live_clock
