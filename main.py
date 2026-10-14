@@ -71,6 +71,17 @@ def background_auto_resolve():
     finally:
         db.close()
 
+def espn_live_sync_job():
+    """Synchronise les scores et chronos en direct depuis ESPN toutes les minutes (gratuit & illimité)."""
+    db = SessionLocal()
+    try:
+        from services.espn_service import sync_espn_live_scores
+        sync_espn_live_scores(db)
+    except Exception as e:
+        pass
+    finally:
+        db.close()
+
 scheduler = BackgroundScheduler(daemon=True)
 
 @asynccontextmanager
@@ -85,6 +96,8 @@ async def lifespan(app: FastAPI):
     # Résolution immédiate des matchs en attente dès le démarrage / réveil du serveur
     db = SessionLocal()
     try:
+        from services.espn_service import sync_espn_live_scores
+        sync_espn_live_scores(db)
         from services.nba_service import auto_resolve_finished_matches
         res = auto_resolve_finished_matches(db)
         print(f"[STARTUP AUTO-RESOLVE] Clôture au démarrage : {res.get('resolved_count', 0)} matchs résolus.")
@@ -95,6 +108,7 @@ async def lifespan(app: FastAPI):
 
     # Enregistrement des tâches automatiques programmées
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
+    scheduler.add_job(espn_live_sync_job, CronTrigger(minute="*")) # Chaque minute pour le live ESPN
     scheduler.add_job(background_auto_resolve, CronTrigger(minute="*/10"))
     scheduler.add_job(half_hourly_sync, CronTrigger(minute="*/30"))
     scheduler.start()

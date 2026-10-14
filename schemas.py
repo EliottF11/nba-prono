@@ -62,6 +62,7 @@ class MatchResponse(BaseModel):
     winner_team_id: Optional[int] = None
     home_score: Optional[int] = None
     away_score: Optional[int] = None
+    live_clock: Optional[str] = None
 
     class Config:
         from_attributes = True

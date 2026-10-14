@@ -900,6 +900,23 @@ async function refreshData() {
       countBadge.textContent = `${openCount} OUVERT${openCount > 1 ? 'S' : ''}`;
     }
 
+    // Polling discret toutes les 20 secondes si un match est en cours (LIVE)
+    if (!window._espnLivePoller) {
+      window._espnLivePoller = setInterval(async () => {
+        if (state.matches && state.matches.some(m => m.status === 'live')) {
+          try {
+            const fresh = await API.getMatches(state.matchesFilter, state.selectedWeek);
+            state.matches = fresh;
+            if (state.activeTab === 'matches') {
+              renderMatches();
+            } else if (state.activeTab === 'results') {
+              renderResultsView();
+            }
+          } catch (e) {}
+        }
+      }, 20000);
+    }
+
     
 
     // Calcul et mise à jour de la streak (Série de victoires)
@@ -2084,9 +2101,10 @@ function renderMatchesListView(container, filtered) {
       `;
     }
 
+    const isLive = match.status === 'live';
     const isPastDeadline = parseDeadline(match.deadline) <= new Date();
     const isFinished = match.status === 'finished';
-    const isLocked = isFinished || isPastDeadline;
+    const isLocked = isFinished || isLive || isPastDeadline;
     const deadline = parseDeadline(match.deadline);
     const dateFormatted = formatMatchTime(deadline);
     const selectedTeamId = state.myPredictions[match.id];
@@ -2099,7 +2117,14 @@ function renderMatchesListView(container, filtered) {
     const awayWon = isFinished && match.winner_team_id === match.away_team.id;
 
     let statusPill = '';
-    if (isFinished) {
+    if (isLive) {
+      statusPill = `
+        <span class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-[6px] bg-[#EF4444] text-white border-2 border-black flex items-center gap-1.5 shadow-[2px_2px_0px_#000] animate-pulse" title="Match en direct">
+          <span class="w-1.5 h-1.5 rounded-full bg-white shrink-0"></span>
+          LIVE ${escapeHtml(match.live_clock || '')}
+        </span>
+      `;
+    } else if (isFinished) {
       if (selectedTeamId) {
         const pts = state.myPredictionPoints[match.id] || 0;
         if (pts > 0) {
@@ -2194,8 +2219,8 @@ function renderMatchesListView(container, filtered) {
         <div class="flex items-center justify-between text-xs pb-2 border-b-2 border-black/80 gap-1.5">
           <div class="flex items-center space-x-1.5 text-zinc-400 font-medium text-[11px] min-w-0 truncate">
             <span class="px-2 py-0.5 rounded-[6px] bg-[#121216] text-[#F4F4F0] font-black font-condensed border-2 border-black text-[10px] shadow-[1px_1px_0px_#000000] shrink-0">${match.season_stage === 'preseason' ? 'PRÉ-SAISON' : 'W' + (match.week_number || 1)}</span>
-            <span class="w-1.5 h-1.5 rounded-full ${isFinished ? 'bg-zinc-600' : isPastDeadline ? 'bg-amber-400 animate-pulse' : 'bg-white'} shrink-0"></span>
-            <span class="truncate font-condensed font-bold">${isFinished ? 'Terminé' : isPastDeadline ? 'En cours' : dateFormatted}</span>
+            <span class="w-1.5 h-1.5 rounded-full ${isLive ? 'bg-red-500 animate-ping' : isFinished ? 'bg-zinc-600' : isPastDeadline ? 'bg-amber-400 animate-pulse' : 'bg-white'} shrink-0"></span>
+            <span class="truncate font-condensed font-bold ${isLive ? 'text-red-400 font-black' : ''}">${isLive ? '● EN DIRECT (' + (match.live_clock || 'Live') + ')' : isFinished ? 'Terminé' : isPastDeadline ? 'En cours' : dateFormatted}</span>
           </div>
           <div class="flex items-center space-x-1.5 shrink-0 flex-wrap justify-end gap-y-1">
             ${weeklyBonusHtml}
@@ -2245,6 +2270,10 @@ function renderMatchesListView(container, filtered) {
               <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
                 Gagné (${match.home_score} pts)
               </div>
+            ` : isLive && match.home_score !== null ? `
+              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/20 py-0.5 rounded border border-amber-400/40 font-mono">
+                SCORE: ${match.home_score} PTS
+              </div>
             ` : ''}
           </button>
 
@@ -2285,6 +2314,10 @@ function renderMatchesListView(container, filtered) {
             ${awayWon ? `
               <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 py-0.5 rounded border border-emerald-500/20">
                 Gagné (${match.away_score} pts)
+              </div>
+            ` : isLive && match.away_score !== null ? `
+              <div class="mt-1 text-center text-[10px] font-black uppercase tracking-wider text-amber-300 bg-amber-500/20 py-0.5 rounded border border-amber-400/40 font-mono">
+                SCORE: ${match.away_score} PTS
               </div>
             ` : ''}
           </button>
@@ -4460,10 +4493,16 @@ async function renderResultsView() {
 
   try {
     const finishedMatches = await API.getMatches('finished');
-    state.finishedMatchesCache = finishedMatches;
+    const liveMatches = (state.matches || []).filter(m => m.status === 'live');
+    const combinedResults = [...liveMatches, ...finishedMatches];
+    state.finishedMatchesCache = combinedResults;
 
-    // 1. Tri par date : Les matchs les plus récents en premier (décroissant)
-    finishedMatches.sort((a, b) => parseDeadline(b.deadline) - parseDeadline(a.deadline));
+    // 1. Tri : Les matchs en DIRECT en premier, puis les matchs les plus récents (décroissant)
+    combinedResults.sort((a, b) => {
+      if (a.status === 'live' && b.status !== 'live') return -1;
+      if (b.status === 'live' && a.status !== 'live') return 1;
+      return parseDeadline(b.deadline) - parseDeadline(a.deadline);
+    });
 
     state.resultsWeekFilter = state.resultsWeekFilter || 'all';
     state.resultsDateFilter = state.resultsDateFilter || 'all';
@@ -4648,6 +4687,7 @@ async function renderResultsView() {
 
     // Rendu des barres horizontales de résultats
     container.innerHTML = displayed.map(match => {
+      const isLive = match.status === 'live';
       const awayWon = (match.away_score || 0) > (match.home_score || 0);
       const homeWon = (match.home_score || 0) > (match.away_score || 0);
       const awayGrad = getTeamSaturatedGradient(match.away_team.color, false);
@@ -4659,26 +4699,35 @@ async function renderResultsView() {
       let pronoBadgeHtml = '';
 
       if (userPickId) {
-        const isPickWon = userPickId === match.winner_team_id;
         const multiplier = isBoosted ? ' x2' : '';
-        if (isPickWon) {
+        if (isLive) {
+          const userPickedWinning = (userPickId === match.home_team_id && homeWon) || (userPickId === match.away_team_id && awayWon);
           pronoBadgeHtml = `
-            <div class="tv-prono-indicator tv-prono-won" title="Pronostic réussi !">
-              <svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> PRONO GAGNÉ${multiplier}
+            <div class="tv-prono-indicator" style="background: #F59E0B; color: #000000; border: 1.5px solid #000;" title="Prono en direct">
+              <span class="w-1.5 h-1.5 rounded-full bg-black animate-pulse"></span> ${userPickedWinning ? 'EN TÊTE' : 'PRONO LIVE'}${multiplier}
             </div>
           `;
         } else {
-          pronoBadgeHtml = `
-            <div class="tv-prono-indicator tv-prono-lost" title="Pronostic manqué">
-              <svg class='lucide-inline lucide-sm lucide-red' viewBox='0 0 24 24'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg> MANQUÉ
-            </div>
-          `;
+          const isPickWon = userPickId === match.winner_team_id;
+          if (isPickWon) {
+            pronoBadgeHtml = `
+              <div class="tv-prono-indicator tv-prono-won" title="Pronostic réussi !">
+                <svg class='lucide-inline lucide-sm lucide-green' viewBox='0 0 24 24'><path d='M20 6 9 17l-5-5'/></svg> PRONO GAGNÉ${multiplier}
+              </div>
+            `;
+          } else {
+            pronoBadgeHtml = `
+              <div class="tv-prono-indicator tv-prono-lost" title="Pronostic manqué">
+                <svg class='lucide-inline lucide-sm lucide-red' viewBox='0 0 24 24'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg> MANQUÉ
+              </div>
+            `;
+          }
         }
       }
 
       return `
         <div 
-          class="tv-scoreboard-bar" 
+          class="tv-scoreboard-bar ${isLive ? 'is-live-bar' : ''}" 
           onclick="handleScoreboardClick(${match.id}, this)"
           data-match-id="${match.id}"
           title="Clique pour voir le résumé complet du match"
@@ -4691,17 +4740,25 @@ async function renderResultsView() {
             <span class="tv-team-score">${match.away_score !== null && match.away_score !== undefined ? match.away_score : '--'}</span>
           </div>
 
-          <!-- Bloc central : Logo de l'application (ballon logo-secondaire) sur fond sombre à la place de l'horloge -->
+          <!-- Bloc central : Logo et Badge FINAL ou LIVE -->
           <div class="tv-center-bug">
             <div class="tv-logo-badge">
               <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="tv-center-logo-ball select-none" />
               <span class="tv-logo-nba sr-only hidden" style="display:none;">NBA</span>
               <span class="tv-logo-pro sr-only hidden" style="display:none;">PRO</span>
             </div>
-            <div class="tv-status-final">
-              <span class="status-dot"></span>
-              <span>FINAL</span>
-            </div>
+            ${isLive ? `
+              <div class="tv-status-final tv-status-live" style="background: #EF4444; color: #FFFFFF; border-color: #000000; box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);">
+                <span class="status-dot animate-ping" style="background: #FFFFFF;"></span>
+                <span class="font-black text-[10px] tracking-wider">LIVE</span>
+                <span class="text-[9px] font-bold opacity-95">${escapeHtml(match.live_clock || 'DIRECT')}</span>
+              </div>
+            ` : `
+              <div class="tv-status-final">
+                <span class="status-dot"></span>
+                <span>FINAL</span>
+              </div>
+            `}
           </div>
 
           <!-- Bloc de droite : Équipe à domicile (Score + Acronyme + Couleur) -->

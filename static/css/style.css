@@ -1652,6 +1652,27 @@ img.rounded-xl,
   box-shadow: 0 0 5px #00E676;
 }
 
+/* Style néo-brutaliste pour les matchs en DIRECT (LIVE) */
+.tv-scoreboard-bar.is-live-bar {
+  border-color: #EF4444 !important;
+  box-shadow: 6px 6px 0px #000000, 0 0 12px rgba(239, 68, 68, 0.35) !important;
+}
+
+.tv-status-live {
+  background: #EF4444 !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 4px;
+  padding: 1px 4px !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8) !important;
+  font-family: var(--font-blocky) !important;
+}
+
+.tv-status-live .status-dot {
+  background: #FFFFFF !important;
+  box-shadow: 0 0 5px #FFFFFF !important;
+}
+
 /* Indicateur subtil de pronostic de l'utilisateur */
 .tv-prono-indicator {
   position: absolute;

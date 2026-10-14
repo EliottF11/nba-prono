@@ -80,6 +80,7 @@ class Match(Base):
     winner_team_id = Column(Integer, ForeignKey("teams.id"), nullable=True) # Renseigné quand terminé
     home_score = Column(Integer, nullable=True)                 # Score final domicile (ex: 112)
     away_score = Column(Integer, nullable=True)                 # Score final extérieur (ex: 108)
+    live_clock = Column(String(50), nullable=True)              # Chrono en direct (ex: '4:32 - 3rd', 'Mi-temps')
     week_number = Column(Integer, default=1, index=True, nullable=False) # Semaine NBA (Week 1, Week 2...)
 
     # Relations

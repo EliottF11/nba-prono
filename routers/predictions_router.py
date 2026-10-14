@@ -59,6 +59,12 @@ def get_matches(
     Enrichit chaque équipe avec sa forme récente (5 derniers matchs W/L).
     """
     try:
+        from services.espn_service import sync_espn_if_needed
+        sync_espn_if_needed(db, cooldown_seconds=15)
+    except Exception as e:
+        pass
+
+    try:
         from services.nba_service import auto_resolve_if_needed
         auto_resolve_if_needed(db, cooldown_seconds=60)
     except Exception as e:
@@ -563,6 +569,68 @@ def trigger_auto_resolve(
         return auto_resolve_finished_matches(db, force_all_past=force)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur auto-resolve: {str(e)}")
+
+
+@router.get("/matches/live", response_model=List[MatchResponse], tags=["Pronostics & Matchs"])
+def get_live_matches(db: Session = Depends(get_db)):
+    """
+    Retourne la liste de tous les matchs actuellement en direct (statut 'live')
+    avec leurs scores en temps réel et chrono exact (ex: '4:32 - 3rd', 'Mi-temps').
+    """
+    try:
+        from services.espn_service import sync_espn_if_needed
+        sync_espn_if_needed(db, cooldown_seconds=10)
+    except Exception as e:
+        pass
+
+    live_matches = db.query(Match).filter(Match.status == "live").order_by(Match.deadline.asc()).all()
+    forms = compute_team_recent_forms(db)
+    for m in live_matches:
+        if m.home_team:
+            m.home_team.recent_form = forms.get(m.home_team_id, ["W", "L", "W", "W", "L"])
+        if m.away_team:
+            m.away_team.recent_form = forms.get(m.away_team_id, ["L", "W", "W", "L", "W"])
+    return live_matches
+
+
+@router.post("/matches/sync-espn", tags=["Pronostics & Matchs"])
+def trigger_sync_espn(
+    date_str: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """Déclenche la synchronisation temps réel depuis l'API publique ouverte d'ESPN."""
+    from services.espn_service import sync_espn_live_scores
+    return sync_espn_live_scores(db, target_date_str=date_str)
+
+
+@router.post("/matches/{match_id}/simulate-live", tags=["Pronostics & Matchs"])
+def simulate_match_live(
+    match_id: int,
+    away_score: int = 74,
+    home_score: int = 78,
+    live_clock: str = "Q3 04:12",
+    db: Session = Depends(get_db)
+):
+    """
+    Mode Démo Admin : passe un match en mode 'live' avec score et chrono
+    pour tester et visualiser le badge en direct sur le site en plein jour.
+    """
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match introuvable")
+
+    match.status = "live"
+    match.home_score = home_score
+    match.away_score = away_score
+    match.live_clock = live_clock
+    db.commit()
+    db.refresh(match)
+    return {
+        "message": f"Match #{match.id} basculé en direct (LIVE)",
+        "status": match.status,
+        "score": f"{match.away_score} - {match.home_score}",
+        "clock": match.live_clock
+    }
 
 
 @router.post("/sync", tags=["Synchronisation"])
