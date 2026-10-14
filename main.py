@@ -96,6 +96,8 @@ async def lifespan(app: FastAPI):
     # Résolution immédiate des matchs en attente dès le démarrage / réveil du serveur
     db = SessionLocal()
     try:
+        from services.nba_service import sanitize_future_matches
+        sanitize_future_matches(db)
         from services.espn_service import sync_espn_live_scores
         sync_espn_live_scores(db)
         from services.nba_service import auto_resolve_finished_matches

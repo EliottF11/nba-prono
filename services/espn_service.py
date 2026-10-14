@@ -30,6 +30,22 @@ def normalize_espn_code(code: str) -> str:
     return ESPN_TEAM_MAP.get(c, c)
 
 
+def is_same_game_date(db_deadline: datetime, event_date_str: Optional[str]) -> bool:
+    """
+    Vérifie si la date du match en base correspond à la date de l'événement ESPN (+/- 30 heures max).
+    Empêche formellement d'associer un match d'aujourd'hui à un match programmé dans le futur.
+    """
+    if not event_date_str or not db_deadline:
+        return False
+    try:
+        ev_dt = datetime.fromisoformat(event_date_str.replace("Z", "+00:00"))
+        db_dt = db_deadline if db_deadline.tzinfo else db_deadline.replace(tzinfo=timezone.utc)
+        diff_hours = abs((db_dt - ev_dt).total_seconds()) / 3600.0
+        return diff_hours <= 30.0
+    except Exception:
+        return False
+
+
 _last_espn_sync_timestamp = 0
 
 def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) -> Dict[str, Any]:
@@ -37,6 +53,10 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
     Récupère le scoreboard ESPN en direct pour la date demandée (ou la date actuelle),
     met à jour les statuts 'live' et 'finished' et synchronise les scores instantanément.
     """
+    from services.nba_service import sanitize_future_matches
+    # Nettoyage préventif automatique de tout match futur indûment clôturé
+    sanitize_future_matches(db)
+
     url = ESPN_SCOREBOARD_URL
     if target_date_str:
         # Format attendu par ESPN : YYYYMMDD
@@ -98,8 +118,10 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
         away_score = int(raw_away_score) if (raw_away_score is not None and str(raw_away_score).isdigit()) else None
 
         # Recherche du match correspondant dans notre base de données
-        # On priorise les matchs qui sont 'upcoming' ou 'live'
-        match = (
+        # Filtrage strict par équipes ET par date pour ne JAMAIS écraser un match futur !
+        event_date_str = event.get("date")
+
+        candidates = (
             db.query(Match)
             .filter(
                 Match.home_team_id == home_team.id,
@@ -107,12 +129,13 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
                 Match.status.in_(["upcoming", "live"])
             )
             .order_by(Match.deadline.asc())
-            .first()
+            .all()
         )
+        match = next((c for c in candidates if is_same_game_date(c.deadline, event_date_str)), None)
 
         # Si pas trouvé en cours ou à venir, chercher si c'est un match déjà fini qu'on veut rafraîchir
-        if not match and state == "post":
-            match = (
+        if not match and (state == "post" or completed):
+            finished_candidates = (
                 db.query(Match)
                 .filter(
                     Match.home_team_id == home_team.id,
@@ -120,10 +143,17 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
                     Match.status == "finished"
                 )
                 .order_by(Match.deadline.desc())
-                .first()
+                .all()
             )
+            match = next((c for c in finished_candidates if is_same_game_date(c.deadline, event_date_str)), None)
 
         if not match:
+            continue
+
+        # Sécurité absolue : Un match dont la deadline est dans le futur (+ de 2h) ne peut JAMAIS être clôturé !
+        now_utc = datetime.now(timezone.utc)
+        match_dl = match.deadline if match.deadline.tzinfo else match.deadline.replace(tzinfo=timezone.utc)
+        if match_dl > (now_utc + timedelta(hours=2)) and (state == "post" or completed):
             continue
 
         # 1. CAS MATCH EN DIRECT (state == 'in')

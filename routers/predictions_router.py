@@ -621,9 +621,18 @@ def simulate_match_live(
         raise HTTPException(status_code=404, detail="Match introuvable")
 
     match.status = status
-    match.home_score = home_score if status != "upcoming" else None
-    match.away_score = away_score if status != "upcoming" else None
-    match.live_clock = live_clock if status == "live" else None
+    if status == "upcoming":
+        match.home_score = None
+        match.away_score = None
+        match.winner_team_id = None
+        match.live_clock = None
+        for p in match.predictions:
+            p.points_won = 0.0
+    else:
+        match.home_score = home_score
+        match.away_score = away_score
+        match.live_clock = live_clock if status == "live" else None
+
     db.commit()
     db.refresh(match)
     return {
@@ -632,6 +641,16 @@ def simulate_match_live(
         "score": f"{match.away_score} - {match.home_score}",
         "clock": match.live_clock
     }
+
+
+@router.post("/matches/sanitize-dates", tags=["Pronostics & Matchs"])
+def sanitize_matches_dates_endpoint(db: Session = Depends(get_db)):
+    """
+    Réinitialise automatiquement tous les matchs futurs prématurément marqués 'finished'
+    ou ayant reçu un score final par erreur.
+    """
+    from services.nba_service import sanitize_future_matches
+    return sanitize_future_matches(db)
 
 
 @router.get("/matches/{match_id}/stats", tags=["Pronostics & Matchs"])

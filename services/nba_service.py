@@ -384,6 +384,49 @@ KNOWN_PRESEASON_RESULTS = {
 
 _last_auto_resolve_timestamp = 0
 
+def sanitize_future_matches(db: Session) -> dict:
+    """
+    Vérifie et réinitialise tous les matchs dont l'heure limite est dans le futur
+    mais qui ont été prématurément marqués 'finished' ou avec un score final.
+    Remet le statut en 'upcoming' et réinitialise les points calculés à tort.
+    """
+    now = datetime.now(timezone.utc)
+    future_matches = db.query(Match).filter(
+        Match.deadline > now
+    ).all()
+
+    reset_count = 0
+    affected_users = set()
+
+    for m in future_matches:
+        if m.status != "upcoming" or m.home_score is not None or m.away_score is not None or m.winner_team_id is not None:
+            m.status = "upcoming"
+            m.home_score = None
+            m.away_score = None
+            m.winner_team_id = None
+            m.live_clock = None
+            for p in m.predictions:
+                p.points_won = 0.0
+                affected_users.add(p.user_id)
+            reset_count += 1
+
+    if affected_users:
+        db.flush()
+        for uid in affected_users:
+            u = db.query(User).filter(User.id == uid).first()
+            if u:
+                # Ne sommer que les points des matchs réellement terminés
+                u.total_points = round(sum(
+                    p.points_won for p in u.predictions 
+                    if p.match and p.match.status == "finished"
+                ), 2)
+
+    if reset_count > 0:
+        db.commit()
+        print(f"[SANITIZE] {reset_count} match(s) futur(s) prématurément clôturés ont été réinitialisés en 'upcoming'.")
+
+    return {"status": "ok", "reset_count": reset_count}
+
 def auto_resolve_finished_matches(db: Session, force_all_past: bool = False) -> dict:
     """
     Vérifie et clôture automatiquement tous les matchs terminés dont l'heure limite est passée.
@@ -392,6 +435,9 @@ def auto_resolve_finished_matches(db: Session, force_all_past: bool = False) -> 
     - Calcule instantanément les points gagnés (cote x 10 avec bonus x2) pour tous les pronostiqueurs.
     - Met à jour le classement en direct sans aucune intervention manuelle.
     """
+    # 0. Sécurité : réinitialise tout match futur anormalement terminé
+    sanitize_future_matches(db)
+
     now = datetime.now(timezone.utc)
     # Recherche des matchs encore marqués 'upcoming' dont la deadline est passée
     past_matches = db.query(Match).filter(
