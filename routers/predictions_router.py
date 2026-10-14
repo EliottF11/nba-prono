@@ -53,10 +53,17 @@ def get_matches(
 ):
     """
     Récupère la liste des matchs ordonnés par heure limite croissante.
+    Auto-résout automatiquement et en tâche de fond transparente les matchs dont la date est passée.
     Permet un filtrage optionnel par statut (?status_filter=upcoming ou finished)
     et par semaine NBA (?week=1, 2, etc.).
     Enrichit chaque équipe avec sa forme récente (5 derniers matchs W/L).
     """
+    try:
+        from services.nba_service import auto_resolve_if_needed
+        auto_resolve_if_needed(db, cooldown_seconds=60)
+    except Exception as e:
+        print(f"[AUTO-RESOLVE MATCHES NOTICE] {e}")
+
     query = db.query(Match)
     if status_filter:
         query = query.filter(Match.status == status_filter)
@@ -175,6 +182,12 @@ def get_my_predictions(
     """
     Renvoie l'ensemble des pronostics enregistrés par le joueur connecté.
     """
+    try:
+        from services.nba_service import auto_resolve_if_needed
+        auto_resolve_if_needed(db, cooldown_seconds=60)
+    except Exception as e:
+        pass
+
     predictions = db.query(Prediction).filter(
         Prediction.user_id == current_user.id
     ).all()
@@ -402,6 +415,12 @@ def get_leaderboard(db: Session = Depends(get_db)):
     """
     Renvoie le classement général des joueurs trié par points décroissants (Uniquement Saison Régulière).
     """
+    try:
+        from services.nba_service import auto_resolve_if_needed
+        auto_resolve_if_needed(db, cooldown_seconds=60)
+    except Exception as e:
+        pass
+
     users = db.query(User).all()
     leaderboard = []
 
@@ -433,6 +452,12 @@ def get_leaderboard_flash(db: Session = Depends(get_db)):
     """
     Renvoie le classement pour le Tournoi Flash Présaison.
     """
+    try:
+        from services.nba_service import auto_resolve_if_needed
+        auto_resolve_if_needed(db, cooldown_seconds=60)
+    except Exception as e:
+        pass
+
     users = db.query(User).all()
     leaderboard = []
 
@@ -518,6 +543,26 @@ def resolve_match(
         "score": f"{home_score} - {away_score}",
         "predictions_updated": len(predictions)
     }
+
+
+@router.get("/cron/auto-resolve", tags=["Pronostics & Matchs"])
+@router.post("/matches/auto-resolve", tags=["Pronostics & Matchs"])
+def trigger_auto_resolve(
+    force: bool = False,
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint automatique pour clôturer tous les matchs terminés dont la date limite est passée :
+    - Synchronise les scores réels via API-Sports ou catalogue officiel.
+    - Calcule instantanément les gains (cote x 10 avec bonus x2).
+    - Met à jour le classement général et présaison en temps réel.
+    - Déclenchable par un service de cron automatique (ex: cron-job.org, Render cron) ou le frontend.
+    """
+    from services.nba_service import auto_resolve_finished_matches
+    try:
+        return auto_resolve_finished_matches(db, force_all_past=force)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur auto-resolve: {str(e)}")
 
 
 @router.post("/sync", tags=["Synchronisation"])

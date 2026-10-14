@@ -47,16 +47,27 @@ def half_hourly_sync():
     """Tâche automatique exécutée toutes les 30 minutes pour mettre à jour les scores."""
     db = SessionLocal()
     try:
-        from services.nba_service import sync_scores_for_date
-        # On synchronise les matchs de la date actuelle
+        from services.nba_service import sync_scores_for_date, auto_resolve_finished_matches
         today_str = datetime.now().strftime("%Y-%m-%d")
         sync_scores_for_date(db, today_str, skip_props=True)
-        # On synchronise aussi la veille pour être sûr d'avoir les fins de matchs de la nuit
         from datetime import timedelta
         yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         sync_scores_for_date(db, yesterday_str, skip_props=True)
+        # Clôture automatique des matchs terminés
+        auto_resolve_finished_matches(db)
     except Exception as e:
         pass
+    finally:
+        db.close()
+
+def background_auto_resolve():
+    """Tâche de fond exécutée toutes les 10 minutes pour détecter et clôturer les matchs terminés."""
+    db = SessionLocal()
+    try:
+        from services.nba_service import auto_resolve_finished_matches
+        auto_resolve_finished_matches(db)
+    except Exception as e:
+        print(f"[BACKGROUND AUTO-RESOLVE ERROR] {e}")
     finally:
         db.close()
 
@@ -71,9 +82,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         pass
 
-    # Enregistrement de la tâche quotidienne à 07h00 (pour les stats des joueurs notamment)
+    # Résolution immédiate des matchs en attente dès le démarrage / réveil du serveur
+    db = SessionLocal()
+    try:
+        from services.nba_service import auto_resolve_finished_matches
+        res = auto_resolve_finished_matches(db)
+        print(f"[STARTUP AUTO-RESOLVE] Clôture au démarrage : {res.get('resolved_count', 0)} matchs résolus.")
+    except Exception as e:
+        print(f"[STARTUP AUTO-RESOLVE NOTICE] {e}")
+    finally:
+        db.close()
+
+    # Enregistrement des tâches automatiques programmées
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
-    # Enregistrement de la tâche toutes les 30 minutes (pour les scores en direct)
+    scheduler.add_job(background_auto_resolve, CronTrigger(minute="*/10"))
     scheduler.add_job(half_hourly_sync, CronTrigger(minute="*/30"))
     scheduler.start()
     yield
