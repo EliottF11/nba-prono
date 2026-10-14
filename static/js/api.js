@@ -150,6 +150,10 @@ const API = {
     return await this.request(`/api/matches${qs}`);
   },
 
+  async getMatchStats(matchId) {
+    return await this.request(`/api/matches/${matchId}/stats`);
+  },
+
   async getWeeks() {
     return await this.request('/api/weeks');
   },

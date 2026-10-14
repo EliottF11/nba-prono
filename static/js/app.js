@@ -1623,6 +1623,22 @@ function renderTinderDeck(container, filtered) {
         </span>
       </div>
 
+      <!-- Bouton Accès 5 Majeurs & Stats du Match -->
+      <div class="relative z-20">
+        <button 
+          type="button"
+          onclick="openMatchResultDetails(${match.id}); event.stopPropagation();" 
+          class="w-full py-1.5 px-3 rounded-[8px] bg-[#14131A] hover:bg-[#1E1D28] text-[#FF9800] hover:text-white border-2 border-black shadow-[2px_2px_0px_#000000] text-[11px] font-condensed font-black tracking-wider uppercase transition cursor-pointer flex items-center justify-between"
+          title="Voir les 5 majeurs officiels et statistiques du match"
+        >
+          <span class="flex items-center gap-1.5">
+            <svg class="lucide-inline lucide-sm lucide-amber" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/></svg>
+            <span>5 Majeurs & Stats</span>
+          </span>
+          <span class="text-[9px] text-zinc-400 font-mono bg-black/60 px-1.5 py-0.5 rounded border border-black/60">Détails ›</span>
+        </button>
+      </div>
+
       <!-- Pied de carte : Statut du pronostic & Position -->
       <div class="pt-2 border-t-2 border-black/80 flex items-center justify-between text-xs relative z-20">
         <div class="text-[11px] font-bold text-zinc-300 truncate">
@@ -2324,19 +2340,24 @@ function renderMatchesListView(container, filtered) {
 
         </div>
 
-        <!-- Footer carte : Pronostics de ligue -->
-        <div class="pt-2 border-t-2 border-black/80 flex items-center justify-between">
-          <span class="text-[10px] text-zinc-400 font-semibold flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            <span>Pronos de ligue</span>
-          </span>
+        <!-- Footer carte : 5 Majeurs/Stats & Pronostics de ligue -->
+        <div class="pt-2 border-t-2 border-black/80 flex items-center justify-between gap-1.5 flex-wrap">
           <button 
-            onclick="openLeagueMatchVotesModal(${match.id})" 
+            type="button"
+            onclick="openMatchResultDetails(${match.id}); event.stopPropagation();"
+            class="btn-tactile text-[10px] font-condensed font-black uppercase tracking-wider text-amber-300 hover:text-white bg-[#14131A] hover:bg-[#1E1D28] px-2.5 py-1 rounded-[6px] border-2 border-black shadow-[2px_2px_0px_#000000] transition cursor-pointer flex items-center gap-1.5"
+            title="Consulter les 5 majeurs et les statistiques du match"
+          >
+            <svg class="lucide-inline lucide-xs lucide-amber" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+            <span>5 Majeurs & Stats</span>
+          </button>
+
+          <button 
+            type="button"
+            onclick="openLeagueMatchVotesModal(${match.id}); event.stopPropagation();" 
             class="btn-tactile text-[10px] font-condensed font-bold uppercase tracking-wider text-zinc-200 hover:text-white bg-[#18181e] hover:bg-[#24242c] px-2.5 py-1 rounded-[6px] border-2 border-black shadow-[2px_2px_0px_#000000] transition cursor-pointer flex items-center gap-1"
           >
-            <span>Qui a voté quoi ?</span>
+            <span>Pronos ligue</span>
             <span>›</span>
           </button>
         </div>
@@ -4839,7 +4860,10 @@ function handleScoreboardClick(matchId, element) {
   openMatchResultDetails(matchId);
 }
 
-function openMatchResultDetails(matchId) {
+// --- Modal Détails du Match : 5 Majeurs & Stats ---
+window._currentMatchDetails = null;
+
+function openMatchResultDetails(matchId, initialTab = 'starters') {
   const modal = document.getElementById('match-result-modal');
   const content = document.getElementById('match-result-modal-content');
   if (!modal || !content) return;
@@ -4848,81 +4872,108 @@ function openMatchResultDetails(matchId) {
   const match = matchesPool.find(m => m.id === matchId);
   if (!match) return;
 
-  const awayWon = (match.away_score || 0) > (match.home_score || 0);
-  const homeWon = (match.home_score || 0) > (match.away_score || 0);
-  const diff = Math.abs((match.home_score || 0) - (match.away_score || 0));
+  window._currentMatchDetails = {
+    matchId,
+    match,
+    stats: null,
+    activeTab: initialTab,
+    startersTeam: 'all',
+    loading: true,
+    error: false
+  };
+
+  updateMatchDetailsView();
+  modal.classList.remove('hidden');
+
+  // Récupération asynchrone des 5 majeurs et statistiques ESPN
+  API.getMatchStats(matchId)
+    .then(data => {
+      if (window._currentMatchDetails && window._currentMatchDetails.matchId === matchId) {
+        window._currentMatchDetails.stats = data;
+        window._currentMatchDetails.loading = false;
+        updateMatchDetailsView();
+      }
+    })
+    .catch(err => {
+      console.warn("[MATCH STATS] Erreur chargement stats ESPN :", err);
+      if (window._currentMatchDetails && window._currentMatchDetails.matchId === matchId) {
+        window._currentMatchDetails.loading = false;
+        window._currentMatchDetails.error = true;
+        updateMatchDetailsView();
+      }
+    });
+}
+
+function switchMatchDetailsTab(tabName) {
+  if (!window._currentMatchDetails) return;
+  window._currentMatchDetails.activeTab = tabName;
+  updateMatchDetailsView();
+}
+
+function setStartersTeamFilter(teamMode) {
+  if (!window._currentMatchDetails) return;
+  window._currentMatchDetails.startersTeam = teamMode;
+  updateMatchDetailsView();
+}
+
+function updateMatchDetailsView() {
+  const modal = document.getElementById('match-result-modal');
+  const content = document.getElementById('match-result-modal-content');
+  if (!modal || !content || !window._currentMatchDetails) return;
+
+  const { match, stats, activeTab, startersTeam, loading } = window._currentMatchDetails;
+
+  const isFinished = match.status === 'finished';
+  const isLive = match.status === 'live';
+  const isUpcoming = !isFinished && !isLive;
+
+  const awayWon = isFinished && ((match.away_score || 0) > (match.home_score || 0));
+  const homeWon = isFinished && ((match.home_score || 0) > (match.away_score || 0));
+  const diff = isFinished ? Math.abs((match.home_score || 0) - (match.away_score || 0)) : null;
 
   const awayColor = match.away_team.color || '#CE1141';
   const homeColor = match.home_team.color || '#007AC1';
   const awayGrad = getTeamSaturatedGradient(awayColor, false);
   const homeGrad = getTeamSaturatedGradient(homeColor, true);
 
-  const userPickId = state.myPredictions ? state.myPredictions[match.id] : null;
-  const isBoosted = state.boostedPredictions ? !!state.boostedPredictions[match.id] : false;
-  let userPronoCard = '';
-
-  if (userPickId) {
-    const isPickHome = userPickId === match.home_team.id;
-    const pickedTeam = isPickHome ? match.home_team : match.away_team;
-    const pickedOdds = isPickHome ? match.home_odds : match.away_odds;
-    const isWon = userPickId === match.winner_team_id;
-    const multiplier = isBoosted ? 2 : 1;
-    const pointsWon = isWon ? ((pickedOdds * 10) * multiplier) : 0.0;
-
-    userPronoCard = `
-      <div class="p-3 rounded-[10px] border-2 border-black ${isWon ? 'bg-[#00E676]/10 border-[#00E676]' : 'bg-red-500/10 border-red-500'} shadow-[3px_3px_0px_#000000] space-y-1.5">
-        <div class="flex items-center justify-between text-[11px] font-condensed font-black uppercase">
-          <span class="text-zinc-300">Ton Pronostic</span>
-          <span class="${isWon ? 'text-[#00E676]' : 'text-red-400'}">
-            ${isWon ? `<svg class="lucide-inline lucide-sm lucide-green" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> GAGNÉ` : `<svg class="lucide-inline lucide-sm lucide-red" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> MANQUÉ`} ${isBoosted ? `<svg class="lucide-inline lucide-sm lucide-amber-fill" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> x2 ACTIF` : ""}
-          </span>
-        </div>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border border-black shadow-[1px_1px_0px_#000000]"
-                 style="background-color: ${pickedTeam.color}; color: ${pickedTeam.text_color || '#FFF'};">
-              ${escapeHtml(pickedTeam.code)}
-            </div>
-            <div>
-              <div class="font-condensed font-black text-sm text-white leading-tight">
-                ${escapeHtml(pickedTeam.city)} ${escapeHtml(pickedTeam.name || '')}
-              </div>
-              <div class="text-[10px] text-zinc-400 font-mono">Cote : ${pickedOdds.toFixed(2)} ${isBoosted ? 'x 2' : ''}</div>
-            </div>
-          </div>
-          <div class="text-right">
-            <div class="text-[9px] font-condensed font-bold uppercase text-zinc-400">Points</div>
-            <div class="font-condensed font-black text-lg ${isWon ? 'text-[#00E676]' : 'text-zinc-500'} font-mono">
-              +${pointsWon.toFixed(1)} pts
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    userPronoCard = `
-      <div class="p-3 rounded-[10px] bg-black/40 border-2 border-dashed border-zinc-700 text-center space-y-1">
-        <div class="text-[11px] font-condensed font-bold text-zinc-400 uppercase">Non pronostiqué</div>
-        <p class="text-[10px] text-zinc-500">Tu n'avais pas validé de pronostic avant le coup d'envoi de cette rencontre.</p>
-      </div>
-    `;
+  // Titre du header
+  const headerTitle = document.getElementById('match-result-modal-header-title');
+  if (headerTitle) {
+    headerTitle.textContent = `${match.away_team.code} @ ${match.home_team.code}`;
   }
 
-  content.innerHTML = `
+  // En-tête Scoreboard TV
+  let centerBugText = 'FINAL';
+  let centerSub = match.season_stage === 'preseason' ? 'PRÉ' : ('W' + (match.week_number || 1));
+  if (isLive) {
+    centerBugText = match.live_clock ? match.live_clock.toUpperCase() : 'LIVE';
+  } else if (isUpcoming) {
+    try {
+      const d = parseDeadline(match.deadline);
+      centerBugText = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      centerBugText = 'À VENIR';
+    }
+  }
+
+  const scoreboardHtml = `
     <!-- Scoreboard Grand Format TV US -->
-    <div class="border-[3px] border-black rounded-[12px] overflow-hidden shadow-[5px_5px_0px_#000000]">
+    <div class="border-[3px] border-black rounded-[12px] overflow-hidden shadow-[4px_4px_0px_#000000]">
       <div class="flex items-stretch h-24">
         <!-- Équipe Extérieure -->
-        <div class="flex-1 p-3 flex flex-col justify-between relative ${awayWon ? 'is-winner' : 'is-loser'}" style="background: ${awayGrad};">
+        <div class="flex-1 p-2.5 sm:p-3 flex flex-col justify-between relative ${awayWon ? 'is-winner' : isFinished ? 'is-loser' : ''}" style="background: ${awayGrad};">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">EXT</span>
+            <span class="text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">EXT</span>
             ${awayWon ? '<span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#FFEB3B] text-black border border-black shadow-[1px_1px_0px_#000]">WINNER</span>' : ''}
           </div>
-          <div class="font-condensed font-black text-3xl text-white leading-none tracking-wide text-shadow">
-            ${escapeHtml(match.away_team.code)}
+          <div>
+            <div class="font-condensed font-black text-2xl sm:text-3xl text-white leading-none tracking-wide text-shadow">
+              ${escapeHtml(match.away_team.code)}
+            </div>
+            <div class="text-[10px] text-white/80 font-bold truncate max-w-[120px]">${escapeHtml(match.away_team.city)}</div>
           </div>
-          <div class="font-mono font-black text-4xl text-white leading-none ${awayWon ? 'text-[#FFEB3B]' : ''}">
-            ${match.away_score ?? '--'}
+          <div class="font-mono font-black text-3xl sm:text-4xl text-white leading-none ${awayWon ? 'text-[#FFEB3B]' : ''}">
+            ${isUpcoming ? '--' : (match.away_score ?? '--')}
           </div>
         </div>
 
@@ -4930,52 +4981,370 @@ function openMatchResultDetails(matchId) {
         <div class="w-20 bg-[#0B0A10] border-l-[3px] border-r-[3px] border-black flex flex-col items-center justify-center p-1 text-center shrink-0">
           <div class="flex flex-col items-center justify-center mb-1">
             <img src="/static/icons/logo-secondaire.png" alt="Pick 'n' Swipe" class="w-4 h-4 object-contain select-none" />
-            <span class="font-blocky text-[8px] tracking-tight uppercase text-[#FFCC00] leading-none mt-0.5">PICK 'N' SWIPE</span>
+            <span class="font-blocky text-[7px] tracking-tight uppercase text-[#FFCC00] leading-none mt-0.5">PICK 'N' SWIPE</span>
           </div>
-          <span class="text-[9px] font-condensed font-black text-zinc-400 uppercase">FINAL</span>
-          <span class="text-[8px] text-zinc-500 font-mono mt-0.5">${match.season_stage === 'preseason' ? 'PRÉ' : 'W' + (match.week_number || 1)}</span>
+          <span class="text-[9px] font-condensed font-black ${isLive ? 'text-red-400 animate-pulse' : 'text-zinc-400'} uppercase">${escapeHtml(centerBugText)}</span>
+          <span class="text-[8px] text-zinc-500 font-mono mt-0.5">${escapeHtml(centerSub)}</span>
         </div>
 
         <!-- Équipe Domicile -->
-        <div class="flex-1 p-3 flex flex-col justify-between text-right relative ${homeWon ? 'is-winner' : 'is-loser'}" style="background: ${homeGrad};">
+        <div class="flex-1 p-2.5 sm:p-3 flex flex-col justify-between text-right relative ${homeWon ? 'is-winner' : isFinished ? 'is-loser' : ''}" style="background: ${homeGrad};">
           <div class="flex items-center justify-between">
             ${homeWon ? '<span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#FFEB3B] text-black border border-black shadow-[1px_1px_0px_#000]">WINNER</span>' : '<span></span>'}
-            <span class="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">DOM</span>
+            <span class="text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-black/60 text-white border border-black">DOM</span>
           </div>
-          <div class="font-condensed font-black text-3xl text-white leading-none tracking-wide text-shadow">
-            ${escapeHtml(match.home_team.code)}
+          <div>
+            <div class="font-condensed font-black text-2xl sm:text-3xl text-white leading-none tracking-wide text-shadow">
+              ${escapeHtml(match.home_team.code)}
+            </div>
+            <div class="text-[10px] text-white/80 font-bold truncate max-w-[120px] ml-auto">${escapeHtml(match.home_team.city)}</div>
           </div>
-          <div class="font-mono font-black text-4xl text-white leading-none ${homeWon ? 'text-[#FFEB3B]' : ''}">
-            ${match.home_score ?? '--'}
+          <div class="font-mono font-black text-3xl sm:text-4xl text-white leading-none ${homeWon ? 'text-[#FFEB3B]' : ''}">
+            ${isUpcoming ? '--' : (match.home_score ?? '--')}
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Franchises & Écart -->
-    <div class="flex items-center justify-between px-3 py-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000] text-xs font-condensed font-black uppercase">
-      <span class="text-zinc-300 truncate max-w-[40%]">${escapeHtml(match.away_team.city)}</span>
-      <span class="text-[#FF9800] bg-black/60 px-2 py-0.5 rounded border border-black">Écart : +${diff} pts</span>
-      <span class="text-zinc-300 truncate max-w-[40%] text-right">${escapeHtml(match.home_team.city)}</span>
-    </div>
-
-    <!-- Cotes Officielles d'Avant-Match -->
-    <div class="grid grid-cols-2 gap-2 text-center">
-      <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
-        <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.away_team.code)}</div>
-        <div class="font-condensed font-black text-lg text-white font-mono">${(match.away_odds || 1.90).toFixed(2)}</div>
-      </div>
-      <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
-        <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.home_team.code)}</div>
-        <div class="font-condensed font-black text-lg text-white font-mono">${(match.home_odds || 1.90).toFixed(2)}</div>
-      </div>
-    </div>
-
-    <!-- Carte Pronostic Utilisateur -->
-    ${userPronoCard}
   `;
 
-  modal.classList.remove('hidden');
+  // Barre d'onglets de navigation
+  const tabsHtml = `
+    <div class="grid grid-cols-3 gap-1 p-1 bg-[#100F15] rounded-[10px] border-2 border-black shadow-[2px_2px_0px_#000000]">
+      <button 
+        type="button"
+        onclick="switchMatchDetailsTab('starters')" 
+        class="py-1.5 text-center font-condensed font-black text-xs uppercase tracking-wider rounded-[6px] border transition cursor-pointer ${
+          activeTab === 'starters' ? 'bg-[#FF9800] text-black border-black shadow-[1px_1px_0px_#000]' : 'border-transparent text-zinc-400 hover:text-white'
+        }"
+      >
+        🏀 5 Majeurs
+      </button>
+      <button 
+        type="button"
+        onclick="switchMatchDetailsTab('stats')" 
+        class="py-1.5 text-center font-condensed font-black text-xs uppercase tracking-wider rounded-[6px] border transition cursor-pointer ${
+          activeTab === 'stats' ? 'bg-[#FF9800] text-black border-black shadow-[1px_1px_0px_#000]' : 'border-transparent text-zinc-400 hover:text-white'
+        }"
+      >
+        📊 Stats Match
+      </button>
+      <button 
+        type="button"
+        onclick="switchMatchDetailsTab('prono')" 
+        class="py-1.5 text-center font-condensed font-black text-xs uppercase tracking-wider rounded-[6px] border transition cursor-pointer ${
+          activeTab === 'prono' ? 'bg-[#FF9800] text-black border-black shadow-[1px_1px_0px_#000]' : 'border-transparent text-zinc-400 hover:text-white'
+        }"
+      >
+        🎯 Mon Prono
+      </button>
+    </div>
+  `;
+
+  // Contenu selon l'onglet actif
+  let bodyHtml = '';
+
+  if (loading) {
+    bodyHtml = `
+      <div class="py-10 text-center space-y-3">
+        <div class="w-8 h-8 border-3 border-[#FF9800] border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <div class="text-xs font-condensed font-bold uppercase text-zinc-400 tracking-wider">Chargement des 5 majeurs & stats ESPN...</div>
+      </div>
+    `;
+  } else if (activeTab === 'starters') {
+    // 🏀 ONGLET 5 MAJEURS
+    const homeStarters = (stats && stats.home_starters) || [];
+    const awayStarters = (stats && stats.away_starters) || [];
+
+    const renderPlayerRow = (p, teamColor, teamText) => `
+      <div class="flex items-center gap-2.5 p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
+        <!-- Portrait Joueur CDN ESPN -->
+        <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-black shrink-0 bg-[#0E0D13] flex items-center justify-center relative">
+          <img 
+            src="${p.headshot || '/static/icons/logo-secondaire.png'}" 
+            alt="${escapeHtml(p.name)}" 
+            class="w-full h-full object-cover object-top"
+            loading="lazy"
+            onerror="this.onerror=null; this.src='/static/icons/logo-secondaire.png';"
+          />
+        </div>
+        <!-- Infos Joueur -->
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5">
+            <span class="px-1.5 py-0.2 rounded bg-black/70 text-zinc-200 border border-black font-condensed font-black text-[10px]">#${escapeHtml(p.jersey || '-')}</span>
+            <span class="px-1.5 py-0.2 rounded font-condensed font-black text-[10px] uppercase border border-black" style="background-color: ${teamColor}; color: ${teamText || '#FFF'};">${escapeHtml(p.pos || 'F')}</span>
+            <span class="font-condensed font-black text-xs sm:text-sm text-white truncate uppercase">${escapeHtml(p.name)}</span>
+          </div>
+          <div class="text-[11px] text-zinc-400 font-mono mt-0.5 flex items-center gap-2">
+            ${isFinished || isLive ? `
+              <span class="text-amber-300 font-bold">${p.pts ?? 0} PTS</span>
+              <span>• ${p.reb ?? 0} REB</span>
+              <span>• ${p.ast ?? 0} AST</span>
+              <span class="text-zinc-500 text-[10px]">(${p.min || 0}')</span>
+            ` : `
+              <span class="text-zinc-300 font-medium">${escapeHtml(p.avg || '')}</span>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Filtre d'équipes sur mobile : Tous | Away | Home
+    const teamFilterButtons = `
+      <div class="flex items-center gap-1.5 text-xs font-condensed font-black uppercase">
+        <button 
+          onclick="setStartersTeamFilter('all')" 
+          class="flex-1 py-1 px-2 rounded-[6px] border-2 border-black transition cursor-pointer ${
+            startersTeam === 'all' ? 'bg-zinc-200 text-black shadow-[1px_1px_0px_#000]' : 'bg-[#18181e] text-zinc-400 hover:text-white'
+          }"
+        >
+          Les 2 Équipes
+        </button>
+        <button 
+          onclick="setStartersTeamFilter('away')" 
+          class="flex-1 py-1 px-2 rounded-[6px] border-2 border-black transition cursor-pointer ${
+            startersTeam === 'away' ? 'text-white shadow-[1px_1px_0px_#000]' : 'bg-[#18181e] text-zinc-400 hover:text-white'
+          }"
+          style="${startersTeam === 'away' ? `background-color: ${awayColor};` : ''}"
+        >
+          ${escapeHtml(match.away_team.code)} (Ext.)
+        </button>
+        <button 
+          onclick="setStartersTeamFilter('home')" 
+          class="flex-1 py-1 px-2 rounded-[6px] border-2 border-black transition cursor-pointer ${
+            startersTeam === 'home' ? 'text-white shadow-[1px_1px_0px_#000]' : 'bg-[#18181e] text-zinc-400 hover:text-white'
+          }"
+          style="${startersTeam === 'home' ? `background-color: ${homeColor};` : ''}"
+        >
+          ${escapeHtml(match.home_team.code)} (Dom.)
+        </button>
+      </div>
+    `;
+
+    bodyHtml = `
+      <div class="space-y-3">
+        ${teamFilterButtons}
+
+        <!-- Section Équipe Extérieure -->
+        ${startersTeam === 'all' || startersTeam === 'away' ? `
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-2.5 py-1 rounded-[6px] bg-[#121216] border border-black">
+              <span class="font-condensed font-black text-xs uppercase flex items-center gap-1.5" style="color: ${awayColor};">
+                <span class="w-2.5 h-2.5 rounded-full border border-black shrink-0" style="background-color: ${awayColor};"></span>
+                ${escapeHtml(match.away_team.city)} ${escapeHtml(match.away_team.name || '')}
+              </span>
+              <span class="text-[10px] font-condensed font-black text-zinc-400 uppercase">5 Majeur (Extérieur)</span>
+            </div>
+            <div class="space-y-1.5">
+              ${awayStarters.map(p => renderPlayerRow(p, awayColor, match.away_team.text_color)).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Section Équipe Domicile -->
+        ${startersTeam === 'all' || startersTeam === 'home' ? `
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-2.5 py-1 rounded-[6px] bg-[#121216] border border-black">
+              <span class="font-condensed font-black text-xs uppercase flex items-center gap-1.5" style="color: ${homeColor};">
+                <span class="w-2.5 h-2.5 rounded-full border border-black shrink-0" style="background-color: ${homeColor};"></span>
+                ${escapeHtml(match.home_team.city)} ${escapeHtml(match.home_team.name || '')}
+              </span>
+              <span class="text-[10px] font-condensed font-black text-zinc-400 uppercase">5 Majeur (Domicile)</span>
+            </div>
+            <div class="space-y-1.5">
+              ${homeStarters.map(p => renderPlayerRow(p, homeColor, match.home_team.text_color)).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="text-[10px] text-zinc-500 font-mono text-center pt-1">
+          Source officielle NBA / ESPN • ${isFinished ? 'Stats finales enregistrées' : isLive ? 'Stats live en direct' : '5 majeurs projetés & moyennes'}
+        </div>
+      </div>
+    `;
+
+  } else if (activeTab === 'stats') {
+    // 📊 ONGLET STATS DU MATCH
+    const teamStats = (stats && stats.team_stats) || [];
+    const leaders = (stats && stats.leaders) || {};
+    const topAway = leaders.top_away;
+    const topHome = leaders.top_home;
+
+    bodyHtml = `
+      <div class="space-y-3.5">
+        <!-- Meilleurs Joueurs / Leaders -->
+        ${topAway && topHome ? `
+          <div class="space-y-1.5">
+            <div class="text-[10px] font-condensed font-black uppercase text-zinc-400 tracking-wider px-1">
+              ⭐ Leaders de la rencontre
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <!-- Leader Away -->
+              <div class="p-2.5 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000] flex flex-col items-center text-center space-y-1.5">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-black bg-[#0E0D13]">
+                  <img src="${topAway.headshot || '/static/icons/logo-secondaire.png'}" alt="${topAway.name}" class="w-full h-full object-cover object-top" onerror="this.onerror=null; this.src='/static/icons/logo-secondaire.png';" />
+                </div>
+                <div class="w-full">
+                  <div class="text-[9px] font-condensed font-black uppercase px-1.5 py-0.5 rounded text-white inline-block border border-black mb-1" style="background-color: ${awayColor};">
+                    ${escapeHtml(match.away_team.code)}
+                  </div>
+                  <div class="font-condensed font-black text-xs text-white truncate uppercase">${escapeHtml(topAway.name)}</div>
+                  <div class="text-[11px] font-mono text-amber-300 font-bold mt-0.5">
+                    ${isFinished || isLive ? `${topAway.pts} PTS • ${topAway.ast} AST` : topAway.avg}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leader Home -->
+              <div class="p-2.5 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000] flex flex-col items-center text-center space-y-1.5">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-black bg-[#0E0D13]">
+                  <img src="${topHome.headshot || '/static/icons/logo-secondaire.png'}" alt="${topHome.name}" class="w-full h-full object-cover object-top" onerror="this.onerror=null; this.src='/static/icons/logo-secondaire.png';" />
+                </div>
+                <div class="w-full">
+                  <div class="text-[9px] font-condensed font-black uppercase px-1.5 py-0.5 rounded text-white inline-block border border-black mb-1" style="background-color: ${homeColor};">
+                    ${escapeHtml(match.home_team.code)}
+                  </div>
+                  <div class="font-condensed font-black text-xs text-white truncate uppercase">${escapeHtml(topHome.name)}</div>
+                  <div class="text-[11px] font-mono text-amber-300 font-bold mt-0.5">
+                    ${isFinished || isLive ? `${topHome.pts} PTS • ${topHome.ast} AST` : topHome.avg}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Face-à-face Statistique des Équipes -->
+        <div class="p-3 rounded-[10px] bg-[#100F15] border-2 border-black shadow-[3px_3px_0px_#000] space-y-3">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+            <span class="font-condensed font-black text-xs uppercase" style="color: ${awayColor};">${escapeHtml(match.away_team.code)}</span>
+            <span class="text-[10px] font-condensed font-black uppercase text-zinc-400 tracking-wider">Comparatif d'Équipe</span>
+            <span class="font-condensed font-black text-xs uppercase" style="color: ${homeColor};">${escapeHtml(match.home_team.code)}</span>
+          </div>
+
+          <div class="space-y-2.5">
+            ${teamStats.map(stat => {
+              const awayPct = stat.away_pct || 50;
+              const homePct = stat.home_pct || 50;
+              return `
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-xs font-condensed font-bold">
+                    <span class="font-mono text-white text-[11px] font-black">${escapeHtml(stat.away_val)}</span>
+                    <span class="text-zinc-300 uppercase tracking-wider text-[10px] font-black">${escapeHtml(stat.label)}</span>
+                    <span class="font-mono text-white text-[11px] font-black">${escapeHtml(stat.home_val)}</span>
+                  </div>
+                  <!-- Split Bar -->
+                  <div class="h-2 rounded-full bg-black/90 border border-black flex overflow-hidden">
+                    <div style="width: ${awayPct}%; background-color: ${awayColor};" class="h-full transition-all duration-300"></div>
+                    <div style="width: ${homePct}%; background-color: ${homeColor};" class="h-full transition-all duration-300"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+  } else {
+    // 🎯 ONGLET MON PRONO & COTES
+    const userPickId = state.myPredictions ? state.myPredictions[match.id] : null;
+    const isBoosted = state.boostedPredictions ? !!state.boostedPredictions[match.id] : false;
+    let userPronoCard = '';
+
+    if (userPickId) {
+      const isPickHome = userPickId === match.home_team.id;
+      const pickedTeam = isPickHome ? match.home_team : match.away_team;
+      const pickedOdds = isPickHome ? match.home_odds : match.away_odds;
+      const isWon = isFinished && userPickId === match.winner_team_id;
+      const multiplier = isBoosted ? 2 : 1;
+      const pointsWon = isWon ? ((pickedOdds * 10) * multiplier) : 0.0;
+
+      userPronoCard = `
+        <div class="p-3 rounded-[10px] border-2 border-black ${isWon ? 'bg-[#00E676]/10 border-[#00E676]' : isFinished ? 'bg-red-500/10 border-red-500' : 'bg-blue-500/10 border-blue-500'} shadow-[3px_3px_0px_#000000] space-y-1.5">
+          <div class="flex items-center justify-between text-[11px] font-condensed font-black uppercase">
+            <span class="text-zinc-300">Ton Pronostic</span>
+            <span class="${isWon ? 'text-[#00E676]' : isFinished ? 'text-red-400' : 'text-blue-400'}">
+              ${isWon ? `<svg class="lucide-inline lucide-sm lucide-green" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> GAGNÉ` : isFinished ? `<svg class="lucide-inline lucide-sm lucide-red" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> MANQUÉ` : 'EN COURS / VALIDÉ'} ${isBoosted ? `<svg class="lucide-inline lucide-sm lucide-amber-fill" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> x2 ACTIF` : ""}
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-[6px] flex items-center justify-center font-condensed font-black text-xs border border-black shadow-[1px_1px_0px_#000000]"
+                   style="background-color: ${pickedTeam.color}; color: ${pickedTeam.text_color || '#FFF'};">
+                ${escapeHtml(pickedTeam.code)}
+              </div>
+              <div>
+                <div class="font-condensed font-black text-sm text-white leading-tight">
+                  ${escapeHtml(pickedTeam.city)} ${escapeHtml(pickedTeam.name || '')}
+                </div>
+                <div class="text-[10px] text-zinc-400 font-mono">Cote : ${pickedOdds.toFixed(2)} ${isBoosted ? 'x 2' : ''}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-[9px] font-condensed font-bold uppercase text-zinc-400">${isFinished ? 'Points' : 'Gain Potentiel'}</div>
+              <div class="font-condensed font-black text-lg ${isWon ? 'text-[#00E676]' : isFinished ? 'text-zinc-500' : 'text-amber-400'} font-mono">
+                ${isFinished ? (isWon ? `+${pointsWon.toFixed(1)} pts` : '0 pt') : `+${((pickedOdds * 10) * multiplier).toFixed(1)} pts`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      userPronoCard = `
+        <div class="p-3 rounded-[10px] bg-black/40 border-2 border-dashed border-zinc-700 text-center space-y-1">
+          <div class="text-[11px] font-condensed font-bold text-zinc-400 uppercase">Non pronostiqué</div>
+          <p class="text-[10px] text-zinc-500">${isUpcoming ? "Tu n'as pas encore validé de prono sur ce match." : "Tu n'avais pas validé de pronostic avant le coup d'envoi."}</p>
+        </div>
+      `;
+    }
+
+    bodyHtml = `
+      <div class="space-y-3">
+        <!-- Cotes Officielles d'Avant-Match -->
+        <div class="grid grid-cols-2 gap-2 text-center">
+          <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
+            <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.away_team.code)}</div>
+            <div class="font-condensed font-black text-lg text-white font-mono">${(match.away_odds || 1.90).toFixed(2)}</div>
+          </div>
+          <div class="p-2 rounded-[8px] bg-[#18181e] border-2 border-black shadow-[2px_2px_0px_#000000]">
+            <div class="text-[9px] font-condensed font-black uppercase text-zinc-400">Cote ${escapeHtml(match.home_team.code)}</div>
+            <div class="font-condensed font-black text-lg text-white font-mono">${(match.home_odds || 1.90).toFixed(2)}</div>
+          </div>
+        </div>
+
+        ${diff !== null ? `
+          <div class="flex items-center justify-between px-3 py-2 rounded-[8px] bg-[#100F15] border-2 border-black shadow-[2px_2px_0px_#000000] text-xs font-condensed font-black uppercase">
+            <span class="text-zinc-300 truncate max-w-[40%]">${escapeHtml(match.away_team.city)}</span>
+            <span class="text-[#FF9800] bg-black/60 px-2 py-0.5 rounded border border-black">Écart : +${diff} pts</span>
+            <span class="text-zinc-300 truncate max-w-[40%] text-right">${escapeHtml(match.home_team.city)}</span>
+          </div>
+        ` : ''}
+
+        <!-- Carte Pronostic Utilisateur -->
+        ${userPronoCard}
+
+        <!-- Raccourci Pronostics de Ligue -->
+        <button 
+          onclick="closeMatchResultDetails(); openLeagueMatchVotesModal(${match.id});" 
+          class="w-full py-2 px-3 rounded-[8px] bg-[#1F1E26] hover:bg-[#282733] text-zinc-200 hover:text-white border-2 border-black shadow-[2px_2px_0px_#000000] text-xs font-condensed font-black tracking-wider uppercase transition cursor-pointer flex items-center justify-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5 text-zinc-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Voir les votes de mes ligues ›</span>
+        </button>
+      </div>
+    `;
+  }
+
+  // Assemblage dans le modal
+  content.innerHTML = `
+    ${scoreboardHtml}
+    ${tabsHtml}
+    <div id="match-tab-body" class="pt-1">
+      ${bodyHtml}
+    </div>
+  `;
 }
 
 function closeMatchResultDetails() {
@@ -4990,6 +5359,9 @@ window.navigateResultsDate = navigateResultsDate;
 window.handleScoreboardClick = handleScoreboardClick;
 window.openMatchResultDetails = openMatchResultDetails;
 window.closeMatchResultDetails = closeMatchResultDetails;
+window.switchMatchDetailsTab = switchMatchDetailsTab;
+window.setStartersTeamFilter = setStartersTeamFilter;
+window.updateMatchDetailsView = updateMatchDetailsView;
 window.getTeamSaturatedGradient = getTeamSaturatedGradient;
 
 

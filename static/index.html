@@ -966,22 +966,22 @@
       </div>
     </div>
 
-    <!-- Modale Détails du Match (TV Broadcast Scoreboard x Neo-Brutalisme) -->
-    <div id="match-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-      <div class="modal-box rounded-2xl w-full max-w-sm p-4 sm:p-5 shadow-2xl relative max-h-[90vh] flex flex-col space-y-3.5 border-[3px] border-black bg-[#16151E]">
+    <!-- Modale Détails du Match (TV Broadcast Scoreboard x 5 Majeurs x Stats) -->
+    <div id="match-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 hidden">
+      <div class="modal-box rounded-2xl w-full max-w-md sm:max-w-xl p-3.5 sm:p-5 shadow-2xl relative max-h-[92vh] flex flex-col space-y-3 border-[3px] border-black bg-[#16151E]">
         <button onclick="closeMatchResultDetails()" class="absolute top-3 right-3 text-zinc-400 hover:text-white transition cursor-pointer z-10 p-1">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
         <!-- Titre & Badge TV -->
         <div class="space-y-1 text-center pt-1">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-[8px] bg-[#100F15] border-2 border-black text-[11px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
-            <svg class="lucide-inline lucide-md lucide-amber" viewBox="0 0 24 24"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg> Match Recap & Détails
+          <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-[8px] bg-[#100F15] border-2 border-black text-[10px] font-condensed font-black tracking-widest uppercase text-[#FF9800] shadow-[2px_2px_0px_#000000]">
+            <svg class="lucide-inline lucide-sm lucide-amber" viewBox="0 0 24 24"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg> Match Hub & 5 Majeurs
           </div>
-          <h3 class="font-condensed font-black text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none">
-            Rapport Officiel
+          <h3 class="font-condensed font-black text-xl sm:text-2xl uppercase tracking-wider text-[#F4F4F0] leading-none" id="match-result-modal-header-title">
+            Feuille de Match
           </h3>
-          <p class="text-[11px] text-zinc-400 font-medium">Scores finaux, cotes et issue de ton pronostic</p>
+          <p class="text-[11px] text-zinc-400 font-medium">Compositions officielles, statistiques détaillées et pronostic</p>
         </div>
 
         <div id="match-result-modal-content" class="space-y-3 pt-1 flex-1 overflow-y-auto pr-1">

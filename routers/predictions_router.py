@@ -634,6 +634,20 @@ def simulate_match_live(
     }
 
 
+@router.get("/matches/{match_id}/stats", tags=["Pronostics & Matchs"])
+def get_match_stats(match_id: int, db: Session = Depends(get_db)):
+    """
+    Retourne les 5 majeurs officiels (ou projetés avec portraits HD ESPN),
+    les statistiques d'équipe comparatives (FG%, 3PT%, FT%, REB, AST...)
+    et les leaders de la rencontre pour n'importe quel match.
+    """
+    from services.espn_service import fetch_match_boxscore_and_starters
+    data = fetch_match_boxscore_and_starters(db, match_id)
+    if not data or data.get("status") == "error":
+        raise HTTPException(status_code=404, detail="Statistiques du match indisponibles.")
+    return data
+
+
 @router.post("/sync", tags=["Synchronisation"])
 def trigger_sync(date_str: Optional[str] = None, db: Session = Depends(get_db)):
     """
