@@ -1,0 +1,1262 @@
+{
+  "ATL": [
+    {
+      "name": "CJ McCollum",
+      "pos": "PG",
+      "jersey": "3",
+      "espn_id": 2490149,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/2490149.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Nickeil Alexander-Walker",
+      "pos": "SG",
+      "jersey": "7",
+      "espn_id": 4278039,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278039.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Dyson Daniels",
+      "pos": "SF",
+      "jersey": "5",
+      "espn_id": 4869342,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4869342.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jalen Johnson",
+      "pos": "PF",
+      "jersey": "1",
+      "espn_id": 4701230,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4701230.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Onyeka Okongwu",
+      "pos": "C",
+      "jersey": "17",
+      "espn_id": 4431680,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4431680.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "BOS": [
+    {
+      "name": "Derrick White",
+      "pos": "PG",
+      "jersey": "9",
+      "espn_id": 3078576,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3078576.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Baylor Scheierman",
+      "pos": "SG",
+      "jersey": "55",
+      "espn_id": 4593841,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4593841.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Paul George",
+      "pos": "SF",
+      "jersey": "13",
+      "espn_id": 4251,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4251.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jayson Tatum",
+      "pos": "PF",
+      "jersey": "0",
+      "espn_id": 4065648,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4065648.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Neemias Queta",
+      "pos": "C",
+      "jersey": "88",
+      "espn_id": 4397424,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4397424.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "BKN": [
+    {
+      "name": "Mikel Brown Jr.",
+      "pos": "PG",
+      "jersey": "0",
+      "espn_id": 5101761,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5101761.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Egor Demin",
+      "pos": "SG",
+      "jersey": "8",
+      "espn_id": 5175643,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Michael Porter Jr.",
+      "pos": "SF",
+      "jersey": "17",
+      "espn_id": 4278104,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278104.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Julius Randle",
+      "pos": "PF",
+      "jersey": "30",
+      "espn_id": 3064514,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3064514.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Day'Ron Sharpe",
+      "pos": "C",
+      "jersey": "20",
+      "espn_id": 4432194,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432194.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "CHA": [
+    {
+      "name": "Coby White",
+      "pos": "PG",
+      "jersey": "3",
+      "espn_id": 4395651,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395651.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Kon Knueppel",
+      "pos": "SG",
+      "jersey": "7",
+      "espn_id": 5061575,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5061575.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Brandon Miller",
+      "pos": "SF",
+      "jersey": "24",
+      "espn_id": 4433287,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433287.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Naz Reid",
+      "pos": "PF",
+      "jersey": "0",
+      "espn_id": 4396971,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4396971.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Moussa Diabate",
+      "pos": "C",
+      "jersey": "14",
+      "espn_id": 4433249,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433249.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "CHI": [
+    {
+      "name": "Josh Giddey",
+      "pos": "PG",
+      "jersey": "3",
+      "espn_id": 4871145,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4871145.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Norman Powell",
+      "pos": "SG",
+      "jersey": "24",
+      "espn_id": 2595516,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/2595516.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Matas Buzelis",
+      "pos": "SF",
+      "jersey": "14",
+      "espn_id": 4711294,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4711294.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Caleb Wilson",
+      "pos": "PF",
+      "jersey": "8",
+      "espn_id": 5095151,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5095151.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Nic Claxton",
+      "pos": "C",
+      "jersey": "9",
+      "espn_id": 4278067,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278067.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "CLE": [
+    {
+      "name": "James Harden",
+      "pos": "PG",
+      "jersey": "1",
+      "espn_id": 3992,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3992.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Donovan Mitchell",
+      "pos": "SG",
+      "jersey": "45",
+      "espn_id": 3908809,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3908809.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Peyton Watson",
+      "pos": "SF",
+      "jersey": "8",
+      "espn_id": 4576087,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4576087.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Evan Mobley",
+      "pos": "PF",
+      "jersey": "4",
+      "espn_id": 4432158,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432158.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jarrett Allen",
+      "pos": "C",
+      "jersey": "31",
+      "espn_id": 4066328,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066328.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "DAL": [
+    {
+      "name": "Kyrie Irving",
+      "pos": "PG",
+      "jersey": "11",
+      "espn_id": 6442,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6442.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Zaccharie Risacher",
+      "pos": "SG",
+      "jersey": "10",
+      "espn_id": 5211175,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5211175.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Cooper Flagg",
+      "pos": "SF",
+      "jersey": "32",
+      "espn_id": 5041939,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5041939.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "P.J. Washington",
+      "pos": "PF",
+      "jersey": "25",
+      "espn_id": 4278078,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278078.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Dereck Lively II",
+      "pos": "C",
+      "jersey": "2",
+      "espn_id": 4683688,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4683688.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "DEN": [
+    {
+      "name": "Jamal Murray",
+      "pos": "PG",
+      "jersey": "27",
+      "espn_id": 3936299,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3936299.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Christian Braun",
+      "pos": "SG",
+      "jersey": "0",
+      "espn_id": 4431767,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4431767.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Cameron Johnson",
+      "pos": "SF",
+      "jersey": "23",
+      "espn_id": 3138196,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3138196.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Aaron Gordon",
+      "pos": "PF",
+      "jersey": "32",
+      "espn_id": 3064290,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3064290.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Nikola Jokic",
+      "pos": "C",
+      "jersey": "15",
+      "espn_id": 3112335,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3112335.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "DET": [
+    {
+      "name": "Cade Cunningham",
+      "pos": "PG",
+      "jersey": "2",
+      "espn_id": 4432166,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432166.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Duncan Robinson",
+      "pos": "SG",
+      "jersey": "55",
+      "espn_id": 3157465,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3157465.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Ausar Thompson",
+      "pos": "SF",
+      "jersey": "9",
+      "espn_id": 4684742,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4684742.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "John Collins",
+      "pos": "PF",
+      "jersey": "20",
+      "espn_id": 3908845,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3908845.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jalen Duren",
+      "pos": "C",
+      "jersey": "0",
+      "espn_id": 4433621,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433621.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "GSW": [
+    {
+      "name": "Stephen Curry",
+      "pos": "PG",
+      "jersey": "30",
+      "espn_id": 3975,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3975.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Brandin Podziemski",
+      "pos": "SG",
+      "jersey": "2",
+      "espn_id": 4709138,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4709138.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Yaxel Lendeborg",
+      "pos": "SF",
+      "jersey": "1",
+      "espn_id": 5175737,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5175737.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Gui Santos",
+      "pos": "PF",
+      "jersey": "15",
+      "espn_id": 4997536,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4997536.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Draymond Green",
+      "pos": "C",
+      "jersey": "23",
+      "espn_id": 6589,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6589.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "HOU": [
+    {
+      "name": "Fred VanVleet",
+      "pos": "PG",
+      "jersey": "5",
+      "espn_id": 2991230,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/2991230.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Amen Thompson",
+      "pos": "SG",
+      "jersey": "1",
+      "espn_id": 4684740,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4684740.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Kevin Durant",
+      "pos": "SF",
+      "jersey": "7",
+      "espn_id": 3202,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3202.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jabari Smith Jr.",
+      "pos": "PF",
+      "jersey": "10",
+      "espn_id": 4432639,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432639.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Alperen Sengun",
+      "pos": "C",
+      "jersey": "28",
+      "espn_id": 4871144,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4871144.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "IND": [
+    {
+      "name": "Tyrese Haliburton",
+      "pos": "PG",
+      "jersey": "0",
+      "espn_id": 4396993,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4396993.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Andrew Nembhard",
+      "pos": "SG",
+      "jersey": "2",
+      "espn_id": 4395712,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395712.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Aaron Nesmith",
+      "pos": "SF",
+      "jersey": "23",
+      "espn_id": 4396909,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4396909.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Pascal Siakam",
+      "pos": "PF",
+      "jersey": "43",
+      "espn_id": 3149673,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3149673.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Ivica Zubac",
+      "pos": "C",
+      "jersey": "40",
+      "espn_id": 4017837,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4017837.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "LAC": [
+    {
+      "name": "Darius Garland",
+      "pos": "PG",
+      "jersey": "10",
+      "espn_id": 4396907,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4396907.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Bradley Beal",
+      "pos": "SG",
+      "jersey": "3",
+      "espn_id": 6580,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6580.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Derrick Jones Jr.",
+      "pos": "SF",
+      "jersey": "5",
+      "espn_id": 3936099,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3936099.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Rui Hachimura",
+      "pos": "PF",
+      "jersey": "28",
+      "espn_id": 4066648,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066648.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Isaiah Jackson",
+      "pos": "C",
+      "jersey": "23",
+      "espn_id": 4432170,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432170.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "LAL": [
+    {
+      "name": "Luka Doncic",
+      "pos": "PG",
+      "jersey": "77",
+      "espn_id": 3945274,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Austin Reaves",
+      "pos": "SG",
+      "jersey": "15",
+      "espn_id": 4066457,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066457.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Quentin Grimes",
+      "pos": "SF",
+      "jersey": "5",
+      "espn_id": 4397014,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4397014.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jake LaRavia",
+      "pos": "PF",
+      "jersey": "12",
+      "espn_id": 4592691,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4592691.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Walker Kessler",
+      "pos": "C",
+      "jersey": "14",
+      "espn_id": 4433136,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433136.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "MEM": [
+    {
+      "name": "Ty Jerome",
+      "pos": "PG",
+      "jersey": "2",
+      "espn_id": 4065733,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4065733.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Cedric Coward",
+      "pos": "SG",
+      "jersey": "23",
+      "espn_id": 4903027,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4903027.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jaylen Wells",
+      "pos": "SF",
+      "jersey": "0",
+      "espn_id": 5112087,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5112087.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Cameron Boozer",
+      "pos": "PF",
+      "jersey": "27",
+      "espn_id": 5041935,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5041935.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Zach Edey",
+      "pos": "C",
+      "jersey": "14",
+      "espn_id": 4600663,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4600663.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "MIA": [
+    {
+      "name": "Davion Mitchell",
+      "pos": "PG",
+      "jersey": "2",
+      "espn_id": 4278053,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278053.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Klay Thompson",
+      "pos": "SG",
+      "jersey": "11",
+      "espn_id": 6475,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6475.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Andrew Wiggins",
+      "pos": "SF",
+      "jersey": "22",
+      "espn_id": 3059319,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3059319.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Giannis Antetokounmpo",
+      "pos": "PF",
+      "jersey": "7",
+      "espn_id": 3032977,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3032977.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Bam Adebayo",
+      "pos": "C",
+      "jersey": "13",
+      "espn_id": 4066261,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066261.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "MIL": [
+    {
+      "name": "Ryan Rollins",
+      "pos": "PG",
+      "jersey": "13",
+      "espn_id": 4591725,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4591725.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Tyler Herro",
+      "pos": "SG",
+      "jersey": "11",
+      "espn_id": 4395725,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395725.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jaime Jaquez Jr.",
+      "pos": "SF",
+      "jersey": "24",
+      "espn_id": 4432848,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432848.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Kyle Kuzma",
+      "pos": "PF",
+      "jersey": "18",
+      "espn_id": 3134907,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3134907.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Myles Turner",
+      "pos": "C",
+      "jersey": "3",
+      "espn_id": 3133628,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3133628.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "MIN": [
+    {
+      "name": "LaMelo Ball",
+      "pos": "PG",
+      "jersey": "1",
+      "espn_id": 4432816,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432816.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Anthony Edwards",
+      "pos": "SG",
+      "jersey": "5",
+      "espn_id": 4594268,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4594268.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jonathan Kuminga",
+      "pos": "SF",
+      "jersey": "24",
+      "espn_id": 4433247,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433247.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jaden McDaniels",
+      "pos": "PF",
+      "jersey": "3",
+      "espn_id": 4431671,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4431671.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Rudy Gobert",
+      "pos": "C",
+      "jersey": "27",
+      "espn_id": 3032976,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3032976.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "NOP": [
+    {
+      "name": "Dejounte Murray",
+      "pos": "PG",
+      "jersey": "5",
+      "espn_id": 3907497,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3907497.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Trey Murphy III",
+      "pos": "SG",
+      "jersey": "25",
+      "espn_id": 4397688,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4397688.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Herbert Jones",
+      "pos": "SF",
+      "jersey": "2",
+      "espn_id": 4277813,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4277813.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Zion Williamson",
+      "pos": "PF",
+      "jersey": "1",
+      "espn_id": 4395628,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395628.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Yves Missi",
+      "pos": "C",
+      "jersey": "21",
+      "espn_id": 5061589,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5061589.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "NYK": [
+    {
+      "name": "Jalen Brunson",
+      "pos": "PG",
+      "jersey": "11",
+      "espn_id": 3934672,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3934672.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Josh Hart",
+      "pos": "SG",
+      "jersey": "3",
+      "espn_id": 3062679,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3062679.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Mikal Bridges",
+      "pos": "SF",
+      "jersey": "25",
+      "espn_id": 3147657,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3147657.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "OG Anunoby",
+      "pos": "PF",
+      "jersey": "8",
+      "espn_id": 3934719,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3934719.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Karl-Anthony Towns",
+      "pos": "C",
+      "jersey": "32",
+      "espn_id": 3136195,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3136195.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "OKC": [
+    {
+      "name": "Shai Gilgeous-Alexander",
+      "pos": "PG",
+      "jersey": "2",
+      "espn_id": 4278073,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4278073.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Cason Wallace",
+      "pos": "SG",
+      "jersey": "22",
+      "espn_id": 4683692,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4683692.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jalen Williams",
+      "pos": "SF",
+      "jersey": "8",
+      "espn_id": 4593803,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4593803.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Chet Holmgren",
+      "pos": "PF",
+      "jersey": "7",
+      "espn_id": 4433255,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433255.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Isaiah Hartenstein",
+      "pos": "C",
+      "jersey": "55",
+      "espn_id": 4222252,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4222252.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "ORL": [
+    {
+      "name": "Jalen Suggs",
+      "pos": "PG",
+      "jersey": "4",
+      "espn_id": 4432165,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432165.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Desmond Bane",
+      "pos": "SG",
+      "jersey": "3",
+      "espn_id": 4066320,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066320.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Franz Wagner",
+      "pos": "SF",
+      "jersey": "22",
+      "espn_id": 4566434,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4566434.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Paolo Banchero",
+      "pos": "PF",
+      "jersey": "5",
+      "espn_id": 4432573,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4432573.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Wendell Carter Jr.",
+      "pos": "C",
+      "jersey": "34",
+      "espn_id": 4277847,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4277847.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "PHI": [
+    {
+      "name": "Tyrese Maxey",
+      "pos": "PG",
+      "jersey": "0",
+      "espn_id": 4431678,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4431678.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "VJ Edgecombe",
+      "pos": "SG",
+      "jersey": "77",
+      "espn_id": 5124612,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5124612.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jaylen Brown",
+      "pos": "SF",
+      "jersey": "7",
+      "espn_id": 3917376,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3917376.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "LeBron James",
+      "pos": "PF",
+      "jersey": "23",
+      "espn_id": 1966,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/1966.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Joel Embiid",
+      "pos": "C",
+      "jersey": "21",
+      "espn_id": 3059318,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3059318.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "PHX": [
+    {
+      "name": "Devin Booker",
+      "pos": "PG",
+      "jersey": "15",
+      "espn_id": 3136193,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3136193.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jalen Green",
+      "pos": "SG",
+      "jersey": "4",
+      "espn_id": 4437244,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4437244.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Dillon Brooks",
+      "pos": "SF",
+      "jersey": "3",
+      "espn_id": 3155526,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3155526.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Miles Bridges",
+      "pos": "PF",
+      "jersey": "22",
+      "espn_id": 4066383,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066383.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Oso Ighodaro",
+      "pos": "C",
+      "jersey": "11",
+      "espn_id": 4601023,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4601023.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "POR": [
+    {
+      "name": "Damian Lillard",
+      "pos": "PG",
+      "jersey": "0",
+      "espn_id": 6606,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6606.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Ja Morant",
+      "pos": "SG",
+      "jersey": "1",
+      "espn_id": 4279888,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4279888.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Toumani Camara",
+      "pos": "SF",
+      "jersey": "33",
+      "espn_id": 4431736,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4431736.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Deni Avdija",
+      "pos": "PF",
+      "jersey": "8",
+      "espn_id": 4683021,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4683021.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Donovan Clingan",
+      "pos": "C",
+      "jersey": "23",
+      "espn_id": 5105565,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5105565.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "SAC": [
+    {
+      "name": "Ben Simmons",
+      "pos": "PG",
+      "jersey": "25",
+      "espn_id": 3907387,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3907387.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Darius Acuff Jr.",
+      "pos": "SG",
+      "jersey": "5",
+      "espn_id": 5142620,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5142620.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Zach LaVine",
+      "pos": "SF",
+      "jersey": "8",
+      "espn_id": 3064440,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3064440.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Keegan Murray",
+      "pos": "PF",
+      "jersey": "13",
+      "espn_id": 4594327,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4594327.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Domantas Sabonis",
+      "pos": "C",
+      "jersey": "11",
+      "espn_id": 3155942,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3155942.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "SAS": [
+    {
+      "name": "De'Aaron Fox",
+      "pos": "PG",
+      "jersey": "4",
+      "espn_id": 4066259,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066259.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Stephon Castle",
+      "pos": "SG",
+      "jersey": "5",
+      "espn_id": 4845367,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4845367.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Devin Vassell",
+      "pos": "SF",
+      "jersey": "24",
+      "espn_id": 4395630,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395630.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Tobias Harris",
+      "pos": "PF",
+      "jersey": "23",
+      "espn_id": 6440,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6440.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Victor Wembanyama",
+      "pos": "C",
+      "jersey": "1",
+      "espn_id": 5104157,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5104157.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "TOR": [
+    {
+      "name": "Immanuel Quickley",
+      "pos": "PG",
+      "jersey": "5",
+      "espn_id": 4395724,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395724.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "RJ Barrett",
+      "pos": "SG",
+      "jersey": "9",
+      "espn_id": 4395625,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4395625.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Kawhi Leonard",
+      "pos": "SF",
+      "jersey": "2",
+      "espn_id": 6450,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6450.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Scottie Barnes",
+      "pos": "PF",
+      "jersey": "4",
+      "espn_id": 4433134,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433134.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jakob Poeltl",
+      "pos": "C",
+      "jersey": "19",
+      "espn_id": 3134908,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/3134908.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "UTA": [
+    {
+      "name": "Keyonte George",
+      "pos": "PG",
+      "jersey": "3",
+      "espn_id": 4433627,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4433627.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Darryn Peterson",
+      "pos": "SG",
+      "jersey": "22",
+      "espn_id": 5041955,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5041955.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Ace Bailey",
+      "pos": "SF",
+      "jersey": "19",
+      "espn_id": 4873138,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4873138.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Lauri Markkanen",
+      "pos": "PF",
+      "jersey": "23",
+      "espn_id": 4066336,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4066336.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Jaren Jackson Jr.",
+      "pos": "C",
+      "jersey": "20",
+      "espn_id": 4277961,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4277961.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ],
+  "WAS": [
+    {
+      "name": "Trae Young",
+      "pos": "PG",
+      "jersey": "3",
+      "espn_id": 4277905,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/4277905.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Kyshawn George",
+      "pos": "SG",
+      "jersey": "18",
+      "espn_id": 5174563,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5174563.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "AJ Dybantsa",
+      "pos": "SF",
+      "jersey": "4",
+      "espn_id": 5142718,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5142718.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Anthony Davis",
+      "pos": "PF",
+      "jersey": "23",
+      "espn_id": 6583,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/6583.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    },
+    {
+      "name": "Alex Sarr",
+      "pos": "C",
+      "jersey": "20",
+      "espn_id": 5160992,
+      "headshot": "https://a.espncdn.com/i/headshots/nba/players/full/5160992.png",
+      "avg": "15.0 PTS, 5.0 REB"
+    }
+  ]
+}

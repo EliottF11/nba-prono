@@ -5,6 +5,8 @@ Service ESPN NBA Scoreboard en direct (Temps Réel Illimité & Gratuit) :
 - Stocke le quart-temps et chrono (ex: '4:32 - 3rd', 'Mi-temps')
 - Clôture automatiquement les matchs terminés (state == 'post') et calcule les gains
 """
+import os
+import json
 import time
 import httpx
 from datetime import datetime, timezone, timedelta
@@ -250,226 +252,22 @@ def sync_espn_if_needed(db: Session, cooldown_seconds: int = 20) -> Dict[str, An
     return res_today
 
 
-# Catalogue officiel des 5 Majeurs probables pour les 30 franchises NBA
-NBA_PROJECTED_STARTERS = {
-    "ATL": [
-        {"name": "Trae Young", "pos": "PG", "jersey": "11", "espn_id": 4277905, "avg": "25.7 PTS, 10.8 AST"},
-        {"name": "Dyson Daniels", "pos": "SG", "jersey": "5", "espn_id": 4869342, "avg": "12.4 PTS, 4.8 REB"},
-        {"name": "Zaccharie Risacher", "pos": "SF", "jersey": "10", "espn_id": 5174351, "avg": "14.2 PTS, 4.5 REB"},
-        {"name": "Jalen Johnson", "pos": "PF", "jersey": "1", "espn_id": 4432174, "avg": "16.0 PTS, 8.7 REB"},
-        {"name": "Clint Capela", "pos": "C", "jersey": "15", "espn_id": 3102529, "avg": "11.5 PTS, 10.6 REB"}
-    ],
-    "BOS": [
-        {"name": "Jrue Holiday", "pos": "PG", "jersey": "4", "espn_id": 3995, "avg": "12.5 PTS, 4.8 AST"},
-        {"name": "Derrick White", "pos": "SG", "jersey": "9", "espn_id": 3078576, "avg": "15.2 PTS, 5.2 AST"},
-        {"name": "Jaylen Brown", "pos": "SF", "jersey": "7", "espn_id": 3917376, "avg": "23.0 PTS, 5.5 REB"},
-        {"name": "Jayson Tatum", "pos": "PF", "jersey": "0", "espn_id": 4065648, "avg": "26.9 PTS, 8.1 REB"},
-        {"name": "Kristaps Porzingis", "pos": "C", "jersey": "8", "espn_id": 3102531, "avg": "20.1 PTS, 7.2 REB"}
-    ],
-    "BKN": [
-        {"name": "Dennis Schroder", "pos": "PG", "jersey": "17", "espn_id": 3032979, "avg": "14.0 PTS, 6.1 AST"},
-        {"name": "Cam Thomas", "pos": "SG", "jersey": "24", "espn_id": 4432173, "avg": "22.5 PTS, 3.2 REB"},
-        {"name": "Cameron Johnson", "pos": "SF", "jersey": "2", "espn_id": 3138160, "avg": "13.4 PTS, 4.3 REB"},
-        {"name": "Dorian Finney-Smith", "pos": "PF", "jersey": "28", "espn_id": 2578273, "avg": "8.5 PTS, 4.7 REB"},
-        {"name": "Nicolas Claxton", "pos": "C", "jersey": "33", "espn_id": 4277883, "avg": "11.8 PTS, 9.9 REB"}
-    ],
-    "CHA": [
-        {"name": "LaMelo Ball", "pos": "PG", "jersey": "1", "espn_id": 4432816, "avg": "23.9 PTS, 8.0 AST"},
-        {"name": "Brandon Miller", "pos": "SG", "jersey": "24", "espn_id": 4871145, "avg": "17.3 PTS, 4.3 REB"},
-        {"name": "Josh Green", "pos": "SF", "jersey": "10", "espn_id": 4431776, "avg": "8.2 PTS, 3.2 REB"},
-        {"name": "Miles Bridges", "pos": "PF", "jersey": "0", "espn_id": 4066383, "avg": "21.0 PTS, 7.3 REB"},
-        {"name": "Nick Richards", "pos": "C", "jersey": "4", "espn_id": 4277884, "avg": "9.7 PTS, 8.0 REB"}
-    ],
-    "CHI": [
-        {"name": "Coby White", "pos": "PG", "jersey": "0", "espn_id": 4395651, "avg": "19.1 PTS, 5.1 AST"},
-        {"name": "Josh Giddey", "pos": "SG", "jersey": "3", "espn_id": 4871146, "avg": "12.3 PTS, 6.4 REB"},
-        {"name": "Zach LaVine", "pos": "SF", "jersey": "8", "espn_id": 3064440, "avg": "19.5 PTS, 5.2 REB"},
-        {"name": "Patrick Williams", "pos": "PF", "jersey": "44", "espn_id": 4432823, "avg": "10.0 PTS, 3.9 REB"},
-        {"name": "Nikola Vucevic", "pos": "C", "jersey": "9", "espn_id": 6478, "avg": "18.0 PTS, 10.5 REB"}
-    ],
-    "CLE": [
-        {"name": "Darius Garland", "pos": "PG", "jersey": "10", "espn_id": 4395653, "avg": "18.0 PTS, 6.5 AST"},
-        {"name": "Donovan Mitchell", "pos": "SG", "jersey": "45", "espn_id": 3908809, "avg": "26.6 PTS, 6.1 AST"},
-        {"name": "Max Strus", "pos": "SF", "jersey": "1", "espn_id": 4065747, "avg": "12.2 PTS, 4.8 REB"},
-        {"name": "Evan Mobley", "pos": "PF", "jersey": "4", "espn_id": 4432158, "avg": "15.7 PTS, 9.4 REB"},
-        {"name": "Jarrett Allen", "pos": "C", "jersey": "31", "espn_id": 4066328, "avg": "16.5 PTS, 10.5 REB"}
-    ],
-    "DAL": [
-        {"name": "Luka Doncic", "pos": "PG", "jersey": "77", "espn_id": 3945274, "avg": "33.9 PTS, 9.8 AST"},
-        {"name": "Kyrie Irving", "pos": "SG", "jersey": "11", "espn_id": 6442, "avg": "25.6 PTS, 5.2 AST"},
-        {"name": "Klay Thompson", "pos": "SF", "jersey": "31", "espn_id": 6475, "avg": "17.9 PTS, 3.3 REB"},
-        {"name": "P.J. Washington", "pos": "PF", "jersey": "25", "espn_id": 4278078, "avg": "12.9 PTS, 5.6 REB"},
-        {"name": "Daniel Gafford", "pos": "C", "jersey": "21", "espn_id": 4277887, "avg": "11.0 PTS, 7.6 REB"}
-    ],
-    "DEN": [
-        {"name": "Jamal Murray", "pos": "PG", "jersey": "27", "espn_id": 3936299, "avg": "21.2 PTS, 6.5 AST"},
-        {"name": "Christian Braun", "pos": "SG", "jersey": "0", "espn_id": 4431767, "avg": "7.3 PTS, 3.7 REB"},
-        {"name": "Michael Porter Jr.", "pos": "SF", "jersey": "1", "espn_id": 4278101, "avg": "16.7 PTS, 7.0 REB"},
-        {"name": "Aaron Gordon", "pos": "PF", "jersey": "32", "espn_id": 3064290, "avg": "13.9 PTS, 6.5 REB"},
-        {"name": "Nikola Jokic", "pos": "C", "jersey": "15", "espn_id": 3112335, "avg": "26.4 PTS, 12.4 REB"}
-    ],
-    "DET": [
-        {"name": "Cade Cunningham", "pos": "PG", "jersey": "2", "espn_id": 4432166, "avg": "22.7 PTS, 7.5 AST"},
-        {"name": "Jaden Ivey", "pos": "SG", "jersey": "23", "espn_id": 4433218, "avg": "15.4 PTS, 3.8 AST"},
-        {"name": "Ausar Thompson", "pos": "SF", "jersey": "9", "espn_id": 4683838, "avg": "8.8 PTS, 6.4 REB"},
-        {"name": "Tobias Harris", "pos": "PF", "jersey": "12", "espn_id": 6440, "avg": "17.2 PTS, 6.5 REB"},
-        {"name": "Jalen Duren", "pos": "C", "jersey": "0", "espn_id": 4433621, "avg": "13.8 PTS, 11.6 REB"}
-    ],
-    "GSW": [
-        {"name": "Stephen Curry", "pos": "PG", "jersey": "30", "espn_id": 3975, "avg": "26.4 PTS, 5.1 AST"},
-        {"name": "Brandin Podziemski", "pos": "SG", "jersey": "2", "espn_id": 4683789, "avg": "9.2 PTS, 5.8 REB"},
-        {"name": "Andrew Wiggins", "pos": "SF", "jersey": "22", "espn_id": 3059319, "avg": "13.2 PTS, 4.5 REB"},
-        {"name": "Jonathan Kuminga", "pos": "PF", "jersey": "0", "espn_id": 4432822, "avg": "16.1 PTS, 4.8 REB"},
-        {"name": "Draymond Green", "pos": "C", "jersey": "23", "espn_id": 6589, "avg": "8.6 PTS, 7.2 REB"}
-    ],
-    "HOU": [
-        {"name": "Fred VanVleet", "pos": "PG", "jersey": "5", "espn_id": 2991230, "avg": "17.4 PTS, 8.1 AST"},
-        {"name": "Jalen Green", "pos": "SG", "jersey": "4", "espn_id": 4432811, "avg": "19.6 PTS, 5.2 REB"},
-        {"name": "Dillon Brooks", "pos": "SF", "jersey": "9", "espn_id": 3155526, "avg": "12.7 PTS, 3.4 REB"},
-        {"name": "Jabari Smith Jr.", "pos": "PF", "jersey": "10", "espn_id": 4432820, "avg": "13.7 PTS, 8.1 REB"},
-        {"name": "Alperen Sengun", "pos": "C", "jersey": "28", "espn_id": 4871148, "avg": "21.1 PTS, 9.3 REB"}
-    ],
-    "IND": [
-        {"name": "Tyrese Haliburton", "pos": "PG", "jersey": "0", "espn_id": 4396993, "avg": "20.1 PTS, 10.9 AST"},
-        {"name": "Andrew Nembhard", "pos": "SG", "jersey": "2", "espn_id": 4395655, "avg": "9.2 PTS, 4.1 AST"},
-        {"name": "Aaron Nesmith", "pos": "SF", "jersey": "23", "espn_id": 4395654, "avg": "12.2 PTS, 3.8 REB"},
-        {"name": "Pascal Siakam", "pos": "PF", "jersey": "43", "espn_id": 3149673, "avg": "21.7 PTS, 7.1 REB"},
-        {"name": "Myles Turner", "pos": "C", "jersey": "33", "espn_id": 3133601, "avg": "17.1 PTS, 6.9 REB"}
-    ],
-    "LAC": [
-        {"name": "James Harden", "pos": "PG", "jersey": "1", "espn_id": 3992, "avg": "16.6 PTS, 8.5 AST"},
-        {"name": "Terance Mann", "pos": "SG", "jersey": "14", "espn_id": 3907823, "avg": "8.8 PTS, 3.4 REB"},
-        {"name": "Norman Powell", "pos": "SF", "jersey": "24", "espn_id": 2595516, "avg": "13.9 PTS, 2.6 REB"},
-        {"name": "Kawhi Leonard", "pos": "PF", "jersey": "2", "espn_id": 6450, "avg": "23.7 PTS, 6.1 REB"},
-        {"name": "Ivica Zubac", "pos": "C", "jersey": "40", "espn_id": 4017837, "avg": "11.7 PTS, 9.2 REB"}
-    ],
-    "LAL": [
-        {"name": "D'Angelo Russell", "pos": "PG", "jersey": "1", "espn_id": 3136776, "avg": "18.0 PTS, 6.3 AST"},
-        {"name": "Austin Reaves", "pos": "SG", "jersey": "15", "espn_id": 4066457, "avg": "15.9 PTS, 5.5 AST"},
-        {"name": "Rui Hachimura", "pos": "SF", "jersey": "28", "espn_id": 4066648, "avg": "13.6 PTS, 4.3 REB"},
-        {"name": "LeBron James", "pos": "PF", "jersey": "23", "espn_id": 1966, "avg": "25.7 PTS, 8.3 AST"},
-        {"name": "Anthony Davis", "pos": "C", "jersey": "3", "espn_id": 6583, "avg": "24.7 PTS, 12.6 REB"}
-    ],
-    "MEM": [
-        {"name": "Ja Morant", "pos": "PG", "jersey": "12", "espn_id": 4279888, "avg": "25.1 PTS, 8.1 AST"},
-        {"name": "Desmond Bane", "pos": "SG", "jersey": "22", "espn_id": 4066320, "avg": "23.7 PTS, 5.5 AST"},
-        {"name": "Marcus Smart", "pos": "SF", "jersey": "36", "espn_id": 2990992, "avg": "14.5 PTS, 4.3 AST"},
-        {"name": "Jaren Jackson Jr.", "pos": "PF", "jersey": "13", "espn_id": 4277961, "avg": "22.5 PTS, 5.5 REB"},
-        {"name": "Zach Edey", "pos": "C", "jersey": "14", "espn_id": 4432810, "avg": "14.0 PTS, 10.2 REB"}
-    ],
-    "MIA": [
-        {"name": "Terry Rozier", "pos": "PG", "jersey": "2", "espn_id": 3074752, "avg": "16.4 PTS, 4.6 AST"},
-        {"name": "Tyler Herro", "pos": "SG", "jersey": "14", "espn_id": 4395725, "avg": "20.8 PTS, 5.3 REB"},
-        {"name": "Jimmy Butler", "pos": "SF", "jersey": "22", "espn_id": 6430, "avg": "20.8 PTS, 5.3 REB"},
-        {"name": "Nikola Jovic", "pos": "PF", "jersey": "5", "espn_id": 4871149, "avg": "7.7 PTS, 4.2 REB"},
-        {"name": "Bam Adebayo", "pos": "C", "jersey": "13", "espn_id": 4066261, "avg": "19.3 PTS, 10.4 REB"}
-    ],
-    "MIL": [
-        {"name": "Damian Lillard", "pos": "PG", "jersey": "0", "espn_id": 6606, "avg": "24.3 PTS, 7.0 AST"},
-        {"name": "Gary Trent Jr.", "pos": "SG", "jersey": "5", "espn_id": 4277843, "avg": "13.7 PTS, 2.3 REB"},
-        {"name": "Khris Middleton", "pos": "SF", "jersey": "22", "espn_id": 6609, "avg": "15.1 PTS, 5.3 AST"},
-        {"name": "Giannis Antetokounmpo", "pos": "PF", "jersey": "34", "espn_id": 3032977, "avg": "30.4 PTS, 11.5 REB"},
-        {"name": "Brook Lopez", "pos": "C", "jersey": "11", "espn_id": 3448, "avg": "12.5 PTS, 5.2 REB"}
-    ],
-    "MIN": [
-        {"name": "Mike Conley", "pos": "PG", "jersey": "10", "espn_id": 3195, "avg": "11.4 PTS, 5.9 AST"},
-        {"name": "Anthony Edwards", "pos": "SG", "jersey": "5", "espn_id": 4594268, "avg": "25.9 PTS, 5.4 REB"},
-        {"name": "Jaden McDaniels", "pos": "SF", "jersey": "3", "espn_id": 4431766, "avg": "10.5 PTS, 3.1 REB"},
-        {"name": "Julius Randle", "pos": "PF", "jersey": "30", "espn_id": 3064514, "avg": "24.0 PTS, 9.2 REB"},
-        {"name": "Rudy Gobert", "pos": "C", "jersey": "27", "espn_id": 3032976, "avg": "14.0 PTS, 12.9 REB"}
-    ],
-    "NOP": [
-        {"name": "Dejounte Murray", "pos": "PG", "jersey": "5", "espn_id": 3907497, "avg": "22.5 PTS, 6.4 AST"},
-        {"name": "CJ McCollum", "pos": "SG", "jersey": "3", "espn_id": 2490149, "avg": "20.0 PTS, 4.6 AST"},
-        {"name": "Brandon Ingram", "pos": "SF", "jersey": "14", "espn_id": 3913176, "avg": "20.8 PTS, 5.1 REB"},
-        {"name": "Zion Williamson", "pos": "PF", "jersey": "1", "espn_id": 4395628, "avg": "22.9 PTS, 5.8 REB"},
-        {"name": "Herbert Jones", "pos": "C", "jersey": "2", "espn_id": 4277889, "avg": "11.0 PTS, 3.6 REB"}
-    ],
-    "NYK": [
-        {"name": "Jalen Brunson", "pos": "PG", "jersey": "11", "espn_id": 3934672, "avg": "28.7 PTS, 6.7 AST"},
-        {"name": "Mikal Bridges", "pos": "SG", "jersey": "25", "espn_id": 3147657, "avg": "19.6 PTS, 4.5 REB"},
-        {"name": "OG Anunoby", "pos": "SF", "jersey": "8", "espn_id": 3934719, "avg": "14.7 PTS, 4.2 REB"},
-        {"name": "Josh Hart", "pos": "PF", "jersey": "3", "espn_id": 3062679, "avg": "9.4 PTS, 8.3 REB"},
-        {"name": "Karl-Anthony Towns", "pos": "C", "jersey": "32", "espn_id": 3136193, "avg": "21.8 PTS, 8.3 REB"}
-    ],
-    "OKC": [
-        {"name": "Shai Gilgeous-Alexander", "pos": "PG", "jersey": "2", "espn_id": 4278077, "avg": "30.1 PTS, 6.2 AST"},
-        {"name": "Alex Caruso", "pos": "SG", "jersey": "9", "espn_id": 2991350, "avg": "10.1 PTS, 3.8 REB"},
-        {"name": "Luguentz Dort", "pos": "SF", "jersey": "5", "espn_id": 4397020, "avg": "10.9 PTS, 3.6 REB"},
-        {"name": "Jalen Williams", "pos": "PF", "jersey": "8", "espn_id": 4593803, "avg": "19.1 PTS, 4.5 AST"},
-        {"name": "Chet Holmgren", "pos": "C", "jersey": "7", "espn_id": 4432160, "avg": "16.5 PTS, 7.9 REB"}
-    ],
-    "ORL": [
-        {"name": "Jalen Suggs", "pos": "PG", "jersey": "4", "espn_id": 4432165, "avg": "12.6 PTS, 3.1 REB"},
-        {"name": "Kentavious Caldwell-Pope", "pos": "SG", "jersey": "3", "espn_id": 6585, "avg": "10.1 PTS, 2.4 REB"},
-        {"name": "Franz Wagner", "pos": "SF", "jersey": "22", "espn_id": 4566434, "avg": "19.7 PTS, 5.3 REB"},
-        {"name": "Paolo Banchero", "pos": "PF", "jersey": "5", "espn_id": 4432573, "avg": "22.6 PTS, 6.9 REB"},
-        {"name": "Wendell Carter Jr.", "pos": "C", "jersey": "34", "espn_id": 4277847, "avg": "11.0 PTS, 6.9 REB"}
-    ],
-    "PHI": [
-        {"name": "Tyrese Maxey", "pos": "PG", "jersey": "0", "espn_id": 4431678, "avg": "25.9 PTS, 6.2 AST"},
-        {"name": "Kelly Oubre Jr.", "pos": "SG", "jersey": "9", "espn_id": 3133603, "avg": "15.4 PTS, 5.0 REB"},
-        {"name": "Paul George", "pos": "SF", "jersey": "8", "espn_id": 4251, "avg": "22.6 PTS, 5.2 REB"},
-        {"name": "Caleb Martin", "pos": "PF", "jersey": "16", "espn_id": 3138161, "avg": "10.0 PTS, 4.4 REB"},
-        {"name": "Joel Embiid", "pos": "C", "jersey": "21", "espn_id": 3059318, "avg": "34.7 PTS, 11.0 REB"}
-    ],
-    "PHX": [
-        {"name": "Tyus Jones", "pos": "PG", "jersey": "21", "espn_id": 3135046, "avg": "12.0 PTS, 7.3 AST"},
-        {"name": "Devin Booker", "pos": "SG", "jersey": "1", "espn_id": 3136195, "avg": "27.1 PTS, 6.9 AST"},
-        {"name": "Bradley Beal", "pos": "SF", "jersey": "3", "espn_id": 6580, "avg": "18.2 PTS, 5.0 AST"},
-        {"name": "Kevin Durant", "pos": "PF", "jersey": "35", "espn_id": 3202, "avg": "27.1 PTS, 6.6 REB"},
-        {"name": "Jusuf Nurkic", "pos": "C", "jersey": "20", "espn_id": 3102530, "avg": "10.9 PTS, 11.0 REB"}
-    ],
-    "POR": [
-        {"name": "Anfernee Simons", "pos": "PG", "jersey": "1", "espn_id": 4351851, "avg": "22.6 PTS, 5.5 AST"},
-        {"name": "Shaedon Sharpe", "pos": "SG", "jersey": "17", "espn_id": 4683839, "avg": "15.9 PTS, 5.0 REB"},
-        {"name": "Deni Avdija", "pos": "SF", "jersey": "8", "espn_id": 4683837, "avg": "14.7 PTS, 7.2 REB"},
-        {"name": "Jerami Grant", "pos": "PF", "jersey": "9", "espn_id": 2991070, "avg": "21.0 PTS, 3.5 REB"},
-        {"name": "Deandre Ayton", "pos": "C", "jersey": "2", "espn_id": 4278129, "avg": "16.7 PTS, 11.1 REB"}
-    ],
-    "SAC": [
-        {"name": "De'Aaron Fox", "pos": "PG", "jersey": "5", "espn_id": 4066259, "avg": "26.6 PTS, 5.6 AST"},
-        {"name": "Keon Ellis", "pos": "SG", "jersey": "23", "espn_id": 4432172, "avg": "5.4 PTS, 2.2 REB"},
-        {"name": "DeMar DeRozan", "pos": "SF", "jersey": "10", "espn_id": 3978, "avg": "24.0 PTS, 5.3 AST"},
-        {"name": "Keegan Murray", "pos": "PF", "jersey": "13", "espn_id": 4432170, "avg": "15.2 PTS, 5.5 REB"},
-        {"name": "Domantas Sabonis", "pos": "C", "jersey": "11", "espn_id": 3155942, "avg": "19.4 PTS, 13.7 REB"}
-    ],
-    "SAS": [
-        {"name": "Chris Paul", "pos": "PG", "jersey": "3", "espn_id": 2779, "avg": "9.2 PTS, 6.8 AST"},
-        {"name": "Devin Vassell", "pos": "SG", "jersey": "24", "espn_id": 4395630, "avg": "19.5 PTS, 3.8 REB"},
-        {"name": "Julian Champagnie", "pos": "SF", "jersey": "30", "espn_id": 4432168, "avg": "6.8 PTS, 2.8 REB"},
-        {"name": "Harrison Barnes", "pos": "PF", "jersey": "40", "espn_id": 6578, "avg": "12.2 PTS, 3.0 REB"},
-        {"name": "Victor Wembanyama", "pos": "C", "jersey": "1", "espn_id": 5104157, "avg": "21.4 PTS, 10.6 REB"}
-    ],
-    "TOR": [
-        {"name": "Immanuel Quickley", "pos": "PG", "jersey": "5", "espn_id": 4395724, "avg": "18.6 PTS, 6.8 AST"},
-        {"name": "Gradey Dick", "pos": "SG", "jersey": "1", "espn_id": 4871147, "avg": "8.5 PTS, 2.2 REB"},
-        {"name": "RJ Barrett", "pos": "SF", "jersey": "9", "espn_id": 4395625, "avg": "21.8 PTS, 6.4 REB"},
-        {"name": "Scottie Barnes", "pos": "PF", "jersey": "4", "espn_id": 4433134, "avg": "19.9 PTS, 8.2 REB"},
-        {"name": "Jakob Poeltl", "pos": "C", "jersey": "19", "espn_id": 3134908, "avg": "11.1 PTS, 8.6 REB"}
-    ],
-    "UTA": [
-        {"name": "Keyonte George", "pos": "PG", "jersey": "3", "espn_id": 4871144, "avg": "13.0 PTS, 4.4 AST"},
-        {"name": "Collin Sexton", "pos": "SG", "jersey": "2", "espn_id": 4277880, "avg": "18.7 PTS, 4.9 AST"},
-        {"name": "Lauri Markkanen", "pos": "SF", "jersey": "23", "espn_id": 4066336, "avg": "23.2 PTS, 8.2 REB"},
-        {"name": "John Collins", "pos": "PF", "jersey": "20", "espn_id": 3908845, "avg": "15.1 PTS, 8.5 REB"},
-        {"name": "Walker Kessler", "pos": "C", "jersey": "24", "espn_id": 4432164, "avg": "8.1 PTS, 7.5 REB"}
-    ],
-    "WAS": [
-        {"name": "Jordan Poole", "pos": "PG", "jersey": "13", "espn_id": 4277956, "avg": "17.4 PTS, 4.4 AST"},
-        {"name": "Bilal Coulibaly", "pos": "SG", "jersey": "0", "espn_id": 5104158, "avg": "8.4 PTS, 4.1 REB"},
-        {"name": "Kyle Kuzma", "pos": "SF", "jersey": "18", "espn_id": 3134907, "avg": "22.2 PTS, 6.6 REB"},
-        {"name": "Alexandre Sarr", "pos": "PF", "jersey": "20", "espn_id": 5174350, "avg": "13.5 PTS, 7.8 REB"},
-        {"name": "Jonas Valanciunas", "pos": "C", "jersey": "17", "espn_id": 6477, "avg": "12.2 PTS, 8.8 REB"}
-    ]
-}
+# Chargement du catalogue officiel des 5 Majeurs à jour (30 équipes avec portraits HD ESPN vérifiés)
+_STARTERS_CACHE_FILE = os.path.join(os.path.dirname(__file__), "official_starters_cache.json")
+NBA_PROJECTED_STARTERS = {}
+try:
+    if os.path.exists(_STARTERS_CACHE_FILE):
+        with open(_STARTERS_CACHE_FILE, "r", encoding="utf-8") as f:
+            NBA_PROJECTED_STARTERS = json.load(f)
+except Exception as e:
+    print(f"[STARTERS CACHE] Erreur chargement: {e}")
 
 
 def _get_player_headshot(espn_id: Optional[int]) -> str:
     """Retourne l'URL officielle du portrait HD sur le CDN ESPN."""
     if not espn_id:
         return "/static/icons/logo-secondaire.png"
-    return f"https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/{espn_id}.png&w=140&h=100"
+    return f"https://a.espncdn.com/i/headshots/nba/players/full/{espn_id}.png"
 
 
 def fetch_match_boxscore_and_starters(db: Session, match_id: int) -> Dict[str, Any]:
@@ -490,12 +288,12 @@ def fetch_match_boxscore_and_starters(db: Session, match_id: int) -> Dict[str, A
     summary_data = None
     espn_event_id = None
 
-    # Recherche de l'événement ESPN correspondant
+    # Recherche de l'événement ESPN correspondant (plage de dates +/- 1 jour pour décalages US/Europe)
     try:
-        # Date du match au format YYYYMMDD
-        date_param = match.deadline.strftime("%Y%m%d")
         candidates_urls = [
-            f"{ESPN_SCOREBOARD_URL}?dates={date_param}",
+            f"{ESPN_SCOREBOARD_URL}?dates={(match.deadline - timedelta(days=1)).strftime('%Y%m%d')}",
+            f"{ESPN_SCOREBOARD_URL}?dates={match.deadline.strftime('%Y%m%d')}",
+            f"{ESPN_SCOREBOARD_URL}?dates={(match.deadline + timedelta(days=1)).strftime('%Y%m%d')}",
             ESPN_SCOREBOARD_URL
         ]
         with httpx.Client(timeout=6) as client:
@@ -513,9 +311,10 @@ def fetch_match_boxscore_and_starters(db: Session, match_id: int) -> Dict[str, A
                             if c_home and c_away:
                                 ev_h = normalize_espn_code(c_home.get("team", {}).get("abbreviation", ""))
                                 ev_a = normalize_espn_code(c_away.get("team", {}).get("abbreviation", ""))
-                                if ev_h == home_code and ev_a == away_code:
-                                    espn_event_id = ev.get("id")
-                                    break
+                                if {ev_h, ev_a} == {home_code, away_code}:
+                                    if is_same_game_date(match.deadline, ev.get("date")):
+                                        espn_event_id = ev.get("id")
+                                        break
                     if espn_event_id:
                         break
                 except Exception:
@@ -587,21 +386,21 @@ def fetch_match_boxscore_and_starters(db: Session, match_id: int) -> Dict[str, A
             elif abbr == away_code:
                 away_team_stats = s_dict
 
-    # Si pas de 5 majeurs trouvés via ESPN live (match à venir ou boxscore précoce), on utilise le catalogue officiel
+    # Si pas de 5 majeurs trouvés via ESPN live (match à venir ou boxscore précoce), on utilise le catalogue officiel à jour
     if len(home_starters) < 5:
         fallback_h = NBA_PROJECTED_STARTERS.get(home_code, [])
         home_starters = [
             {
                 "name": p["name"],
                 "pos": p["pos"],
-                "jersey": p["jersey"],
-                "headshot": _get_player_headshot(p.get("espn_id")),
+                "jersey": str(p.get("jersey", "")),
+                "headshot": p.get("headshot") or _get_player_headshot(p.get("espn_id")),
                 "min": "32",
-                "pts": p["avg"].split("PTS")[0].strip() if "PTS" in p["avg"] else "15",
+                "pts": p.get("avg", "15").split("PTS")[0].strip() if "PTS" in p.get("avg", "") else "15",
                 "reb": "5",
                 "ast": "4",
                 "fg": "48%",
-                "avg": p["avg"]
+                "avg": p.get("avg", "15.0 PTS, 5.0 REB")
             }
             for p in fallback_h
         ]
@@ -612,14 +411,14 @@ def fetch_match_boxscore_and_starters(db: Session, match_id: int) -> Dict[str, A
             {
                 "name": p["name"],
                 "pos": p["pos"],
-                "jersey": p["jersey"],
-                "headshot": _get_player_headshot(p.get("espn_id")),
+                "jersey": str(p.get("jersey", "")),
+                "headshot": p.get("headshot") or _get_player_headshot(p.get("espn_id")),
                 "min": "32",
-                "pts": p["avg"].split("PTS")[0].strip() if "PTS" in p["avg"] else "15",
+                "pts": p.get("avg", "15").split("PTS")[0].strip() if "PTS" in p.get("avg", "") else "15",
                 "reb": "5",
                 "ast": "4",
                 "fg": "48%",
-                "avg": p["avg"]
+                "avg": p.get("avg", "15.0 PTS, 5.0 REB")
             }
             for p in fallback_a
         ]
