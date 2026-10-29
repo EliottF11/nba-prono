@@ -50,7 +50,7 @@ def is_same_game_date(db_deadline: datetime, event_date_str: Optional[str]) -> b
 
 _last_espn_sync_timestamp = 0
 _http_client: Optional[httpx.Client] = None
-_teams_cache: Dict[str, Team] = {}
+_teams_id_map: Dict[str, int] = {}
 
 def get_http_client() -> httpx.Client:
     global _http_client
@@ -58,11 +58,11 @@ def get_http_client() -> httpx.Client:
         _http_client = httpx.Client(timeout=8, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
     return _http_client
 
-def get_cached_teams(db: Session) -> Dict[str, Team]:
-    global _teams_cache
-    if not _teams_cache:
-        _teams_cache = {t.code: t for t in db.query(Team).all()}
-    return _teams_cache
+def get_teams_id_map(db: Session) -> Dict[str, int]:
+    global _teams_id_map
+    if not _teams_id_map:
+        _teams_id_map = {row[0]: row[1] for row in db.query(Team.code, Team.id).all()}
+    return _teams_id_map
 
 def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) -> Dict[str, Any]:
     """
@@ -92,8 +92,8 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
     if not events:
         return {"status": "ok", "events_found": 0, "live_matches": 0, "resolved_matches": 0}
 
-    # Pré-chargement mis en cache des équipes pour lookup rapide sans réinterroger la BDD
-    teams_by_code = get_cached_teams(db)
+    # Pré-chargement des IDs d'équipes pour lookup rapide (entiers purs, jamais détachés de session)
+    teams_id_map = get_teams_id_map(db)
 
     live_count = 0
     resolved_count = 0
@@ -121,10 +121,10 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
         home_code = normalize_espn_code(home_comp.get("team", {}).get("abbreviation", ""))
         away_code = normalize_espn_code(away_comp.get("team", {}).get("abbreviation", ""))
 
-        home_team = teams_by_code.get(home_code)
-        away_team = teams_by_code.get(away_code)
+        home_team_id = teams_id_map.get(home_code)
+        away_team_id = teams_id_map.get(away_code)
 
-        if not home_team or not away_team:
+        if not home_team_id or not away_team_id:
             continue
 
         # Extraction des scores numériques
@@ -140,8 +140,8 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
         candidates = (
             db.query(Match)
             .filter(
-                Match.home_team_id == home_team.id,
-                Match.away_team_id == away_team.id,
+                Match.home_team_id == home_team_id,
+                Match.away_team_id == away_team_id,
                 Match.status.in_(["upcoming", "live"])
             )
             .order_by(Match.deadline.asc())
@@ -154,8 +154,8 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
             finished_candidates = (
                 db.query(Match)
                 .filter(
-                    Match.home_team_id == home_team.id,
-                    Match.away_team_id == away_team.id,
+                    Match.home_team_id == home_team_id,
+                    Match.away_team_id == away_team_id,
                     Match.status == "finished"
                 )
                 .order_by(Match.deadline.desc())
@@ -202,7 +202,7 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
             match.live_clock = "Final"
 
             if home_score is not None and away_score is not None:
-                winner_id = home_team.id if home_score > away_score else away_team.id
+                winner_id = home_team_id if home_score > away_score else away_team_id
                 match.winner_team_id = winner_id
 
                 # Si le match n'était pas encore clôturé, on calcule et distribue les points
@@ -221,7 +221,7 @@ def sync_espn_live_scores(db: Session, target_date_str: Optional[str] = None) ->
                         "id": match.id,
                         "status": "finished",
                         "score": f"{away_code} {away_score} - {home_score} {home_code}",
-                        "winner": home_code if winner_id == home_team.id else away_code
+                        "winner": home_code if winner_id == home_team_id else away_code
                     })
 
     if affected_users:
@@ -660,8 +660,8 @@ def sync_espn_upcoming_schedule(db: Session, days_ahead: int = 10) -> int:
     sur les N prochains jours et les insère dans la BDD avec des cotes équilibrées.
     """
     now = datetime.now(timezone.utc)
-    teams_by_code = {t.code: t for t in db.query(Team).all()}
-    if not teams_by_code:
+    teams_id_map = get_teams_id_map(db)
+    if not teams_id_map:
         return 0
 
     existing_keys = {
@@ -693,9 +693,9 @@ def sync_espn_upcoming_schedule(db: Session, days_ahead: int = 10) -> int:
                     h_code = normalize_espn_code(home_comp.get("team", {}).get("abbreviation", ""))
                     a_code = normalize_espn_code(away_comp.get("team", {}).get("abbreviation", ""))
 
-                    home_team = teams_by_code.get(h_code)
-                    away_team = teams_by_code.get(a_code)
-                    if not home_team or not away_team:
+                    home_team_id = teams_id_map.get(h_code)
+                    away_team_id = teams_id_map.get(a_code)
+                    if not home_team_id or not away_team_id:
                         continue
 
                     ev_date_str = ev.get("date")
@@ -707,7 +707,7 @@ def sync_espn_upcoming_schedule(db: Session, days_ahead: int = 10) -> int:
                     if ev_dt <= now:
                         continue
 
-                    match_key = (home_team.id, away_team.id, ev_dt.strftime("%Y-%m-%d"))
+                    match_key = (home_team_id, away_team_id, ev_dt.strftime("%Y-%m-%d"))
                     if match_key in existing_keys:
                         continue
 
@@ -721,8 +721,8 @@ def sync_espn_upcoming_schedule(db: Session, days_ahead: int = 10) -> int:
                     a_odds = round(rng.uniform(1.35, 2.55), 2)
 
                     new_match = Match(
-                        home_team_id=home_team.id,
-                        away_team_id=away_team.id,
+                        home_team_id=home_team_id,
+                        away_team_id=away_team_id,
                         home_odds=h_odds,
                         away_odds=a_odds,
                         deadline=ev_dt,
