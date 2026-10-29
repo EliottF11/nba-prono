@@ -684,29 +684,38 @@ def sync_all_matches_endpoint(db: Session = Depends(get_db)):
     3. Synchronise les scores live via ESPN
     4. Récupère et insère le calendrier officiel NBA des 10 prochains jours
     """
-    from services.nba_service import sanitize_future_matches, auto_resolve_finished_matches
-    from services.espn_service import sync_recent_and_live_scores, sync_espn_upcoming_schedule
+    import traceback
+    try:
+        from services.nba_service import sanitize_future_matches, auto_resolve_finished_matches
+        from services.espn_service import sync_recent_and_live_scores, sync_espn_upcoming_schedule
 
-    sanitized = sanitize_future_matches(db)
-    resolved = auto_resolve_finished_matches(db, force_all_past=True)
-    live_synced = sync_recent_and_live_scores(db)
-    schedule_imported = sync_espn_upcoming_schedule(db, days_ahead=10)
+        sanitized = sanitize_future_matches(db)
+        resolved = auto_resolve_finished_matches(db, force_all_past=True)
+        live_synced = sync_recent_and_live_scores(db)
+        schedule_imported = sync_espn_upcoming_schedule(db, days_ahead=10)
 
-    total_matches = db.query(Match).count()
-    upcoming_count = db.query(Match).filter(Match.status == "upcoming").count()
-    finished_count = db.query(Match).filter(Match.status == "finished").count()
+        total_matches = db.query(Match).count()
+        upcoming_count = db.query(Match).filter(Match.status == "upcoming").count()
+        finished_count = db.query(Match).filter(Match.status == "finished").count()
 
-    return {
-        "status": "success",
-        "sanitized": sanitized,
-        "resolved_matches_count": resolved.get("resolved_count", 0),
-        "new_schedule_imported": schedule_imported,
-        "stats": {
-            "total_matches": total_matches,
-            "upcoming_matches": upcoming_count,
-            "finished_matches": finished_count
+        return {
+            "status": "success",
+            "sanitized": sanitized,
+            "resolved_matches_count": resolved.get("resolved_count", 0),
+            "new_schedule_imported": schedule_imported,
+            "stats": {
+                "total_matches": total_matches,
+                "upcoming_matches": upcoming_count,
+                "finished_matches": finished_count
+            }
         }
-    }
+    except Exception as e:
+        print(f"[SYNC-ALL ERROR] {e}\n{traceback.format_exc()}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }
 
 
 @router.get("/matches/{match_id}/stats", tags=["Pronostics & Matchs"])
