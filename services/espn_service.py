@@ -253,6 +253,15 @@ def sync_espn_if_needed(db: Session, cooldown_seconds: int = 60) -> Dict[str, An
     return sync_espn_live_scores(db)
 
 
+def sync_recent_and_live_scores(db: Session) -> Dict[str, Any]:
+    """Synchronise la date d'aujourd'hui et de la veille."""
+    now_utc = datetime.now(timezone.utc)
+    res_today = sync_espn_live_scores(db, target_date_str=now_utc.strftime("%Y%m%d"))
+    sync_espn_live_scores(db, target_date_str=(now_utc - timedelta(days=1)).strftime("%Y%m%d"))
+    return res_today
+
+
+
 # Chargement du catalogue officiel des 5 Majeurs à jour (30 équipes avec portraits HD ESPN vérifiés)
 _STARTERS_CACHE_FILE = os.path.join(os.path.dirname(__file__), "official_starters_cache.json")
 NBA_PROJECTED_STARTERS = {}
