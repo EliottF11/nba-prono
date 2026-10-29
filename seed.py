@@ -17,6 +17,10 @@ def reset_and_init_db():
 def seed_all_teams_and_matches():
     db = SessionLocal()
     try:
+        # Fast path : vérification rapide pour économiser la mémoire et le CPU au démarrage si déjà seedé
+        if db.query(Team).count() >= 30 and db.query(Match).count() >= 60:
+            return
+
         print("-> Injection des 30 équipes NBA (villes + couleurs officielles)...")
         
         teams_data = [

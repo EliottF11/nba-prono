@@ -33,7 +33,7 @@ def run_tests():
         matches = client.get("/api/matches").json()
         upcoming_matches = [m for m in matches if m["status"] == "upcoming"]
 
-    m1 = upcoming_matches[0]
+    m1 = next((m for m in upcoming_matches if m.get("season_stage") == "regular"), upcoming_matches[0])
     m1_id = m1["id"]
     home_team_id = m1["home_team"]["id"]
     away_team_id = m1["away_team"]["id"]

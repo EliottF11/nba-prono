@@ -272,7 +272,7 @@ const API = {
     });
   },
 
-  // --- Améliorations MPP : Transparence des votes & Mur de chambrage ---
+  // --- Transparence des votes & Mur de chambrage ---
   async getLeagueMatchVotes(leagueId, matchId) {
     return await this.request(`/api/leagues/${leagueId}/matches/${matchId}/predictions`);
   },

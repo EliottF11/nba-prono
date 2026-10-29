@@ -249,6 +249,14 @@ def run_checks():
             print(f"  ❌ [FAIL] Module Ligues : {e}")
             failed += 1
 
+    # Nettoyage automatique des comptes de test créés pendant l'audit
+    try:
+        r_clean = client.post("/api/admin/cleanup-test-data", headers={"X-Admin-Secret": "nba-audit-clean-2026"})
+        if r_clean.status_code == 200:
+            print("  🧹 [OK] Données temporaires d'audit nettoyées automatiquement.")
+    except Exception:
+        pass
+
     # -------------------------------------------------------------
     # Bilan Final
     # -------------------------------------------------------------

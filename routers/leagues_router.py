@@ -34,19 +34,37 @@ def generate_unique_league_code(db: Session) -> str:
     raise HTTPException(status_code=500, detail="Impossible de générer un code de ligue unique.")
 
 
-def build_league_detail(league: League, current_user: User) -> LeagueDetailResponse:
+def build_league_detail(league: League, current_user: User, db: Optional[Session] = None) -> LeagueDetailResponse:
     """Construit la réponse détaillée d'une ligue avec son classement interne ordonné."""
+    from sqlalchemy.orm import object_session
+    from sqlalchemy import func, case
+    session = db or object_session(league)
+
+    member_user_ids = [m.user_id for m in league.members]
+    user_stats = {}
+    if session and member_user_ids:
+        stats_rows = (
+            session.query(
+                Prediction.user_id,
+                func.count(Prediction.id).label("preds_count"),
+                func.count(case(((Prediction.points_won > 0), 1), else_=None)).label("won_count")
+            )
+            .filter(Prediction.user_id.in_(member_user_ids))
+            .group_by(Prediction.user_id)
+            .all()
+        )
+        user_stats = {r[0]: (r[1], r[2]) for r in stats_rows}
+
     # Récupérer tous les membres avec leurs utilisateurs triés par total_points décroissant
     members_data = []
     for m in league.members:
         u = m.user
-        preds = u.predictions
-        won_count = sum(1 for p in preds if p.points_won > 0)
+        preds_count, won_count = user_stats.get(u.id, (0, 0))
         members_data.append({
             "member": m,
             "user": u,
             "points": u.total_points,
-            "preds_count": len(preds),
+            "preds_count": preds_count,
             "won_count": won_count
         })
 
@@ -298,7 +316,7 @@ def get_league_match_predictions(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Transparence des pronostics en ligue privée (Signature MPP) :
+    Transparence des pronostics en ligue privée :
     - AVANT le coup d'envoi (match à venir et deadline non dépassée) :
       Mode secret 🔒 -> On sait combien de membres ont voté (ex: 3/4 ont voté) et qui a voté,
       mais les choix d'équipes et les bonus x2 restent cachés pour préserver le suspense.
@@ -445,8 +463,10 @@ def get_league_messages(
     if not membership:
         raise HTTPException(status_code=403, detail="Vous devez être membre de la ligue pour voir le mur de chambrage.")
 
+    from sqlalchemy.orm import joinedload
     messages = (
         db.query(LeagueMessage)
+        .options(joinedload(LeagueMessage.user))
         .filter(LeagueMessage.league_id == league_id)
         .order_by(LeagueMessage.created_at.asc())
         .limit(100)

@@ -297,7 +297,7 @@ class LeagueSummaryResponse(BaseModel):
     created_at: datetime
 
 
-# --- Schémas Transparence des Votes & Mur de Chambrage (MPP Features) ---
+# --- Schémas Transparence des Votes & Mur de Chambrage ---
 
 class LeagueMemberVoteResponse(BaseModel):
     user_id: int

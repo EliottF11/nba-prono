@@ -22,12 +22,23 @@ from auth import get_current_user
 
 router = APIRouter(prefix="/api", tags=["Pronostics & Matchs"])
 
-def compute_team_recent_forms(db: Session) -> dict:
-    """Calcule la forme récente (jusqu'à 5 derniers matchs: 'W' ou 'L') pour chaque équipe."""
+import time
+from sqlalchemy.orm import joinedload
+
+_recent_forms_cache = {"timestamp": 0, "data": {}}
+
+def compute_team_recent_forms(db: Session, cache_ttl: int = 120) -> dict:
+    """Calcule la forme récente (jusqu'à 5 derniers matchs: 'W' ou 'L') pour chaque équipe avec cache 2 min."""
+    global _recent_forms_cache
+    now = time.time()
+    if now - _recent_forms_cache["timestamp"] < cache_ttl and _recent_forms_cache["data"]:
+        return _recent_forms_cache["data"]
+
     finished_matches = (
         db.query(Match)
         .filter(Match.status == "finished", Match.winner_team_id.isnot(None))
         .order_by(Match.deadline.desc())
+        .limit(100)
         .all()
     )
     forms = {}
@@ -42,6 +53,7 @@ def compute_team_recent_forms(db: Session) -> dict:
         if len(forms[m.away_team_id]) < 5:
             forms[m.away_team_id].append("W" if m.winner_team_id == m.away_team_id else "L")
 
+    _recent_forms_cache = {"timestamp": now, "data": forms}
     return forms
 
 
@@ -60,17 +72,17 @@ def get_matches(
     """
     try:
         from services.espn_service import sync_espn_if_needed
-        sync_espn_if_needed(db, cooldown_seconds=15)
+        sync_espn_if_needed(db, cooldown_seconds=60)
     except Exception as e:
         pass
 
     try:
         from services.nba_service import auto_resolve_if_needed
-        auto_resolve_if_needed(db, cooldown_seconds=60)
+        auto_resolve_if_needed(db, cooldown_seconds=120)
     except Exception as e:
-        print(f"[AUTO-RESOLVE MATCHES NOTICE] {e}")
+        pass
 
-    query = db.query(Match)
+    query = db.query(Match).options(joinedload(Match.home_team), joinedload(Match.away_team))
     if status_filter:
         query = query.filter(Match.status == status_filter)
     if week is not None:
@@ -420,76 +432,80 @@ def get_my_flash_predictions(
 def get_leaderboard(db: Session = Depends(get_db)):
     """
     Renvoie le classement général des joueurs trié par points décroissants (Uniquement Saison Régulière).
+    Calcul optimisé en une seule requête SQL directe sans charger des milliers d'objets ORM en mémoire.
     """
-    try:
-        from services.nba_service import auto_resolve_if_needed
-        auto_resolve_if_needed(db, cooldown_seconds=60)
-    except Exception as e:
-        pass
+    from sqlalchemy import func, case
+    rows = (
+        db.query(
+            User.id,
+            User.username,
+            User.avatar_url,
+            func.coalesce(func.sum(case((Match.season_stage == 'regular', Prediction.points_won), else_=0.0)), 0.0).label("total_pts"),
+            func.count(case((Match.season_stage == 'regular', Prediction.id), else_=None)).label("preds_count"),
+            func.count(case(((Match.season_stage == 'regular') & (Prediction.points_won > 0), Prediction.id), else_=None)).label("won_count")
+        )
+        .outerjoin(Prediction, Prediction.user_id == User.id)
+        .outerjoin(Match, Prediction.match_id == Match.id)
+        .filter(~User.username.ilike("audit_%"))
+        .group_by(User.id)
+        .order_by(func.coalesce(func.sum(case((Match.season_stage == 'regular', Prediction.points_won), else_=0.0)), 0.0).desc(), User.id.asc())
+        .all()
+    )
 
-    users = db.query(User).all()
-    leaderboard = []
-
-    for user in users:
-        regular_preds = [p for p in user.predictions if p.match.season_stage == 'regular']
-        total_pts = sum(p.points_won for p in regular_preds)
-        won = sum(1 for p in regular_preds if p.points_won > 0)
-        leaderboard.append({
-            "user_id": user.id,
-            "username": user.username,
-            "total_points": round(total_pts, 2),
-            "avatar_url": user.avatar_url,
-            "predictions_count": len(regular_preds),
-            "won_count": won
-        })
-
-    # Tri manuel
-    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
-    
-    # Assignation du rang
-    for rank, entry in enumerate(leaderboard, start=1):
-        entry["rank"] = rank
-
-    return leaderboard
+    return [
+        LeaderboardEntry(
+            rank=rank,
+            user_id=r[0],
+            username=r[1],
+            avatar_url=r[2],
+            total_points=round(float(r[3]), 2),
+            predictions_count=int(r[4]),
+            won_count=int(r[5])
+        )
+        for rank, r in enumerate(rows, start=1)
+    ]
 
 
 @router.get("/leaderboard/flash", response_model=List[LeaderboardEntry])
 def get_leaderboard_flash(db: Session = Depends(get_db)):
     """
     Renvoie le classement pour le Tournoi Flash Présaison.
+    Calcul optimisé en une seule requête SQL directe sans saturation mémoire.
     """
-    try:
-        from services.nba_service import auto_resolve_if_needed
-        auto_resolve_if_needed(db, cooldown_seconds=60)
-    except Exception as e:
-        pass
+    from sqlalchemy import func, case
+    rows = (
+        db.query(
+            User.id,
+            User.username,
+            User.avatar_url,
+            func.coalesce(func.sum(case((Match.season_stage == 'preseason', Prediction.points_won), else_=0.0)), 0.0).label("total_pts"),
+            func.count(case((Match.season_stage == 'preseason', Prediction.id), else_=None)).label("preds_count"),
+            func.count(case(((Match.season_stage == 'preseason') & (Prediction.points_won > 0), Prediction.id), else_=None)).label("won_count")
+        )
+        .outerjoin(Prediction, Prediction.user_id == User.id)
+        .outerjoin(Match, Prediction.match_id == Match.id)
+        .filter(~User.username.ilike("audit_%"))
+        .group_by(User.id)
+        .order_by(func.coalesce(func.sum(case((Match.season_stage == 'preseason', Prediction.points_won), else_=0.0)), 0.0).desc(), User.id.asc())
+        .all()
+    )
 
-    users = db.query(User).all()
-    leaderboard = []
+    filtered = [r for r in rows if r[4] > 0]
+    if not filtered:
+        filtered = rows
 
-    for user in users:
-        preseason_preds = [p for p in user.predictions if p.match.season_stage == 'preseason']
-        if not preseason_preds:
-            continue # Ne pas inclure les joueurs sans prono présaison ? Ou les inclure avec 0 pts. On peut les inclure.
-        total_pts = sum(p.points_won for p in preseason_preds)
-        won = sum(1 for p in preseason_preds if p.points_won > 0)
-        leaderboard.append({
-            "user_id": user.id,
-            "username": user.username,
-            "total_points": round(total_pts, 2),
-            "avatar_url": user.avatar_url,
-            "predictions_count": len(preseason_preds),
-            "won_count": won
-        })
-
-    # Tri manuel
-    leaderboard.sort(key=lambda x: x["total_points"], reverse=True)
-    
-    # Assignation du rang
-    for rank, entry in enumerate(leaderboard, start=1):
-        entry["rank"] = rank
-
-    return leaderboard
+    return [
+        LeaderboardEntry(
+            rank=rank,
+            user_id=r[0],
+            username=r[1],
+            avatar_url=r[2],
+            total_points=round(float(r[3]), 2),
+            predictions_count=int(r[4]),
+            won_count=int(r[5])
+        )
+        for rank, r in enumerate(filtered, start=1)
+    ]
 
 
 @router.post("/matches/{match_id}/resolve")
@@ -579,11 +595,17 @@ def get_live_matches(db: Session = Depends(get_db)):
     """
     try:
         from services.espn_service import sync_espn_if_needed
-        sync_espn_if_needed(db, cooldown_seconds=10)
+        sync_espn_if_needed(db, cooldown_seconds=30)
     except Exception as e:
         pass
 
-    live_matches = db.query(Match).filter(Match.status == "live").order_by(Match.deadline.asc()).all()
+    live_matches = (
+        db.query(Match)
+        .options(joinedload(Match.home_team), joinedload(Match.away_team))
+        .filter(Match.status == "live")
+        .order_by(Match.deadline.asc())
+        .all()
+    )
     forms = compute_team_recent_forms(db)
     for m in live_matches:
         if m.home_team:
@@ -651,6 +673,40 @@ def sanitize_matches_dates_endpoint(db: Session = Depends(get_db)):
     """
     from services.nba_service import sanitize_future_matches
     return sanitize_future_matches(db)
+
+
+@router.post("/matches/sync-all", tags=["Synchronisation"])
+def sync_all_matches_endpoint(db: Session = Depends(get_db)):
+    """
+    Synchronisation complète du site :
+    1. Réinitialise les éventuels matchs futurs indûment clôturés
+    2. Clôture tous les matchs passés, applique les scores et calcule les points
+    3. Synchronise les scores live via ESPN
+    4. Récupère et insère le calendrier officiel NBA des 10 prochains jours
+    """
+    from services.nba_service import sanitize_future_matches, auto_resolve_finished_matches
+    from services.espn_service import sync_recent_and_live_scores, sync_espn_upcoming_schedule
+
+    sanitized = sanitize_future_matches(db)
+    resolved = auto_resolve_finished_matches(db, force_all_past=True)
+    live_synced = sync_recent_and_live_scores(db)
+    schedule_imported = sync_espn_upcoming_schedule(db, days_ahead=10)
+
+    total_matches = db.query(Match).count()
+    upcoming_count = db.query(Match).filter(Match.status == "upcoming").count()
+    finished_count = db.query(Match).filter(Match.status == "finished").count()
+
+    return {
+        "status": "success",
+        "sanitized": sanitized,
+        "resolved_matches_count": resolved.get("resolved_count", 0),
+        "new_schedule_imported": schedule_imported,
+        "stats": {
+            "total_matches": total_matches,
+            "upcoming_matches": upcoming_count,
+            "finished_matches": finished_count
+        }
+    }
 
 
 @router.get("/matches/{match_id}/stats", tags=["Pronostics & Matchs"])

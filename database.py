@@ -13,9 +13,18 @@ if DATABASE_URL.startswith("postgres://"):
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
+engine_kwargs = {"connect_args": connect_args}
+if not DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update({
+        "pool_size": 3,
+        "max_overflow": 2,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    })
+
 engine = create_engine(
     DATABASE_URL,
-    connect_args=connect_args
+    **engine_kwargs
 )
 
 # Fabrique de sessions de base de données

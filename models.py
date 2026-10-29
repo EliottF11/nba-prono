@@ -224,7 +224,7 @@ class LeagueMember(Base):
 
 class LeagueMessage(Base):
     """
-    Message sur le mur de chambrage (mini-chat) d'une ligue privée (Style MPP).
+    Message sur le mur de chambrage (mini-chat) d'une ligue privée.
     """
     __tablename__ = "league_messages"
 

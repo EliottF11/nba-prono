@@ -1,4 +1,10 @@
+import os
+import gc
 import sys
+
+# Réduction de l'allocation mémoire virtuelle glibc sous Linux / Render
+os.environ.setdefault("MALLOC_ARENA_MAX", "2")
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 if hasattr(sys.stderr, "reconfigure"):
@@ -9,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -42,6 +48,7 @@ def daily_morning_sync():
         pass
     finally:
         db.close()
+        gc.collect()
 
 def half_hourly_sync():
     """Tâche automatique exécutée toutes les 30 minutes pour mettre à jour les scores."""
@@ -50,7 +57,6 @@ def half_hourly_sync():
         from services.nba_service import sync_scores_for_date, auto_resolve_finished_matches
         today_str = datetime.now().strftime("%Y-%m-%d")
         sync_scores_for_date(db, today_str, skip_props=True)
-        from datetime import timedelta
         yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         sync_scores_for_date(db, yesterday_str, skip_props=True)
         # Clôture automatique des matchs terminés
@@ -59,6 +65,7 @@ def half_hourly_sync():
         pass
     finally:
         db.close()
+        gc.collect()
 
 def background_auto_resolve():
     """Tâche de fond exécutée toutes les 10 minutes pour détecter et clôturer les matchs terminés."""
@@ -70,17 +77,28 @@ def background_auto_resolve():
         print(f"[BACKGROUND AUTO-RESOLVE ERROR] {e}")
     finally:
         db.close()
+        gc.collect()
 
 def espn_live_sync_job():
-    """Synchronise les scores et chronos en direct depuis ESPN toutes les minutes (gratuit & illimité)."""
+    """Synchronise les scores et chronos en direct depuis ESPN quand des matchs sont actifs ou imminents."""
     db = SessionLocal()
     try:
-        from services.espn_service import sync_espn_live_scores
-        sync_espn_live_scores(db)
+        from models import Match
+        now_utc = datetime.now(timezone.utc)
+        # Économie de mémoire majeure : n'interroger ESPN que si un match est en cours ('live') ou débute sous 4h
+        has_active_matches = db.query(Match.id).filter(
+            (Match.status == "live") |
+            ((Match.status == "upcoming") & (Match.deadline <= now_utc + timedelta(hours=4)))
+        ).first() is not None
+
+        if has_active_matches:
+            from services.espn_service import sync_espn_live_scores
+            sync_espn_live_scores(db)
     except Exception as e:
         pass
     finally:
         db.close()
+        gc.collect()
 
 scheduler = BackgroundScheduler(daemon=True)
 
@@ -96,21 +114,22 @@ async def lifespan(app: FastAPI):
     # Résolution immédiate des matchs en attente dès le démarrage / réveil du serveur
     db = SessionLocal()
     try:
-        from services.nba_service import sanitize_future_matches
+        from services.nba_service import sanitize_future_matches, auto_resolve_finished_matches
+        from services.espn_service import sync_recent_and_live_scores, sync_espn_upcoming_schedule
         sanitize_future_matches(db)
-        from services.espn_service import sync_espn_live_scores
-        sync_espn_live_scores(db)
-        from services.nba_service import auto_resolve_finished_matches
-        res = auto_resolve_finished_matches(db)
-        print(f"[STARTUP AUTO-RESOLVE] Clôture au démarrage : {res.get('resolved_count', 0)} matchs résolus.")
+        sync_recent_and_live_scores(db)
+        res = auto_resolve_finished_matches(db, force_all_past=True)
+        imported = sync_espn_upcoming_schedule(db, days_ahead=10)
+        print(f"[STARTUP SYNC] {res.get('resolved_count', 0)} matchs résolus, {imported} nouveaux matchs importés.")
     except Exception as e:
-        print(f"[STARTUP AUTO-RESOLVE NOTICE] {e}")
+        print(f"[STARTUP SYNC NOTICE] {e}")
     finally:
         db.close()
+        gc.collect()
 
     # Enregistrement des tâches automatiques programmées
     scheduler.add_job(daily_morning_sync, CronTrigger(hour=7, minute=0))
-    scheduler.add_job(espn_live_sync_job, CronTrigger(minute="*")) # Chaque minute pour le live ESPN
+    scheduler.add_job(espn_live_sync_job, CronTrigger(minute="*/2")) # Toutes les 2 min pour préserver le CPU/RAM
     scheduler.add_job(background_auto_resolve, CronTrigger(minute="*/10"))
     scheduler.add_job(half_hourly_sync, CronTrigger(minute="*/30"))
     scheduler.start()
@@ -119,7 +138,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="NBA Prono MVP API",
-    description="API de pronostics NBA style Mon Petit Prono (FastAPI, SQLite, Mobile-First)",
+    description="API de pronostics NBA (FastAPI, SQLite, Mobile-First)",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -165,10 +184,23 @@ def serve_preview():
     """Sert le simulateur iPhone officiel avec rechargement automatique en direct."""
     return FileResponse("static/preview.html")
 
+_last_dev_check = 0
+_last_dev_version = 0
+
 @app.get("/api/dev/version", include_in_schema=False)
 def dev_version():
     """Renvoie l'horodatage de dernière modification des fichiers pour le Hot-Reload."""
-    import os
+    global _last_dev_check, _last_dev_version
+    # Désactivation en production sur Render
+    if os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production":
+        return {"v": 1}
+
+    import time
+    now = time.time()
+    if now - _last_dev_check < 2.0:
+        return {"v": _last_dev_version}
+
+    _last_dev_check = now
     latest = 0
     for folder in ["static", "routers"]:
         if os.path.exists(folder):
@@ -181,6 +213,7 @@ def dev_version():
                                 latest = t
                         except OSError:
                             pass
+    _last_dev_version = latest
     return {"v": latest}
 
 @app.get("/api/health", tags=["Système"])

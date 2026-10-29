@@ -191,7 +191,7 @@ function initUIEvents() {
   if (closeJoinLeagueBtn) closeJoinLeagueBtn.addEventListener('click', closeJoinLeagueModal);
   if (joinLeagueForm) joinLeagueForm.addEventListener('submit', handleJoinLeagueSubmit);
 
-  // Gestion modale Transparence des pronostics de ligue (Signature MPP)
+  // Gestion modale Transparence des pronostics de ligue
   const closeLmvBtn = document.getElementById('close-league-match-votes-modal');
   const lmvSelect = document.getElementById('lmv-league-select');
   if (closeLmvBtn) closeLmvBtn.addEventListener('click', closeLeagueMatchVotesModal);
@@ -3723,7 +3723,7 @@ async function leaveLeagueAction(leagueId) {
   }
 }
 
-// --- Améliorations MPP : Transparence des pronostics de ligue ---
+// --- Transparence des pronostics de ligue ---
 async function openLeagueMatchVotesModal(matchId, explicitLeagueId = null) {
   if (!state.currentUser) {
     openAuthModal('login');
@@ -3815,7 +3815,7 @@ function renderLeagueMatchVotes(data, match) {
     content.innerHTML = `
       <div class="p-3 bg-gradient-to-r from-amber-500/10 to-[#181a24] border border-amber-500/30 rounded-xl space-y-1.5 text-center">
         <div class="text-xs font-bold text-amber-400 flex items-center justify-center gap-1.5">
-          <svg class='lucide-inline lucide-md lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Pronostics secrets (Suspense MPP)
+          <svg class='lucide-inline lucide-md lucide-muted' viewBox='0 0 24 24'><rect width='18' height='11' x='3' y='11' rx='2' ry='2'/><path d='M7 11V7a5 5 0 0 1 10 0v4'/></svg> Pronostics secrets (Suspense garanti)
         </div>
         <p class="text-[11px] text-slate-300">
           Les choix d'équipes et les Bonus x2 seront révélés au coup d'envoi du match !
@@ -3911,7 +3911,7 @@ function renderLeagueMatchVotes(data, match) {
   }
 }
 
-// --- Améliorations MPP : Mur de Chambrage (Trash-Talk) ---
+// --- Mur de Chambrage (Trash-Talk) ---
 async function loadLeagueMessages(leagueId, isBackground = false) {
   const container = document.getElementById('league-chat-messages');
   if (!container) return;
@@ -5169,6 +5169,21 @@ function updateMatchDetailsView() {
     const topAway = leaders.top_away;
     const topHome = leaders.top_home;
 
+    const formatLeaderStatBadge = (p) => {
+      if (!p) return '';
+      if (p.plus_minus_str !== undefined && p.plus_minus_str !== null && (p.pts || p.reb || p.ast)) {
+        const pm = parseInt(p.plus_minus, 10) || 0;
+        const pmClass = pm > 0 ? 'text-emerald-400 bg-emerald-950/60 border border-emerald-500/50' : (pm < 0 ? 'text-rose-400 bg-rose-950/60 border border-rose-500/50' : 'text-zinc-400 bg-zinc-800/60 border border-zinc-700/50');
+        return `
+          <div class="flex flex-col items-center gap-1 mt-1">
+            <span class="text-[11px] font-mono text-amber-300 font-bold">${p.pts || 0} PTS • ${p.reb || 0} REB • ${p.ast || 0} AST</span>
+            <span class="text-[9px] font-mono font-black px-1.5 py-0.5 rounded ${pmClass}">+/- ${p.plus_minus_str}</span>
+          </div>
+        `;
+      }
+      return `<div class="text-[11px] font-mono text-amber-300 font-bold mt-0.5">${escapeHtml(p.avg || 'Leader d\'équipe')}</div>`;
+    };
+
     bodyHtml = `
       <div class="space-y-3.5">
         <!-- Meilleurs Joueurs / Leaders -->
@@ -5188,9 +5203,7 @@ function updateMatchDetailsView() {
                     ${escapeHtml(match.away_team.code)}
                   </div>
                   <div class="font-condensed font-black text-xs text-white truncate uppercase">${escapeHtml(topAway.name)}</div>
-                  <div class="text-[11px] font-mono text-amber-300 font-bold mt-0.5">
-                    ${isFinished || isLive ? `${topAway.pts} PTS • ${topAway.ast} AST` : topAway.avg}
-                  </div>
+                  ${formatLeaderStatBadge(topAway)}
                 </div>
               </div>
 
@@ -5204,9 +5217,7 @@ function updateMatchDetailsView() {
                     ${escapeHtml(match.home_team.code)}
                   </div>
                   <div class="font-condensed font-black text-xs text-white truncate uppercase">${escapeHtml(topHome.name)}</div>
-                  <div class="text-[11px] font-mono text-amber-300 font-bold mt-0.5">
-                    ${isFinished || isLive ? `${topHome.pts} PTS • ${topHome.ast} AST` : topHome.avg}
-                  </div>
+                  ${formatLeaderStatBadge(topHome)}
                 </div>
               </div>
             </div>

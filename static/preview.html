@@ -283,8 +283,11 @@
       }
     }
 
-    // Scrute toutes les 700 millisecondes
-    setInterval(checkFileChanges, 700);
+    // Scrute uniquement en environnement local de développement (désactivé sur Render/production)
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalDev) {
+      setInterval(checkFileChanges, 1500);
+    }
 
     // Toast visuel
     function triggerToast(message) {

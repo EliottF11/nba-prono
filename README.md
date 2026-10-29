@@ -1,4 +1,4 @@
-# 🏀 NBA Prono - Application MVP de Pronostics NBA (Style Mon Petit Prono)
+# 🏀 NBA Prono - Application de Pronostics NBA (Pick 'n' Swipe)
 
 Application web de pronostics NBA simple, ultra fluide et "mobile-first", conçue avec Python (FastAPI), SQLite et Tailwind CSS.
 
